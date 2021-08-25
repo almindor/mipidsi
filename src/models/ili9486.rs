@@ -1,5 +1,8 @@
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
-use embedded_graphics_core::{pixelcolor::Rgb666, prelude::{IntoStorage, RgbColor}};
+use embedded_graphics_core::{
+    pixelcolor::Rgb666,
+    prelude::{IntoStorage, RgbColor},
+};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{instruction::Instruction, Display, Error};
