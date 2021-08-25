@@ -2,7 +2,7 @@
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
 
-//! This crate provides a genericddisplay driver to connect to TFT displays
+//! This crate provides a generic ddisplay driver to connect to TFT displays
 //! that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
 //! Currently only supports SPI with DC pin setups via the [display_interface]
 //!  
