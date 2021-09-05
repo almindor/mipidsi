@@ -31,7 +31,6 @@ impl Model for ST7789 {
         delay.delay_us(120_000);
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        delay.delay_us(120_000);
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
         write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
@@ -40,6 +39,9 @@ impl Model for ST7789 {
 
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
         write_command(di, Instruction::DISPON, &[])?; // turn on display
+
+        // DISPON requires some time otherwise we risk SPI data issues
+        delay.delay_us(120_000);
 
         Ok(())
     }

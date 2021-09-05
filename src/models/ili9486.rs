@@ -1,8 +1,5 @@
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
-use embedded_graphics_core::{
-    pixelcolor::Rgb666,
-    prelude::{IntoStorage, RgbColor},
-};
+use embedded_graphics_core::{pixelcolor::Rgb666, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{instruction::Instruction, Display, Error};
@@ -35,8 +32,6 @@ impl Model for ILI9486 {
         delay.delay_us(120_000);
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        delay.delay_us(120_000);
-
         write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
         write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
         write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
@@ -47,9 +42,11 @@ impl Model for ILI9486 {
         // write_command(di, Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
 
         write_command(di, Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
-
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
         write_command(di, Instruction::DISPON, &[])?; // turn on display
+
+        // DISPON requires some time otherwise we risk SPI data issues
+        delay.delay_us(120_000);
 
         Ok(())
     }
