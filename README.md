@@ -1,6 +1,6 @@
 # mipidsi
 
-This crate provides a generic ddisplay driver to connect to TFT displays
+This crate provides a generic display driver to connect to TFT displays
 that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
 
 Uses [display_interface](https://docs.rs/display-interface/0.4.1/display_interface/) to talk to the hardware.
