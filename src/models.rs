@@ -60,7 +60,7 @@ pub trait Model {
 }
 
 // helper for models
-fn write_command(
+pub fn write_command(
     di: &mut dyn WriteOnlyDataCommand,
     command: Instruction,
     params: &[u8],
