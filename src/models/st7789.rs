@@ -11,7 +11,7 @@ use super::{write_command, Model};
 pub struct ST7789;
 
 impl Model for ST7789 {
-    type PixelFormat = Rgb565;
+    type ColorFormat = Rgb565;
 
     fn new() -> Self {
         Self
@@ -49,7 +49,7 @@ impl Model for ST7789 {
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
     where
         DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::PixelFormat>,
+        I: IntoIterator<Item = Self::ColorFormat>,
     {
         write_command(di, Instruction::RAMWR, &[])?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());

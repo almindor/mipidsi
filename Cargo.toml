@@ -12,7 +12,7 @@ documentation = "https://docs.rs/mipidsi"
 
 [dependencies]
 display-interface = "0.4.1"
-embedded-graphics-core = "0.3.2"
+embedded-graphics-core = "0.3.3"
 embedded-hal = "0.2.6"
 nb = "1.0.0"
 

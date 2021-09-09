@@ -1,5 +1,10 @@
+use core::marker::PhantomData;
+
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
-use embedded_graphics_core::{pixelcolor::Rgb666, prelude::IntoStorage};
+use embedded_graphics_core::{
+    pixelcolor::{Rgb565, Rgb666},
+    prelude::{IntoStorage, RgbColor},
+};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{instruction::Instruction, Display, Error};
@@ -7,15 +12,15 @@ use crate::{instruction::Instruction, Display, Error};
 use super::{write_command, Model};
 
 /// ILI9486 SPI display with Reset pin
+/// Rgb666 color mode (works with SPI)
 /// Backlight pin is not controlled
-/// Only SPI with DC pin interface is supported
-pub struct ILI9486;
+pub struct ILI9486<C>(PhantomData<C>);
 
-impl Model for ILI9486 {
-    type PixelFormat = Rgb666;
+impl Model for ILI9486<Rgb666> {
+    type ColorFormat = Rgb666;
 
     fn new() -> Self {
-        Self
+        Self(PhantomData)
     }
 
     fn init<RST, DELAY>(
@@ -31,38 +36,19 @@ impl Model for ILI9486 {
         self.hard_reset(rst, delay)?;
         delay.delay_us(120_000);
 
-        write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
-        write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
-        write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
-        write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
-
-        // optional gamma setup
-        // write_command(di, Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
-        // write_command(di, Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
-
-        write_command(di, Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
-        write_command(di, Instruction::NORON, &[])?; // turn to normal mode
-        write_command(di, Instruction::DISPON, &[])?; // turn on display
-
-        // DISPON requires some time otherwise we risk SPI data issues
-        delay.delay_us(120_000);
-
-        Ok(())
+        init_common(di, delay).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
     where
         DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::PixelFormat>,
+        I: IntoIterator<Item = Self::ColorFormat>,
     {
         write_command(di, Instruction::RAMWR, &[])?;
         let mut iter = colors.into_iter().flat_map(|c| {
-            let s = c.into_storage(); // bit-packed 18bits
-                                      // we need to un-pack and pad with 2 bits each into 3 bytes of 6bit info
-            let red = ((s & 0x3F) as u8) << 2;
-            let green = (((s >> 6) & 0x3F) as u8) << 2;
-            let blue = (((s >> 12) & 0x3F) as u8) << 2;
+            let red = c.r() << 2;
+            let green = c.g() << 2;
+            let blue = c.b() << 2;
             [red, green, blue]
         });
 
@@ -75,9 +61,72 @@ impl Model for ILI9486 {
     }
 }
 
-// simplified constructor on Display
+/// ILI9486 SPI display with Reset pin
+/// Rgb565 color mode (does *NOT* work with SPI)
+/// Backlight pin is not controlled
+impl Model for ILI9486<Rgb565> {
+    type ColorFormat = Rgb565;
 
-impl<DI, RST> Display<DI, RST, ILI9486>
+    fn new() -> Self {
+        Self(PhantomData)
+    }
+
+    fn init<RST, DELAY>(
+        &mut self,
+        di: &mut dyn WriteOnlyDataCommand,
+        rst: &mut RST,
+        delay: &mut DELAY,
+    ) -> Result<(), Error<RST::Error>>
+    where
+        RST: OutputPin,
+        DELAY: DelayUs<u32>,
+    {
+        self.hard_reset(rst, delay)?;
+        delay.delay_us(120_000);
+
+        init_common(di, delay).map_err(|_| Error::DisplayError)
+    }
+
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    where
+        DI: WriteOnlyDataCommand,
+        I: IntoIterator<Item = Self::ColorFormat>,
+    {
+        write_command(di, Instruction::RAMWR, &[])?;
+        let mut iter = colors.into_iter().map(|c| c.into_storage());
+
+        let buf = DataFormat::U16BEIter(&mut iter);
+        di.send_data(buf)
+    }
+
+    fn display_size(&self) -> (u16, u16) {
+        (320, 480)
+    }
+}
+
+// simplified constructor for Display
+
+impl<DI, RST> Display<DI, RST, ILI9486<Rgb565>>
+where
+    DI: WriteOnlyDataCommand,
+    RST: OutputPin,
+{
+    ///
+    /// Creates a new [Display] instance with [ILI9486] as the [Model]
+    /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9486!
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `rst` - display hard reset [OutputPin]
+    /// * `model` - the display [Model]
+    ///
+    pub fn ili9486_rgb565(di: DI, rst: RST) -> Self {
+        Self::with_model(di, rst, ILI9486::new())
+    }
+}
+
+impl<DI, RST> Display<DI, RST, ILI9486<Rgb666>>
 where
     DI: WriteOnlyDataCommand,
     RST: OutputPin,
@@ -91,7 +140,35 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `model` - the display [Model]
     ///
-    pub fn ili9486(di: DI, rst: RST) -> Self {
+    pub fn ili9486_rgb666(di: DI, rst: RST) -> Self {
         Self::with_model(di, rst, ILI9486::new())
     }
+}
+
+// common init for all color format models
+fn init_common<DELAY>(
+    di: &mut dyn WriteOnlyDataCommand,
+    delay: &mut DELAY,
+) -> Result<(), DisplayError>
+where
+    DELAY: DelayUs<u32>,
+{
+    write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
+    write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
+    write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
+    write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
+    write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+
+    // optional gamma setup
+    // write_command(di, Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
+    // write_command(di, Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
+
+    write_command(di, Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
+    write_command(di, Instruction::NORON, &[])?; // turn to normal mode
+    write_command(di, Instruction::DISPON, &[])?; // turn on display
+
+    // DISPON requires some time otherwise we risk SPI data issues
+    delay.delay_us(120_000);
+
+    Ok(())
 }

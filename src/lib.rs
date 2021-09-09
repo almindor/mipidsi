@@ -165,7 +165,7 @@ where
         &mut self,
         x: u16,
         y: u16,
-        color: M::PixelFormat,
+        color: M::ColorFormat,
     ) -> Result<(), Error<RST::Error>> {
         self.set_address_window(x, y, x, y)?;
         self.model
@@ -194,7 +194,7 @@ where
         colors: T,
     ) -> Result<(), Error<RST::Error>>
     where
-        T: IntoIterator<Item = M::PixelFormat>,
+        T: IntoIterator<Item = M::ColorFormat>,
     {
         self.set_address_window(sx, sy, ex, ey)?;
         self.model.write_pixels(&mut self.di, colors)?;

@@ -11,7 +11,7 @@ where
     DI: WriteOnlyDataCommand,
     RST: OutputPin,
     M: Model,
-    I: IntoIterator<Item = Pixel<M::PixelFormat>>,
+    I: IntoIterator<Item = Pixel<M::ColorFormat>>,
 {
     fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error<RST::Error>>;
 }
@@ -21,7 +21,7 @@ where
     DI: WriteOnlyDataCommand,
     RST: OutputPin,
     M: Model,
-    I: IntoIterator<Item = Pixel<M::PixelFormat>>,
+    I: IntoIterator<Item = Pixel<M::ColorFormat>>,
 {
     fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error<RST::Error>> {
         //  Get the pixels for the item to be rendered.

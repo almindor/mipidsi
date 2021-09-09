@@ -11,7 +11,7 @@ pub use ili9486::*;
 pub use st7789::*;
 
 pub trait Model {
-    type PixelFormat: RgbColor;
+    type ColorFormat: RgbColor;
 
     /// Common model constructor
     fn new() -> Self;
@@ -48,7 +48,7 @@ pub trait Model {
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
     where
         DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::PixelFormat>;
+        I: IntoIterator<Item = Self::ColorFormat>;
 
     /// Size of the visible display as `(width, height)`
     fn display_size(&self) -> (u16, u16);

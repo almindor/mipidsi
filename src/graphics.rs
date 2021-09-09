@@ -15,7 +15,7 @@ where
     M: Model,
 {
     type Error = Error<RST::Error>;
-    type Color = M::PixelFormat;
+    type Color = M::ColorFormat;
 
     #[cfg(not(feature = "batch"))]
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
