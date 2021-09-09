@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
@@ -11,16 +9,61 @@ use crate::{instruction::Instruction, Display, Error};
 
 use super::{write_command, Model};
 
-/// ILI9486 SPI display with Reset pin
-/// Rgb666 color mode (works with SPI)
+/// ILI9486 display with Reset pin
+/// in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled
-pub struct ILI9486<C>(PhantomData<C>);
+pub struct ILI9486Rgb565;
 
-impl Model for ILI9486<Rgb666> {
+/// ILI9486 display with Reset pin
+/// in Rgb666 color mode (works with SPI)
+/// Backlight pin is not controlled
+pub struct ILI9486Rgb666;
+
+impl Model for ILI9486Rgb565 {
+    type ColorFormat = Rgb565;
+
+    fn new() -> Self {
+        Self
+    }
+
+    fn init<RST, DELAY>(
+        &mut self,
+        di: &mut dyn WriteOnlyDataCommand,
+        rst: &mut RST,
+        delay: &mut DELAY,
+    ) -> Result<(), Error<RST::Error>>
+    where
+        RST: OutputPin,
+        DELAY: DelayUs<u32>,
+    {
+        self.hard_reset(rst, delay)?;
+        delay.delay_us(120_000);
+
+        init_common(di, delay).map_err(|_| Error::DisplayError)
+    }
+
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    where
+        DI: WriteOnlyDataCommand,
+        I: IntoIterator<Item = Self::ColorFormat>,
+    {
+        write_command(di, Instruction::RAMWR, &[])?;
+        let mut iter = colors.into_iter().map(|c| c.into_storage());
+
+        let buf = DataFormat::U16BEIter(&mut iter);
+        di.send_data(buf)
+    }
+
+    fn display_size(&self) -> (u16, u16) {
+        (320, 480)
+    }
+}
+
+impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
 
     fn new() -> Self {
-        Self(PhantomData)
+        Self
     }
 
     fn init<RST, DELAY>(
@@ -61,52 +104,9 @@ impl Model for ILI9486<Rgb666> {
     }
 }
 
-/// ILI9486 SPI display with Reset pin
-/// Rgb565 color mode (does *NOT* work with SPI)
-/// Backlight pin is not controlled
-impl Model for ILI9486<Rgb565> {
-    type ColorFormat = Rgb565;
-
-    fn new() -> Self {
-        Self(PhantomData)
-    }
-
-    fn init<RST, DELAY>(
-        &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
-        rst: &mut RST,
-        delay: &mut DELAY,
-    ) -> Result<(), Error<RST::Error>>
-    where
-        RST: OutputPin,
-        DELAY: DelayUs<u32>,
-    {
-        self.hard_reset(rst, delay)?;
-        delay.delay_us(120_000);
-
-        init_common(di, delay).map_err(|_| Error::DisplayError)
-    }
-
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
-    where
-        DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::ColorFormat>,
-    {
-        write_command(di, Instruction::RAMWR, &[])?;
-        let mut iter = colors.into_iter().map(|c| c.into_storage());
-
-        let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)
-    }
-
-    fn display_size(&self) -> (u16, u16) {
-        (320, 480)
-    }
-}
-
 // simplified constructor for Display
 
-impl<DI, RST> Display<DI, RST, ILI9486<Rgb565>>
+impl<DI, RST> Display<DI, RST, ILI9486Rgb565>
 where
     DI: WriteOnlyDataCommand,
     RST: OutputPin,
@@ -122,11 +122,11 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb565(di: DI, rst: RST) -> Self {
-        Self::with_model(di, rst, ILI9486::new())
+        Self::with_model(di, rst, ILI9486Rgb565::new())
     }
 }
 
-impl<DI, RST> Display<DI, RST, ILI9486<Rgb666>>
+impl<DI, RST> Display<DI, RST, ILI9486Rgb666>
 where
     DI: WriteOnlyDataCommand,
     RST: OutputPin,
@@ -141,7 +141,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb666(di: DI, rst: RST) -> Self {
-        Self::with_model(di, rst, ILI9486::new())
+        Self::with_model(di, rst, ILI9486Rgb666::new())
     }
 }
 
