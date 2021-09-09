@@ -6,7 +6,7 @@ authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/almindor/mipidsi"
-keywords = ["embedded-hal-driver", "mipi", "dsi", "display"]
+keywords = ["embedded-hal-driver", "mipi", "dsi", "display", "st7789", "ili9486"]
 readme = "README.md"
 documentation = "https://docs.rs/mipidsi"
 
