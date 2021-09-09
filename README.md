@@ -3,13 +3,15 @@
 This crate provides a generic display driver to connect to TFT displays
 that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
 
-Uses [display_interface](https://docs.rs/display-interface/0.4.1/display_interface/) to talk to the hardware.
+Uses [display_interface](https://crates.io/crates/display-interface) to talk to the hardware.
 
 An optional batching of draws is supported via the `batch` feature (default on)
 
 ## Architecture
 
 The `Display` driver itself contains most of the functionality. Each specific display model implements the `Model` trait for every color format it supports.
+
+[embedded-graphics-core](https://crates.io/crates/embedded-graphics-core) is used to provide the drawing API.
 
 ### Example
 ```rust
