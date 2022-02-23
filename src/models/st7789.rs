@@ -37,6 +37,9 @@ impl Model for ST7789 {
         write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
         write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
 
+        write_command(di, Instruction::INVON, &[])?;
+        // delay.delay_us(10_000);
+
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
         write_command(di, Instruction::DISPON, &[])?; // turn on display
 
