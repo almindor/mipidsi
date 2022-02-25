@@ -3,7 +3,7 @@ use embedded_hal::digital::v2::{OutputPin, PinState};
 use core::convert::Infallible;
 
 #[derive(Default)]
-pub struct NoPin {}
+pub struct NoPin;
 
 impl OutputPin for NoPin {
     type Error = Infallible;
@@ -11,6 +11,7 @@ impl OutputPin for NoPin {
     fn set_low(&mut self) -> Result<(), Self::Error> {
         Ok(())
     }
+    
     fn set_high(&mut self) -> Result<(), Self::Error> {
         Ok(())
     }

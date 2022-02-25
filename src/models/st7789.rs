@@ -98,7 +98,7 @@ where
     DI: WriteOnlyDataCommand,
 {
     ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model] and without
+    /// Creates a new [Display] instance with [ST7789] as the [Model] without
     /// a hard reset Pin
     ///
     /// # Arguments
