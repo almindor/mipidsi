@@ -32,6 +32,7 @@ use models::Model;
 
 mod graphics;
 mod no_pin;
+pub use no_pin::*;
 
 #[cfg(feature = "batch")]
 mod batch;
@@ -48,14 +49,12 @@ where
     // Display interface
     di: DI,
     // Reset pin.
-    rst: RST,
+    rst: Option<RST>,
     // Model
     model: MODEL,
     // Current orientation
     orientation: Orientation,
 }
-
-pub type DisplayNoRST<DI, MODEL> = Display<DI, no_pin::NoPin, MODEL>;
 
 ///
 /// Display orientation.
@@ -118,7 +117,7 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `model` - the display [Model]
     ///
-    pub fn with_model(di: DI, rst: RST, model: M) -> Self {
+    pub fn with_model(di: DI, rst: Option<RST>, model: M) -> Self {
         Self {
             di,
             rst,
@@ -220,7 +219,7 @@ where
     /// Release resources allocated to this driver back.
     /// This returns the display interface and the RST pin deconstructing the driver.
     ///
-    pub fn release(self) -> (DI, RST, M) {
+    pub fn release(self) -> (DI, Option<RST>, M) {
         (self.di, self.rst, self.model)
     }
 

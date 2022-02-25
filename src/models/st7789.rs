@@ -3,7 +3,6 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
-use crate::DisplayNoRST;
 use crate::{instruction::Instruction, Display, Error};
 
 use super::{write_command, Model};
@@ -22,15 +21,18 @@ impl Model for ST7789 {
     fn init<RST, DELAY>(
         &mut self,
         di: &mut dyn WriteOnlyDataCommand,
-        rst: &mut RST,
+        rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<(), Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
     {
-        self.hard_reset(rst, delay)?;
-        delay.delay_us(120_000);
+        match rst {
+            Some(ref mut rst) => self.hard_reset(rst, delay)?,
+            None => write_command(di, Instruction::SWRESET, &[])?,
+        }
+        delay.delay_us(150_000);
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
 
@@ -87,11 +89,11 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789(di: DI, rst: RST) -> Self {
-        Self::with_model(di, rst, ST7789::new())
+        Self::with_model(di, Some(rst), ST7789::new())
     }
 }
 
-impl<DI> DisplayNoRST<DI, ST7789>
+impl<DI> Display<DI, NoPin, ST7789>
 where
     DI: WriteOnlyDataCommand,
 {
@@ -105,6 +107,6 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789_without_rst(di: DI) -> Self {
-        Self::with_model(di, NoPin::default(), ST7789::new())
+        Self::with_model(di, None, ST7789::new())
     }
 }

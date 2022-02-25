@@ -29,14 +29,17 @@ impl Model for ILI9486Rgb565 {
     fn init<RST, DELAY>(
         &mut self,
         di: &mut dyn WriteOnlyDataCommand,
-        rst: &mut RST,
+        rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<(), Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
     {
-        self.hard_reset(rst, delay)?;
+        match rst {
+            Some(ref mut rst) => self.hard_reset(rst, delay)?,
+            None => write_command(di, Instruction::SWRESET, &[])?,
+        }
         delay.delay_us(120_000);
 
         init_common(di, delay).map_err(|_| Error::DisplayError)
@@ -69,14 +72,18 @@ impl Model for ILI9486Rgb666 {
     fn init<RST, DELAY>(
         &mut self,
         di: &mut dyn WriteOnlyDataCommand,
-        rst: &mut RST,
+        rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<(), Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
     {
-        self.hard_reset(rst, delay)?;
+        match rst {
+            Some(ref mut rst) => self.hard_reset(rst, delay)?,
+            None => write_command(di, Instruction::SWRESET, &[])?,
+        };
+
         delay.delay_us(120_000);
 
         init_common(di, delay).map_err(|_| Error::DisplayError)
@@ -122,7 +129,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb565(di: DI, rst: RST) -> Self {
-        Self::with_model(di, rst, ILI9486Rgb565::new())
+        Self::with_model(di, Some(rst), ILI9486Rgb565::new())
     }
 }
 
@@ -141,7 +148,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb666(di: DI, rst: RST) -> Self {
-        Self::with_model(di, rst, ILI9486Rgb666::new())
+        Self::with_model(di, Some(rst), ILI9486Rgb666::new())
     }
 }
 
