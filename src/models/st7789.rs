@@ -2,6 +2,8 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
+use crate::no_pin::NoPin;
+use crate::DisplayNoRST;
 use crate::{instruction::Instruction, Display, Error};
 
 use super::{write_command, Model};
@@ -75,7 +77,8 @@ where
     RST: OutputPin,
 {
     ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model]
+    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
+    /// hard reset Pin
     ///
     /// # Arguments
     ///
@@ -85,5 +88,23 @@ where
     ///
     pub fn st7789(di: DI, rst: RST) -> Self {
         Self::with_model(di, rst, ST7789::new())
+    }
+}
+
+impl<DI> DisplayNoRST<DI, ST7789>
+where
+    DI: WriteOnlyDataCommand,
+{
+    ///
+    /// Creates a new [Display] instance with [ST7789] as the [Model] and without
+    /// a hard reset Pin
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `model` - the display [Model]
+    ///
+    pub fn st7789_without_rst(di: DI) -> Self {
+        Self::with_model(di, NoPin::default(), ST7789::new())
     }
 }

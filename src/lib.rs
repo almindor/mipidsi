@@ -31,6 +31,7 @@ pub mod models;
 use models::Model;
 
 mod graphics;
+mod no_pin;
 
 #[cfg(feature = "batch")]
 mod batch;
@@ -53,6 +54,8 @@ where
     // Current orientation
     orientation: Orientation,
 }
+
+pub type DisplayNoRST<DI, MODEL> = Display<DI, no_pin::NoPin, MODEL>;
 
 ///
 /// Display orientation.
