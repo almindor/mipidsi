@@ -20,7 +20,7 @@ pub trait Model {
     fn init<RST, DELAY>(
         &mut self,
         di: &mut dyn WriteOnlyDataCommand,
-        rst: &mut RST,
+        rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<(), Error<RST::Error>>
     where
