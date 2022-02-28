@@ -35,13 +35,17 @@ impl Model for ST7789 {
         delay.delay_us(150_000);
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
+        delay.delay_us(10_000);
+
+        write_command(di, Instruction::INVOFF, &[])?;
+        write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
+        write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
-        write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
-        write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
-        write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
-
+        write_command(di, Instruction::INVON, &[])?;
+        delay.delay_us(10_000);
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
+        delay.delay_us(10_000);
         write_command(di, Instruction::DISPON, &[])?; // turn on display
 
         // DISPON requires some time otherwise we risk SPI data issues
