@@ -95,18 +95,16 @@ where
     }
 
     fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error>
-    where
-        Self: Sized,
     {
         let fb_size = self.model.framebuffer_size();
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
 
         match self.orientation {
-            Orientation::Portrait | Orientation::PortraitSwapped => {
+            Orientation::Portrait => {
                 self.set_pixels(0, 0, fb_size.0, fb_size.1, colors)
             }
-            Orientation::Landscape | Orientation::LandscapeSwapped => {
+            Orientation::Landscape => {
                 self.set_pixels(0, 0, fb_size.1, fb_size.0, colors)
             }
         }
@@ -121,6 +119,10 @@ where
 {
     fn size(&self) -> Size {
         let ds = self.model.display_size();
-        Size::new(u32::from(ds.0), u32::from(ds.1))
+        let (width, height) = match self.orientation {
+            Orientation::Portrait => (ds.0, ds.1),
+            Orientation::Landscape => (ds.1, ds.0)
+        };
+        Size::new(u32::from(width), u32::from(height))
     }
 }

@@ -5,7 +5,7 @@
 //! This crate provides a generic ddisplay driver to connect to TFT displays
 //! that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
 //! Currently only supports SPI with DC pin setups via the [display_interface]
-//!  
+//!
 //! An optional batching of draws is supported via the `batch` feature (default on)
 //!
 //! ## Example
@@ -64,10 +64,8 @@ where
 #[repr(u8)]
 #[derive(Copy, Clone)]
 pub enum Orientation {
-    Portrait = 0b0000_0000,         // no inverting
-    Landscape = 0b0110_0000,        // invert column and page/column order
-    PortraitSwapped = 0b1100_0000,  // invert page and column order
-    LandscapeSwapped = 0b1010_0000, // invert page and page/column order
+    Portrait = 0b0000_0000,  // no inverting
+    Landscape = 0b0110_0000, // invert column and page/column order
 }
 
 impl Default for Orientation {
@@ -151,8 +149,19 @@ where
     ///
     /// Sets display [Orientation]
     ///
-    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
-        let value = self.madctl | ((orientation as u8) & 0b1110_0000);
+    pub fn set_orientation(
+        &mut self,
+        orientation: Orientation,
+        invert_x: bool,
+        invert_y: bool,
+    ) -> Result<(), Error<RST::Error>> {
+        let mut value = self.madctl | ((orientation as u8) & 0b1110_0000);
+        if invert_x {
+            value ^= 0x40
+        };
+        if invert_y {
+            value ^= 0x80
+        };
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
         self.orientation = orientation;
