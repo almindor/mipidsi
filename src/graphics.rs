@@ -67,10 +67,10 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.model.framebuffer_size();
+        let fb_size = self.size();
         let fb_rect = Rectangle::with_corners(
             Point::new(0, 0),
-            Point::new(fb_size.0 as i32, fb_size.1 as i32),
+            Point::new(fb_size.width as i32, fb_size.height as i32),
         );
         let area = area.intersection(&fb_rect);
 
