@@ -6,9 +6,11 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 // existing model implementations
 mod ili9486;
 mod st7789;
+mod st7735s;
 
 pub use ili9486::*;
 pub use st7789::*;
+pub use st7735s::*;
 
 pub trait Model {
     type ColorFormat: RgbColor;

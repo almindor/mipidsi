@@ -104,10 +104,10 @@ where
 
         match self.orientation {
             Orientation::Portrait | Orientation::PortraitSwapped => {
-                self.set_pixels(0, 0, 319, 479, colors)
+                self.set_pixels(0, 0, fb_size.0, fb_size.1, colors)
             }
             Orientation::Landscape | Orientation::LandscapeSwapped => {
-                self.set_pixels(0, 0, 479, 319, colors)
+                self.set_pixels(0, 0, fb_size.1, fb_size.0, colors)
             }
         }
     }
