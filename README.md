@@ -19,6 +19,7 @@ The `Display` driver itself contains most of the functionality. Each specific di
 let di = SPIInterfaceNoCS::new(spi, dc);
 // create the ILI9486 display driver in rgb666 color mode from the display interface and RST pin
 let mut display = Display::ili9486_rgb666(di, rst);
+display.init(&mut delay::Ets)?;
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```
