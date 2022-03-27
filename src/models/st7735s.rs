@@ -30,14 +30,15 @@ impl Model for ST7735s {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => {
+                write_command(di, Instruction::SWRESET, &[])?;
+                delay.delay_us(120);
+            }
         }
-        delay.delay_us(200_000);
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(120_000);
 
-        write_command(di, Instruction::INVON, &[])?; // turn inversion on
         write_command(di, Instruction::INVON, &[])?; // turn inversion on
         write_command(di, Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
         write_command(di, Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
@@ -51,8 +52,8 @@ impl Model for ST7735s {
         write_command(di, Instruction::VCMOFSET, &[0x0E])?; // set VCOM control 1
         write_command(di, Instruction::PGC, &[0x10, 0x0E, 0x02, 0x03, 0x0E, 0x07, 0x02, 0x07, 0x0A, 0x12, 0x27, 0x37, 0x00, 0x0D, 0x0E, 0x10])?; // set GAMMA +Polarity characteristics
         write_command(di, Instruction::NGC, &[0x10, 0x0E, 0x03, 0x03, 0x0F, 0x06, 0x02, 0x08, 0x0A, 0x13, 0x26, 0x36, 0x00, 0x0D, 0x0E, 0x10])?;  // set GAMMA -Polarity characteristics
-        write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // set interface pixel format, 16bit pixel into frame memory
-        write_command(di, Instruction::MADCTL, &[0b1010_0000])?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
+        write_command(di, Instruction::COLMOD, &[0b0000_0101])?; // set interface pixel format, 16bit pixel into frame memory
+        write_command(di, Instruction::MADCTL, &[0b1010_0000])?; // set memory data access control, Top -> Bottom, BGR, Left -> Right
         write_command(di, Instruction::DISPON, &[])?; // turn on display
 
         Ok(())
