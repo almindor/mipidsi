@@ -1,5 +1,5 @@
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
-use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
+use embedded_graphics_core::{pixelcolor::Bgr565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
@@ -12,7 +12,7 @@ use super::{write_command, Model};
 pub struct ST7735s;
 
 impl Model for ST7735s {
-    type ColorFormat = Rgb565;
+    type ColorFormat = Bgr565;
 
     fn new() -> Self {
         Self
@@ -52,7 +52,7 @@ impl Model for ST7735s {
         write_command(di, Instruction::PGC, &[0x10, 0x0E, 0x02, 0x03, 0x0E, 0x07, 0x02, 0x07, 0x0A, 0x12, 0x27, 0x37, 0x00, 0x0D, 0x0E, 0x10])?; // set GAMMA +Polarity characteristics
         write_command(di, Instruction::NGC, &[0x10, 0x0E, 0x03, 0x03, 0x0F, 0x06, 0x02, 0x08, 0x0A, 0x13, 0x26, 0x36, 0x00, 0x0D, 0x0E, 0x10])?;  // set GAMMA -Polarity characteristics
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // set interface pixel format, 16bit pixel into frame memory
-        write_command(di, Instruction::MADCTL, &[0b1010_1000])?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
+        write_command(di, Instruction::MADCTL, &[0b1010_0000])?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
         write_command(di, Instruction::DISPON, &[])?; // turn on display
 
         Ok(())
