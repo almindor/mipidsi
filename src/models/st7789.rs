@@ -18,16 +18,18 @@ impl Model for ST7789 {
         Self
     }
 
-    fn init<RST, DELAY>(
+    fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
+        di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<(), Error<RST::Error>>
+    ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
+        DI: WriteOnlyDataCommand,
     {
+        let madctl = 0b0000_0000;
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -39,7 +41,7 @@ impl Model for ST7789 {
 
         write_command(di, Instruction::INVOFF, &[])?;
         write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
-        write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
+        write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
         write_command(di, Instruction::INVON, &[])?;
@@ -51,7 +53,7 @@ impl Model for ST7789 {
         // DISPON requires some time otherwise we risk SPI data issues
         delay.delay_us(120_000);
 
-        Ok(())
+        Ok(madctl)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
