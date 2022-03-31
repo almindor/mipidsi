@@ -26,15 +26,16 @@ impl Model for ILI9486Rgb565 {
         Self
     }
 
-    fn init<RST, DELAY>(
+    fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
+        di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
+        DI: WriteOnlyDataCommand,
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -69,15 +70,16 @@ impl Model for ILI9486Rgb666 {
         Self
     }
 
-    fn init<RST, DELAY>(
+    fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
+        di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
+        DI: WriteOnlyDataCommand,
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -153,12 +155,10 @@ where
 }
 
 // common init for all color format models
-fn init_common<DELAY>(
-    di: &mut dyn WriteOnlyDataCommand,
-    delay: &mut DELAY,
-) -> Result<u8, DisplayError>
+fn init_common<DELAY, DI>(di: &mut DI, delay: &mut DELAY) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,
+    DI: WriteOnlyDataCommand,
 {
     let madctl = 0b0000_0000;
 

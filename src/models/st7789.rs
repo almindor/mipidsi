@@ -18,15 +18,16 @@ impl Model for ST7789 {
         Self
     }
 
-    fn init<RST, DELAY>(
+    fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
+        di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
+        DI: WriteOnlyDataCommand,
     {
         let madctl = 0b0000_0000;
         match rst {

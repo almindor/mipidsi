@@ -20,15 +20,16 @@ pub trait Model {
 
     /// Initializes the display for this model
     /// and returns the value of MADCTL set by init
-    fn init<RST, DELAY>(
+    fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut dyn WriteOnlyDataCommand,
+        di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>;
+        DELAY: DelayUs<u32>,
+        DI: WriteOnlyDataCommand;
 
     fn hard_reset<RST, DELAY>(
         &mut self,
@@ -63,11 +64,14 @@ pub trait Model {
 }
 
 // helper for models
-pub fn write_command(
-    di: &mut dyn WriteOnlyDataCommand,
+pub fn write_command<DI>(
+    di: &mut DI,
     command: Instruction,
     params: &[u8],
-) -> Result<(), DisplayError> {
+) -> Result<(), DisplayError>
+where
+    DI: WriteOnlyDataCommand,
+{
     di.send_commands(DataFormat::U8(&[command as u8]))?;
 
     if !params.is_empty() {
