@@ -152,7 +152,7 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
-        let value = (self.madctl & 0b0001_1111) | (orientation as u8);
+        let value = self.madctl | ((orientation as u8) & 0b1110_0000);
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
         self.orientation = orientation;
