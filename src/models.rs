@@ -5,12 +5,12 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 // existing model implementations
 mod ili9486;
-mod st7789;
 mod st7735s;
+mod st7789;
 
 pub use ili9486::*;
-pub use st7789::*;
 pub use st7735s::*;
+pub use st7789::*;
 
 pub trait Model {
     type ColorFormat: RgbColor;
@@ -19,12 +19,13 @@ pub trait Model {
     fn new() -> Self;
 
     /// Initializes the display for this model
+    /// and returns the value of MADCTL set by init
     fn init<RST, DELAY>(
         &mut self,
         di: &mut dyn WriteOnlyDataCommand,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<(), Error<RST::Error>>
+    ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>;

@@ -54,6 +54,8 @@ where
     model: MODEL,
     // Current orientation
     orientation: Orientation,
+    // Current MADCTL value
+    madctl: u8,
 }
 
 ///
@@ -123,6 +125,7 @@ where
             rst,
             model,
             orientation: Orientation::default(),
+            madctl: 0,
         }
     }
 
@@ -134,7 +137,8 @@ where
     /// * `delay_source` - mutable reference to a [DelayUs] provider
     ///
     pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
-        self.model.init(&mut self.di, &mut self.rst, delay_source)
+        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
+        Ok(())
     }
 
     ///
@@ -148,9 +152,11 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
+        let value = (self.madctl & 0b0001_1111) | (orientation as u8);
         self.write_command(Instruction::MADCTL)?;
-        self.write_data(&[orientation as u8])?;
+        self.write_data(&[value])?;
         self.orientation = orientation;
+        self.madctl = value;
         Ok(())
     }
 

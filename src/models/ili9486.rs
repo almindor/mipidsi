@@ -31,7 +31,7 @@ impl Model for ILI9486Rgb565 {
         di: &mut dyn WriteOnlyDataCommand,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<(), Error<RST::Error>>
+    ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -74,7 +74,7 @@ impl Model for ILI9486Rgb666 {
         di: &mut dyn WriteOnlyDataCommand,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<(), Error<RST::Error>>
+    ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -156,13 +156,15 @@ where
 fn init_common<DELAY>(
     di: &mut dyn WriteOnlyDataCommand,
     delay: &mut DELAY,
-) -> Result<(), DisplayError>
+) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,
 {
+    let madctl = 0b0000_0000;
+
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
-    write_command(di, Instruction::MADCTL, &[0b0000_0000])?; // left -> right, bottom -> top RGB
+    write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
 
@@ -177,5 +179,5 @@ where
     // DISPON requires some time otherwise we risk SPI data issues
     delay.delay_us(120_000);
 
-    Ok(())
+    Ok(madctl)
 }
