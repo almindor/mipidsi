@@ -67,10 +67,10 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.size();
+        let fb_size = self.framebuffer_size();
         let fb_rect = Rectangle::with_corners(
             Point::new(0, 0),
-            Point::new(fb_size.width as i32, fb_size.height as i32),
+            Point::new(fb_size.0 as i32, fb_size.1 as i32),
         );
         let area = area.intersection(&fb_rect);
 
@@ -94,20 +94,11 @@ where
         }
     }
 
-    fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error>
-    {
-        let fb_size = self.model.framebuffer_size();
+    fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
+        let fb_size = self.framebuffer_size();
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
-
-        match self.orientation {
-            Orientation::Portrait => {
-                self.set_pixels(0, 0, fb_size.0, fb_size.1, colors)
-            }
-            Orientation::Landscape => {
-                self.set_pixels(0, 0, fb_size.1, fb_size.0, colors)
-            }
-        }
+        self.set_pixels(0, 0, fb_size.0, fb_size.1, colors)
     }
 }
 
@@ -121,7 +112,7 @@ where
         let ds = self.model.display_size();
         let (width, height) = match self.orientation {
             Orientation::Portrait => (ds.0, ds.1),
-            Orientation::Landscape => (ds.1, ds.0)
+            Orientation::Landscape => (ds.1, ds.0),
         };
         Size::new(u32::from(width), u32::from(height))
     }

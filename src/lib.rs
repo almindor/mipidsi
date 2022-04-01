@@ -251,6 +251,19 @@ where
             .map_err(|_| Error::DisplayError)
     }
 
+    fn framebuffer_size(&self) -> (u16, u16)
+    where
+        DI: WriteOnlyDataCommand,
+        RST: OutputPin,
+        M: Model,
+    {
+        let ds = self.model.framebuffer_size();
+        match self.orientation {
+            Orientation::Portrait => (ds.0, ds.1),
+            Orientation::Landscape => (ds.1, ds.0),
+        }
+    }
+
     // Sets the address window for the display.
     fn set_address_window(
         &mut self,
