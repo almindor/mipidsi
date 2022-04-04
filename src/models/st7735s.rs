@@ -29,7 +29,7 @@ impl Model for ST7735s {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = 0b1010_1000;
+        let madctl = 0b0000_1000;
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
