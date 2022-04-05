@@ -3,6 +3,7 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
+use crate::Orientation;
 use crate::{instruction::Instruction, Display, Error};
 
 use super::{write_command, Model};
@@ -90,12 +91,18 @@ impl Model for ST7735s {
         di.send_data(buf)
     }
 
-    fn display_size(&self) -> (u16, u16) {
-        (80, 160)
+    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait => (80, 160),
+            Orientation::Landscape => (160, 80),
+        }
     }
 
-    fn framebuffer_size(&self) -> (u16, u16) {
-        (132, 162)
+    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait => (132, 162),
+            Orientation::Landscape => (162, 132),
+        }
     }
 }
 
