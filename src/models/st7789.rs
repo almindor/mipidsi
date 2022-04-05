@@ -3,6 +3,7 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
+use crate::Orientation;
 use crate::{instruction::Instruction, Display, Error};
 
 use super::{write_command, Model};
@@ -68,12 +69,15 @@ impl Model for ST7789 {
         di.send_data(buf)
     }
 
-    fn display_size(&self) -> (u16, u16) {
+    fn display_size(&self, _orientation: Orientation) -> (u16, u16) {
         (240, 240)
     }
 
-    fn framebuffer_size(&self) -> (u16, u16) {
-        (240, 320)
+    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait => (240, 320),
+            Orientation::Landscape => (320, 240),
+        }
     }
 }
 

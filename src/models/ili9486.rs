@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, Error};
+use crate::{instruction::Instruction, Display, Error, Orientation};
 
 use super::{write_command, Model};
 
@@ -58,8 +58,11 @@ impl Model for ILI9486Rgb565 {
         di.send_data(buf)
     }
 
-    fn display_size(&self) -> (u16, u16) {
-        (320, 480)
+    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait => (320, 480),
+            Orientation::Landscape => (480, 320),
+        }
     }
 }
 
@@ -108,8 +111,11 @@ impl Model for ILI9486Rgb666 {
         di.send_data(buf)
     }
 
-    fn display_size(&self) -> (u16, u16) {
-        (320, 480)
+    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait => (320, 480),
+            Orientation::Landscape => (480, 320),
+        }
     }
 }
 

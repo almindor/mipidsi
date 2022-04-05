@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, Error};
+use crate::{instruction::Instruction, Error, Orientation};
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
@@ -55,11 +55,11 @@ pub trait Model {
         I: IntoIterator<Item = Self::ColorFormat>;
 
     /// Size of the visible display as `(width, height)`
-    fn display_size(&self) -> (u16, u16);
+    fn display_size(&self, orientation: Orientation) -> (u16, u16);
 
     /// Size of the display framebuffer as `(width, height)`
-    fn framebuffer_size(&self) -> (u16, u16) {
-        self.display_size()
+    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+        self.display_size(orientation)
     }
 }
 
