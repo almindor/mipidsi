@@ -59,18 +59,55 @@ where
 }
 
 ///
+/// Display orientation inversion.
+///
+#[derive(Copy, Clone)]
+pub enum Inversion {
+    None,
+    X,
+    Y,
+    XY,
+}
+
+///
 /// Display orientation.
 ///
-#[repr(u8)]
 #[derive(Copy, Clone)]
 pub enum Orientation {
-    Portrait = 0b0000_0000,  // no inverting
-    Landscape = 0b0110_0000, // invert column and page/column order
+    Portrait(Inversion),
+    Landscape(Inversion),
+}
+
+impl Orientation {
+    /// Shortcut function to create un-inverted Portrait Orientation
+    pub fn portrait() -> Self {
+        Self::Portrait(Inversion::None)
+    }
+
+    /// Shortcut function to create un-inverted Landscape Orientation
+    pub fn landscape() -> Self {
+        Self::Portrait(Inversion::None)
+    }
 }
 
 impl Default for Orientation {
     fn default() -> Self {
-        Self::Portrait
+        Self::Portrait(Inversion::None)
+    }
+}
+
+impl Orientation {
+    pub fn value_u8(&self) -> u8 {
+        match self {
+            Orientation::Portrait(Inversion::None) => 0b0000_0000,
+            Orientation::Portrait(Inversion::X) => 0b1000_0000,
+            Orientation::Portrait(Inversion::Y) => 0b0100_0000,
+            Orientation::Portrait(Inversion::XY) => 0b1100_0000,
+            Orientation::Landscape(Inversion::None) => 0b0110_0000,
+            Orientation::Landscape(Inversion::X) => 0b0010_0000,
+            Orientation::Landscape(Inversion::Y) => 0b1110_0000,
+            Orientation::Landscape(Inversion::XY) => 0b1010_0000,
+        }
     }
 }
 
@@ -85,6 +122,39 @@ pub enum TearingEffect {
     Vertical,
     /// Output horizontal and vertical blanking information.
     HorizontalAndVertical,
+}
+
+///
+/// Options for displays used on initialization
+///
+#[derive(Copy, Clone, Default)]
+pub struct DisplayOptions {
+    /// Initial display orientation (without inverts)
+    pub orientation: Orientation,
+    /// Set to make display vertical refresh bottom to top
+    pub invert_vertical_refresh: bool,
+    /// Set to make display use BGR instead of RGB pixel format
+    pub rgb_to_bgr: bool,
+    /// Set to make display horizontal refresh right to left
+    pub invert_horizontal_refresh: bool,
+}
+
+impl DisplayOptions {
+    /// Returns MADCTL register value for given display options
+    pub fn madctl(&self) -> u8 {
+        let mut value = self.orientation.value_u8();
+        if self.invert_vertical_refresh {
+            value |= 0b0001_0000;
+        }
+        if self.rgb_to_bgr {
+            value |= 0b0000_1000;
+        }
+        if self.invert_horizontal_refresh {
+            value |= 0b0000_0100;
+        }
+
+        value
+    }
 }
 
 ///
@@ -134,8 +204,14 @@ where
     ///
     /// * `delay_source` - mutable reference to a [DelayUs] provider
     ///
-    pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
-        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
+    pub fn init(
+        &mut self,
+        delay_source: &mut impl DelayUs<u32>,
+        options: DisplayOptions,
+    ) -> Result<(), Error<RST::Error>> {
+        self.madctl = self
+            .model
+            .init(&mut self.di, &mut self.rst, delay_source, options)?;
         Ok(())
     }
 
@@ -149,19 +225,8 @@ where
     ///
     /// Sets display [Orientation]
     ///
-    pub fn set_orientation(
-        &mut self,
-        orientation: Orientation,
-        invert_x: bool,
-        invert_y: bool,
-    ) -> Result<(), Error<RST::Error>> {
-        let mut value = self.madctl | ((orientation as u8) & 0b1110_0000);
-        if invert_x {
-            value ^= 0x40
-        };
-        if invert_y {
-            value ^= 0x80
-        };
+    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
+        let value = self.madctl | (orientation.value_u8() & 0b1110_0000);
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
         self.orientation = orientation;

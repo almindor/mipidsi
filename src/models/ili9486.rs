@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, Error, Orientation};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error, Orientation};
 
 use super::{write_command, Model};
 
@@ -31,6 +31,7 @@ impl Model for ILI9486Rgb565 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
+        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -43,7 +44,7 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        init_common(di, delay).map_err(|_| Error::DisplayError)
+        init_common(di, delay, options).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -60,8 +61,8 @@ impl Model for ILI9486Rgb565 {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait => (320, 480),
-            Orientation::Landscape => (480, 320),
+            Orientation::Portrait(_) => (320, 480),
+            Orientation::Landscape(_) => (480, 320),
         }
     }
 }
@@ -78,6 +79,7 @@ impl Model for ILI9486Rgb666 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
+        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -91,7 +93,7 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        init_common(di, delay).map_err(|_| Error::DisplayError)
+        init_common(di, delay, options).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -113,8 +115,8 @@ impl Model for ILI9486Rgb666 {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait => (320, 480),
-            Orientation::Landscape => (480, 320),
+            Orientation::Portrait(_) => (320, 480),
+            Orientation::Landscape(_) => (480, 320),
         }
     }
 }
@@ -161,12 +163,16 @@ where
 }
 
 // common init for all color format models
-fn init_common<DELAY, DI>(di: &mut DI, delay: &mut DELAY) -> Result<u8, DisplayError>
+fn init_common<DELAY, DI>(
+    di: &mut DI,
+    delay: &mut DELAY,
+    options: DisplayOptions,
+) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
-    let madctl = 0b0000_0000;
+    let madctl = options.madctl();
 
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors

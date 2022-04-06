@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, Error, Orientation};
+use crate::{instruction::Instruction, DisplayOptions, Error, Orientation};
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
@@ -25,6 +25,7 @@ pub trait Model {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
+        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,

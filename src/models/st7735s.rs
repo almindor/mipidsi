@@ -3,8 +3,8 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
-use crate::Orientation;
 use crate::{instruction::Instruction, Display, Error};
+use crate::{DisplayOptions, Orientation};
 
 use super::{write_command, Model};
 
@@ -24,13 +24,14 @@ impl Model for ST7735s {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
+        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = 0b0000_1000;
+        let madctl = options.madctl();
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -93,15 +94,15 @@ impl Model for ST7735s {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait => (80, 160),
-            Orientation::Landscape => (160, 80),
+            Orientation::Portrait(_) => (80, 160),
+            Orientation::Landscape(_) => (160, 80),
         }
     }
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait => (132, 162),
-            Orientation::Landscape => (162, 132),
+            Orientation::Portrait(_) => (132, 162),
+            Orientation::Landscape(_) => (162, 132),
         }
     }
 }
