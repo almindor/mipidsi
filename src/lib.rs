@@ -86,7 +86,7 @@ impl Orientation {
 
     /// Shortcut function to create un-inverted Landscape Orientation
     pub fn landscape() -> Self {
-        Self::Portrait(Inversion::None)
+        Self::Landscape(Inversion::None)
     }
 }
 
