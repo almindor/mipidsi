@@ -59,54 +59,37 @@ where
 }
 
 ///
-/// Display orientation inversion.
-///
-#[derive(Copy, Clone)]
-pub enum Inversion {
-    None,
-    X,
-    Y,
-    XY,
-}
-
-///
 /// Display orientation.
 ///
 #[derive(Copy, Clone)]
 pub enum Orientation {
-    Portrait(Inversion),
-    Landscape(Inversion),
-}
-
-impl Orientation {
-    /// Shortcut function to create un-inverted Portrait Orientation
-    pub fn portrait() -> Self {
-        Self::Portrait(Inversion::None)
-    }
-
-    /// Shortcut function to create un-inverted Landscape Orientation
-    pub fn landscape() -> Self {
-        Self::Landscape(Inversion::None)
-    }
+    /// Portrait orientation, with mirror image parameter
+    Portrait(bool),
+    /// Landscape orientation, with mirror image parameter
+    Landscape(bool),
+    /// Inverted Portrait orientation, with mirror image parameter
+    PortraitInverted(bool),
+    /// Inverted Lanscape orientation, with mirror image parameter
+    LandscapeInverted(bool),
 }
 
 impl Default for Orientation {
     fn default() -> Self {
-        Self::Portrait(Inversion::None)
+        Self::Portrait(false)
     }
 }
 
 impl Orientation {
     pub fn value_u8(&self) -> u8 {
         match self {
-            Orientation::Portrait(Inversion::None) => 0b0000_0000,
-            Orientation::Portrait(Inversion::X) => 0b1000_0000,
-            Orientation::Portrait(Inversion::Y) => 0b0100_0000,
-            Orientation::Portrait(Inversion::XY) => 0b1100_0000,
-            Orientation::Landscape(Inversion::None) => 0b0110_0000,
-            Orientation::Landscape(Inversion::X) => 0b0010_0000,
-            Orientation::Landscape(Inversion::Y) => 0b1110_0000,
-            Orientation::Landscape(Inversion::XY) => 0b1010_0000,
+            Orientation::Portrait(false) => 0b0000_0000,
+            Orientation::Portrait(true) => 0b0100_0000,
+            Orientation::PortraitInverted(false) => 0b1100_0000,
+            Orientation::PortraitInverted(true) => 0b1000_0000,
+            Orientation::Landscape(false) => 0b0010_0000,
+            Orientation::Landscape(true) => 0b0110_0000,
+            Orientation::LandscapeInverted(false) => 0b1110_0000,
+            Orientation::LandscapeInverted(true) => 0b1010_0000,
         }
     }
 }

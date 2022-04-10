@@ -94,15 +94,15 @@ impl Model for ST7735s {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) => (80, 160),
-            Orientation::Landscape(_) => (160, 80),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (80, 160),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (160, 80),
         }
     }
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) => (132, 162),
-            Orientation::Landscape(_) => (162, 132),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (132, 162),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (162, 132),
         }
     }
 }

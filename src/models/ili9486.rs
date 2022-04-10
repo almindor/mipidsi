@@ -61,8 +61,8 @@ impl Model for ILI9486Rgb565 {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) => (320, 480),
-            Orientation::Landscape(_) => (480, 320),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 480),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (480, 320),
         }
     }
 }
@@ -115,8 +115,8 @@ impl Model for ILI9486Rgb666 {
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) => (320, 480),
-            Orientation::Landscape(_) => (480, 320),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 480),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (480, 320),
         }
     }
 }

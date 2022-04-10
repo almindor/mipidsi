@@ -76,8 +76,8 @@ impl Model for ST7789 {
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) => (240, 320),
-            Orientation::Landscape(_) => (320, 240),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (240, 320),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (320, 240),
         }
     }
 }
