@@ -108,6 +108,21 @@ pub enum TearingEffect {
 }
 
 ///
+/// Defines expected color component ordering, RGB or BGR
+///
+#[derive(Copy, Clone)]
+pub enum ColorOrder {
+    Rgb,
+    Bgr,
+}
+
+impl Default for ColorOrder {
+    fn default() -> Self {
+        Self::Rgb
+    }
+}
+
+///
 /// Options for displays used on initialization
 ///
 #[derive(Copy, Clone, Default)]
@@ -116,8 +131,8 @@ pub struct DisplayOptions {
     pub orientation: Orientation,
     /// Set to make display vertical refresh bottom to top
     pub invert_vertical_refresh: bool,
-    /// Set to make display use BGR instead of RGB pixel format
-    pub rgb_to_bgr: bool,
+    /// Specify display color ordering
+    pub color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
 }
@@ -129,8 +144,9 @@ impl DisplayOptions {
         if self.invert_vertical_refresh {
             value |= 0b0001_0000;
         }
-        if self.rgb_to_bgr {
-            value |= 0b0000_1000;
+        match self.color_order {
+            ColorOrder::Rgb => {}
+            ColorOrder::Bgr => value |= 0b0000_1000,
         }
         if self.invert_horizontal_refresh {
             value |= 0b0000_0100;
