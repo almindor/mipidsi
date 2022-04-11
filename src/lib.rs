@@ -211,6 +211,7 @@ where
         self.madctl = self
             .model
             .init(&mut self.di, &mut self.rst, delay_source, options)?;
+        self.orientation = options.orientation;
         Ok(())
     }
 
