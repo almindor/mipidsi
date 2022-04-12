@@ -61,16 +61,36 @@ where
 ///
 /// Display orientation.
 ///
-#[repr(u8)]
 #[derive(Copy, Clone)]
 pub enum Orientation {
-    Portrait = 0b0000_0000,  // no inverting
-    Landscape = 0b0110_0000, // invert column and page/column order
+    /// Portrait orientation, with mirror image parameter
+    Portrait(bool),
+    /// Landscape orientation, with mirror image parameter
+    Landscape(bool),
+    /// Inverted Portrait orientation, with mirror image parameter
+    PortraitInverted(bool),
+    /// Inverted Lanscape orientation, with mirror image parameter
+    LandscapeInverted(bool),
 }
 
 impl Default for Orientation {
     fn default() -> Self {
-        Self::Portrait
+        Self::Portrait(false)
+    }
+}
+
+impl Orientation {
+    pub fn value_u8(&self) -> u8 {
+        match self {
+            Orientation::Portrait(false) => 0b0000_0000,
+            Orientation::Portrait(true) => 0b0100_0000,
+            Orientation::PortraitInverted(false) => 0b1100_0000,
+            Orientation::PortraitInverted(true) => 0b1000_0000,
+            Orientation::Landscape(false) => 0b0010_0000,
+            Orientation::Landscape(true) => 0b0110_0000,
+            Orientation::LandscapeInverted(false) => 0b1110_0000,
+            Orientation::LandscapeInverted(true) => 0b1010_0000,
+        }
     }
 }
 
@@ -85,6 +105,55 @@ pub enum TearingEffect {
     Vertical,
     /// Output horizontal and vertical blanking information.
     HorizontalAndVertical,
+}
+
+///
+/// Defines expected color component ordering, RGB or BGR
+///
+#[derive(Copy, Clone)]
+pub enum ColorOrder {
+    Rgb,
+    Bgr,
+}
+
+impl Default for ColorOrder {
+    fn default() -> Self {
+        Self::Rgb
+    }
+}
+
+///
+/// Options for displays used on initialization
+///
+#[derive(Copy, Clone, Default)]
+pub struct DisplayOptions {
+    /// Initial display orientation (without inverts)
+    pub orientation: Orientation,
+    /// Set to make display vertical refresh bottom to top
+    pub invert_vertical_refresh: bool,
+    /// Specify display color ordering
+    pub color_order: ColorOrder,
+    /// Set to make display horizontal refresh right to left
+    pub invert_horizontal_refresh: bool,
+}
+
+impl DisplayOptions {
+    /// Returns MADCTL register value for given display options
+    pub fn madctl(&self) -> u8 {
+        let mut value = self.orientation.value_u8();
+        if self.invert_vertical_refresh {
+            value |= 0b0001_0000;
+        }
+        match self.color_order {
+            ColorOrder::Rgb => {}
+            ColorOrder::Bgr => value |= 0b0000_1000,
+        }
+        if self.invert_horizontal_refresh {
+            value |= 0b0000_0100;
+        }
+
+        value
+    }
 }
 
 ///
@@ -134,8 +203,15 @@ where
     ///
     /// * `delay_source` - mutable reference to a [DelayUs] provider
     ///
-    pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
-        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
+    pub fn init(
+        &mut self,
+        delay_source: &mut impl DelayUs<u32>,
+        options: DisplayOptions,
+    ) -> Result<(), Error<RST::Error>> {
+        self.madctl = self
+            .model
+            .init(&mut self.di, &mut self.rst, delay_source, options)?;
+        self.orientation = options.orientation;
         Ok(())
     }
 
@@ -149,19 +225,8 @@ where
     ///
     /// Sets display [Orientation]
     ///
-    pub fn set_orientation(
-        &mut self,
-        orientation: Orientation,
-        invert_x: bool,
-        invert_y: bool,
-    ) -> Result<(), Error<RST::Error>> {
-        let mut value = self.madctl | ((orientation as u8) & 0b1110_0000);
-        if invert_x {
-            value ^= 0x40
-        };
-        if invert_y {
-            value ^= 0x80
-        };
+    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
+        let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
         self.orientation = orientation;

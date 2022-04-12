@@ -3,8 +3,8 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
-use crate::Orientation;
 use crate::{instruction::Instruction, Display, Error};
+use crate::{DisplayOptions, Orientation};
 
 use super::{write_command, Model};
 
@@ -24,13 +24,14 @@ impl Model for ST7789 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
+        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = 0b0000_0000;
+        let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -75,8 +76,8 @@ impl Model for ST7789 {
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait => (240, 320),
-            Orientation::Landscape => (320, 240),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (240, 320),
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (320, 240),
         }
     }
 }
