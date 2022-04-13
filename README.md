@@ -25,3 +25,8 @@ display.clear(Rgb666::BLACK)?;
 ```
 
 License: MIT
+
+## Minimum Supported Rust Version (MSRV)
+
+This crate is guaranteed to compile on stable Rust 1.49.0 and up. It *might*
+compile with older versions but that may change in any new patch release.
