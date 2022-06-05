@@ -285,6 +285,28 @@ where
     }
 
     ///
+    /// Sets scroll region
+    /// # Arguments
+    ///
+    /// * `tfa` - Top fixed area
+    /// * `vsa` - Vertical scrolling area
+    /// * `bfa` - Bottom fixed area
+    ///
+    pub fn set_scroll_region(
+        &mut self,
+        tfa: u16,
+        vsa: u16,
+        bfa: u16,
+    ) -> Result<(), Error<RST::Error>> {
+        self.write_command(Instruction::VSCRDER)?;
+        self.write_data(&tfa.to_be_bytes())?;
+        self.write_data(&vsa.to_be_bytes())?;
+        self.write_data(&bfa.to_be_bytes())?;
+
+        Ok(())
+    }
+
+    ///
     /// Sets scroll offset "shifting" the displayed picture
     /// # Arguments
     ///
