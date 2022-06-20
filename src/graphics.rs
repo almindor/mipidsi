@@ -2,7 +2,7 @@ use embedded_graphics_core::prelude::{DrawTarget, Point, Size};
 use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
 
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::blocking::OutputPin;
 
 use crate::models::Model;
 use crate::{Display, Error};

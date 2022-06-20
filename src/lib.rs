@@ -24,8 +24,8 @@ use crate::instruction::Instruction;
 use display_interface::DataFormat;
 use display_interface::DisplayError;
 use display_interface::WriteOnlyDataCommand;
-use embedded_hal::blocking::delay::DelayUs;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::delay::blocking::DelayUs;
+use embedded_hal::digital::blocking::OutputPin;
 
 pub mod models;
 use models::Model;
@@ -205,7 +205,7 @@ where
     ///
     pub fn init(
         &mut self,
-        delay_source: &mut impl DelayUs<u32>,
+        delay_source: &mut impl DelayUs,
         options: DisplayOptions,
     ) -> Result<(), Error<RST::Error>> {
         self.madctl = self

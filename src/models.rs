@@ -1,7 +1,7 @@
 use crate::{instruction::Instruction, DisplayOptions, Error, Orientation};
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::blocking::DelayUs, digital::blocking::OutputPin};
 
 // existing model implementations
 mod ili9486;
@@ -29,7 +29,7 @@ pub trait Model {
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand;
 
     fn hard_reset<RST, DELAY>(
@@ -39,10 +39,10 @@ pub trait Model {
     ) -> Result<(), Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
     {
         rst.set_low().map_err(Error::Pin)?;
-        delay.delay_us(10);
+        delay.delay_us(10); // TODO: fix up error mapping
         rst.set_high().map_err(Error::Pin)?;
 
         Ok(())

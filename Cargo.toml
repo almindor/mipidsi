@@ -1,7 +1,7 @@
 [package]
 name = "mipidsi"
 description = "MIPI Display Serial Interface generic driver"
-version = "0.2.1"
+version = "0.3.0-alpha.1"
 authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -14,7 +14,7 @@ rust-version = "1.59"
 [dependencies]
 display-interface = "0.4.1"
 embedded-graphics-core = "0.3.3"
-embedded-hal = "0.2.6"
+embedded-hal = "1.0.0-alpha.7"
 nb = "1.0.0"
 
 [dependencies.heapless]
