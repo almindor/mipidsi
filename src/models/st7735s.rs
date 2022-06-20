@@ -1,6 +1,6 @@
 use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::blocking::DelayUs, digital::blocking::OutputPin};
 
 use crate::no_pin::NoPin;
 use crate::{instruction::Instruction, Display, Error};
@@ -28,7 +28,7 @@ impl Model for ST7735s {
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit

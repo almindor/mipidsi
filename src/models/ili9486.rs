@@ -3,7 +3,7 @@ use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::blocking::DelayUs, digital::blocking::OutputPin};
 
 use crate::{instruction::Instruction, Display, DisplayOptions, Error, Orientation};
 
@@ -35,14 +35,14 @@ impl Model for ILI9486Rgb565 {
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(120_000);
+        delay.delay_us(120_000); // TODO: fixup error mapping
 
         init_common(di, delay, options).map_err(|_| Error::DisplayError)
     }
@@ -83,7 +83,7 @@ impl Model for ILI9486Rgb666 {
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
@@ -169,7 +169,7 @@ fn init_common<DELAY, DI>(
     options: DisplayOptions,
 ) -> Result<u8, DisplayError>
 where
-    DELAY: DelayUs<u32>,
+    DELAY: DelayUs,
     DI: WriteOnlyDataCommand,
 {
     let madctl = options.madctl();
