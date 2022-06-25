@@ -91,7 +91,7 @@ impl Model for ILI9486Rgb666 {
             None => write_command(di, Instruction::SWRESET, &[])?,
         };
 
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).unwrap(); // TODO: fix error reporting
 
         init_common(di, delay, options).map_err(|_| Error::DisplayError)
     }
@@ -189,7 +189,7 @@ where
     write_command(di, Instruction::DISPON, &[])?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
-    delay.delay_us(120_000);
+    delay.delay_us(120_000).unwrap(); // TODO: pass on the error
 
     Ok(madctl)
 }
