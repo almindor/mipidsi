@@ -42,7 +42,7 @@ pub trait Model {
         DELAY: DelayUs,
     {
         rst.set_low().map_err(Error::Pin)?;
-        delay.delay_us(10); // TODO: fix up error mapping
+        delay.delay_us(10).unwrap(); // TODO: fixup error mapping
         rst.set_high().map_err(Error::Pin)?;
 
         Ok(())

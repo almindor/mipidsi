@@ -1,6 +1,6 @@
 use core::convert::Infallible;
 
-use embedded_hal::digital::{blocking::OutputPin, PinState, ErrorType};
+use embedded_hal::digital::{blocking::OutputPin, ErrorType, PinState};
 
 /// The NoPin struct is here as a dummy implementation of the OutputPin trait
 /// to handle the case when devices do not have a RST Pin and remove the need

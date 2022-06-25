@@ -37,10 +37,10 @@ impl Model for ST7735s {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(200_000);
+        delay.delay_us(200_000).unwrap(); // TODO: fixup error mapping
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).unwrap(); // TODO: fixup error mapping
 
         write_command(di, Instruction::INVON, &[])?; // turn inversion on
         write_command(di, Instruction::INVON, &[])?; // turn inversion on

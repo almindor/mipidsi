@@ -42,7 +42,7 @@ impl Model for ILI9486Rgb565 {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(120_000); // TODO: fixup error mapping
+        delay.delay_us(120_000).unwrap(); // TODO: fixup error mapping
 
         init_common(di, delay, options).map_err(|_| Error::DisplayError)
     }

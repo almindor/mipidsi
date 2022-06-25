@@ -36,10 +36,10 @@ impl Model for ST7789 {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(150_000);
+        delay.delay_us(150_000).unwrap(); // TODO: fixup error mapping
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        delay.delay_us(10_000);
+        delay.delay_us(10_000).unwrap(); // TODO: fixup error mapping
 
         write_command(di, Instruction::INVOFF, &[])?;
         write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
@@ -47,13 +47,13 @@ impl Model for ST7789 {
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
         write_command(di, Instruction::INVON, &[])?;
-        delay.delay_us(10_000);
+        delay.delay_us(10_000).unwrap(); // TODO: fixup error mapping
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
-        delay.delay_us(10_000);
+        delay.delay_us(10_000).unwrap(); // TODO: fixup error mapping
         write_command(di, Instruction::DISPON, &[])?; // turn on display
 
         // DISPON requires some time otherwise we risk SPI data issues
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).unwrap(); // TODO: fixup error mapping
 
         Ok(madctl)
     }
