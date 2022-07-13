@@ -9,6 +9,7 @@ repository = "https://github.com/almindor/mipidsi"
 keywords = ["embedded-hal-driver", "mipi", "dsi", "display"]
 readme = "README.md"
 documentation = "https://docs.rs/mipidsi"
+rust-version = "1.59"
 
 [dependencies]
 display-interface = "0.4.1"
