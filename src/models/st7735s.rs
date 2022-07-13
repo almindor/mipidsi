@@ -15,10 +15,6 @@ pub struct ST7735s;
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
-    }
-
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
@@ -107,7 +103,6 @@ impl Model for ST7735s {
         }
     }
 }
-
 // simplified constructor on Display
 
 impl<DI, RST> Display<DI, RST, ST7735s>
@@ -126,7 +121,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7735s(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7735s::new())
+        Self::with_model(di, Some(rst), ST7735s {})
     }
 }
 
@@ -144,6 +139,6 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7735s_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7735s::new())
+        Self::with_model(di, None, ST7735s {})
     }
 }

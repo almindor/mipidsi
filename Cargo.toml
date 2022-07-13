@@ -1,7 +1,7 @@
 [package]
 name = "mipidsi"
 description = "MIPI Display Serial Interface generic driver"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2018"
 license = "MIT"

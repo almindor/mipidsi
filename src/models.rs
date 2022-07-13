@@ -15,9 +15,6 @@ pub use st7789::*;
 pub trait Model {
     type ColorFormat: RgbColor;
 
-    /// Common model constructor
-    fn new() -> Self;
-
     /// Initializes the display for this model
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(

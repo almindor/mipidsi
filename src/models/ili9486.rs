@@ -22,10 +22,6 @@ pub struct ILI9486Rgb666;
 impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
-    }
-
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
@@ -69,10 +65,6 @@ impl Model for ILI9486Rgb565 {
 
 impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -192,4 +184,16 @@ where
     delay.delay_us(120_000);
 
     Ok(madctl)
+}
+
+impl ILI9486Rgb565 {
+    fn new() -> Self {
+        Self
+    }
+}
+
+impl ILI9486Rgb666 {
+    fn new() -> Self {
+        Self
+    }
 }

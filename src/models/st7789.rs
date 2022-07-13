@@ -10,14 +10,13 @@ use super::{write_command, Model};
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7789;
+pub struct ST7789 {
+    display_size: (u16, u16),
+    framebuffer_size: (u16, u16),
+}
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -71,13 +70,17 @@ impl Model for ST7789 {
     }
 
     fn display_size(&self, _orientation: Orientation) -> (u16, u16) {
-        (240, 240)
+        self.display_size
     }
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (240, 320),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (320, 240),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => {
+                (self.framebuffer_size.0, self.framebuffer_size.1)
+            }
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => {
+                (self.framebuffer_size.1, self.framebuffer_size.0)
+            }
         }
     }
 }
@@ -91,7 +94,8 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] with a
-    /// hard reset Pin
+    /// hard reset Pin and hardcoded framebuffer size to 240x320 and display
+    /// size to 240x240
     ///
     /// # Arguments
     ///
@@ -100,7 +104,40 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7789::new())
+        Self::with_model(
+            di,
+            Some(rst),
+            ST7789 {
+                display_size: (240, 240),
+                framebuffer_size: (240, 320),
+            },
+        )
+    }
+
+    ///
+    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
+    /// hard reset Pin and specified display and framebuffer sizes.
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `rst` - display hard reset [OutputPin]
+    /// * `model` - the display [Model]
+    ///
+    pub fn st7789_sized(
+        di: DI,
+        rst: RST,
+        display_size: (u16, u16),
+        framebuffer_size: (u16, u16),
+    ) -> Self {
+        Self::with_model(
+            di,
+            Some(rst),
+            ST7789 {
+                display_size,
+                framebuffer_size,
+            },
+        )
     }
 }
 
@@ -110,7 +147,8 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] without
-    /// a hard reset Pin
+    /// a hard reset Pin and hardcoded framebuffer size to 240x320 and display
+    /// size to 240x240
     ///
     /// # Arguments
     ///
@@ -118,6 +156,37 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7789::new())
+        Self::with_model(
+            di,
+            None,
+            ST7789 {
+                display_size: (240, 240),
+                framebuffer_size: (240, 320),
+            },
+        )
+    }
+
+    ///
+    /// Creates a new [Display] instance with [ST7789] as the [Model] without
+    /// a hard reset Pin and specified display and framebuffer sizes.
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `model` - the display [Model]
+    ///
+    pub fn st7789_without_rst_sized(
+        di: DI,
+        display_size: (u16, u16),
+        framebuffer_size: (u16, u16),
+    ) -> Self {
+        Self::with_model(
+            di,
+            None,
+            ST7789 {
+                display_size,
+                framebuffer_size,
+            },
+        )
     }
 }
