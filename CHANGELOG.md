@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- bumped MSRV to 1.59
+
 ### Added
 - added `Model::address_window_offset()` to `Model` trait
 - added `ST7789VW` waveshare model
