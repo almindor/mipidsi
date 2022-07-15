@@ -7,10 +7,12 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 mod ili9486;
 mod st7735s;
 mod st7789;
+mod st7789vw;
 
 pub use ili9486::*;
 pub use st7735s::*;
 pub use st7789::*;
+pub use st7789vw::*;
 
 pub trait Model {
     type ColorFormat: RgbColor;
@@ -61,6 +63,12 @@ pub trait Model {
     /// Size of the display framebuffer as `(width, height)`
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         self.display_size(orientation)
+    }
+
+    /// Model specific address window offset override. Used in some models
+    /// where the display is smaller than the driver draw area (e.g. Waveshare)
+    fn address_window_offset(&self, _orientation: Orientation) -> (u16, u16) {
+        (0, 0)
     }
 }
 

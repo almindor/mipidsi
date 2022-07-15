@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- added `Model::address_window_offset()` to `Model` trait
+- added `ST7789VW` waveshare model
+
 ## [v0.2.0] - 2021-04-12
 
 ### Changed
