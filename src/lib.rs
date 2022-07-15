@@ -346,12 +346,14 @@ where
         ex: u16,
         ey: u16,
     ) -> Result<(), Error<RST::Error>> {
+        let offset = self.model.address_window_offset(self.orientation);
+
         self.write_command(Instruction::CASET)?;
-        self.write_data(&sx.to_be_bytes())?;
-        self.write_data(&ex.to_be_bytes())?;
+        self.write_data(&(sx + offset.0).to_be_bytes())?;
+        self.write_data(&(ex + offset.0).to_be_bytes())?;
         self.write_command(Instruction::RASET)?;
-        self.write_data(&sy.to_be_bytes())?;
-        self.write_data(&ey.to_be_bytes())
+        self.write_data(&(sy + offset.1).to_be_bytes())?;
+        self.write_data(&(ey + offset.1).to_be_bytes())
     }
 
     ///
