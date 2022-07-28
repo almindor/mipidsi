@@ -12,19 +12,17 @@ use super::{write_command, Model};
 /// ILI9486 display with Reset pin
 /// in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled
+#[derive(Default)]
 pub struct ILI9486Rgb565;
 
 /// ILI9486 display with Reset pin
 /// in Rgb666 color mode (works with SPI)
 /// Backlight pin is not controlled
+#[derive(Default)]
 pub struct ILI9486Rgb666;
 
 impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -69,10 +67,6 @@ impl Model for ILI9486Rgb565 {
 
 impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -139,7 +133,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb565(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb565::new())
+        Self::with_model(di, Some(rst), ILI9486Rgb565::default())
     }
 }
 
@@ -158,7 +152,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn ili9486_rgb666(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb666::new())
+        Self::with_model(di, Some(rst), ILI9486Rgb666::default())
     }
 }
 

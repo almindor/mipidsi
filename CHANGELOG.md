@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - bumped MSRV to 1.59
+- use `Default` for `Model` constructor and move `new` out of trait
 
 ### Added
 - added `Model::address_window_offset()` to `Model` trait
-- added `ST7789VW` waveshare model
+- added `ST7789VW` waveshare model with specific `new` method with window offsets
 
 ## [v0.2.0] - 2021-04-12
 

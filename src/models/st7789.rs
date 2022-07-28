@@ -10,14 +10,11 @@ use super::{write_command, Model};
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
+#[derive(Default)]
 pub struct ST7789;
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -100,7 +97,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7789::new())
+        Self::with_model(di, Some(rst), ST7789::default())
     }
 }
 
@@ -118,6 +115,6 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn st7789_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7789::new())
+        Self::with_model(di, None, ST7789::default())
     }
 }

@@ -10,14 +10,19 @@ use super::{write_command, Model};
 
 /// ST7789VW SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7789VW;
+#[derive(Default)]
+pub struct ST7789VW {
+    window_offsets: (u16, u16),
+}
+
+impl ST7789VW {
+    pub fn new(window_offsets: (u16, u16)) -> Self {
+        Self { window_offsets }
+    }
+}
 
 impl Model for ST7789VW {
     type ColorFormat = Rgb565;
-
-    fn new() -> Self {
-        Self
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -84,8 +89,12 @@ impl Model for ST7789VW {
     // Waveshare st7789vw requires an offset
     fn address_window_offset(&self, orientation: Orientation) -> (u16, u16) {
         match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (52, 40),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (40, 53),
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => {
+                (self.window_offsets.0, self.window_offsets.1)
+            }
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => {
+                (self.window_offsets.1, self.window_offsets.0)
+            }
         }
     }
 }
@@ -105,10 +114,11 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
+    /// * `window_offsets` - offsets for windowing (caset/raset) for displays that need them
     /// * `model` - the display [Model]
     ///
-    pub fn st7789vw(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7789VW::new())
+    pub fn st7789vw(di: DI, rst: RST, window_offsets: (u16, u16)) -> Self {
+        Self::with_model(di, Some(rst), ST7789VW::new(window_offsets))
     }
 }
 
@@ -123,9 +133,10 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `window_offsets` - offsets for windowing (caset/raset) for displays that need them
     /// * `model` - the display [Model]
     ///
-    pub fn st7789vw_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7789VW::new())
+    pub fn st7789vw_without_rst(di: DI, window_offsets: (u16, u16)) -> Self {
+        Self::with_model(di, None, ST7789VW::new(window_offsets))
     }
 }
