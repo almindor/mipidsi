@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.1] - 2022-08-03
+
+### Added
+
+- clarified display model constructor usage in `README`
+
 ### Changed
 
 - fix `i32` -> `u16` conversion overflow bug in `batch` module in case of negative coordinates

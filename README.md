@@ -13,6 +13,10 @@ The `Display` driver itself contains most of the functionality. Each specific di
 
 [embedded-graphics-core](https://crates.io/crates/embedded-graphics-core) is used to provide the drawing API.
 
+## Models
+
+Each supported display model can be used either through the `Display::with_model` call or through a shortcut function such as `Display::st7789` if provided (only available to in-tree models, external crate models must use the `with_model` constructor).
+
 ### Example
 ```rust
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
