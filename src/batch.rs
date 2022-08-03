@@ -208,6 +208,9 @@ where
                     return Some(row);
                 }
                 Some(Pixel(coord, color)) => {
+                    if coord.x < 0 || coord.y < 0 {
+                        continue;
+                    }
                     //  If there is a pixel...
                     let x = coord.x as u16;
                     let y = coord.y as u16;

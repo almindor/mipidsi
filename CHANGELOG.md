@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- fix `i32` -> `u16` conversion overflow bug in `batch` module in case of negative coordinates
+
 ## [v0.2.0] - 2021-04-12
 
 ### Changed
