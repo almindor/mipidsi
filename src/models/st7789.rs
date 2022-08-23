@@ -31,29 +31,30 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+        let madctl = options.madctl();
+        if let Some(rst) = rst {
+            rst.set_high().map_err(Error::Pin)?;
+            delay.delay_us(10); // ensure the pin change will get registered
+            rst.set_low().map_err(Error::Pin)?;
+            delay.delay_us(10); // ensure the pin change will get registered
+            rst.set_high().map_err(Error::Pin)?;
+            delay.delay_us(10); // ensure the pin change will get registered
         }
-        delay.delay_us(150_000);
 
+        write_command(di, Instruction::SWRESET, &[])?; // reset display
+        delay.delay_us(150_000);
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(10_000);
-
-        write_command(di, Instruction::INVOFF, &[])?;
-        write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
+        write_command(di, Instruction::INVOFF, &[])?; // turn off invert
+        write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?; // vertical scroll definition
         write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
-
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
-        write_command(di, Instruction::INVON, &[])?;
+        write_command(di, Instruction::INVON, &[])?; // hack?
         delay.delay_us(10_000);
-        write_command(di, Instruction::NORON, &[])?; // turn to normal mode
+        write_command(di, Instruction::NORON, &[])?; // turn on display
         delay.delay_us(10_000);
         write_command(di, Instruction::DISPON, &[])?; // turn on display
-
-        // DISPON requires some time otherwise we risk SPI data issues
-        delay.delay_us(120_000);
+        delay.delay_us(10_000);
 
         Ok(madctl)
     }
