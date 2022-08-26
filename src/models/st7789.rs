@@ -31,7 +31,7 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
+        let madctl = options.madctl();
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
