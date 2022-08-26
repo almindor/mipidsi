@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.2] - 2022-08-26
+
 ### Changed
 
  - fix `Display::clear` out of bounds pixels
