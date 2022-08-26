@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+ - fix `Display::clear` out of bounds pixels
+ - remove `ST7789` model `Bgr` bit override
+
 ## [v0.2.1] - 2022-08-03
 
 ### Added
