@@ -98,7 +98,7 @@ where
         let fb_size = self.model.framebuffer_size(self.orientation);
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
-        self.set_pixels(0, 0, fb_size.0, fb_size.1, colors)
+        self.set_pixels(0, 0, fb_size.0 - 1, fb_size.1 - 1, colors)
     }
 }
 
