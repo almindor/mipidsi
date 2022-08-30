@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.3.0] - 2022-08-30
+
+### Added
+
+- added `ILI9342C` model support thanks to [Jesse Braham's](https://github.com/jessebraham) [PR](https://github.com/almindor/mipidsi/pull/25)
+
 ## [v0.2.2] - 2022-08-26
 
 ### Changed
 
- - fix `Display::clear` out of bounds pixels
- - remove `ST7789` model `Bgr` bit override
+- fix `Display::clear` out of bounds pixels
+- remove `ST7789` model `Bgr` bit override
 
 ## [v0.2.1] - 2022-08-03
 
