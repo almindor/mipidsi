@@ -61,7 +61,7 @@ where
 ///
 /// Display orientation.
 ///
-#[derive(Copy, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Orientation {
     /// Portrait orientation, with mirror image parameter
     Portrait(bool),
@@ -110,7 +110,7 @@ pub enum TearingEffect {
 ///
 /// Defines expected color component ordering, RGB or BGR
 ///
-#[derive(Copy, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum ColorOrder {
     Rgb,
     Bgr,
@@ -125,7 +125,7 @@ impl Default for ColorOrder {
 ///
 /// Options for displays used on initialization
 ///
-#[derive(Copy, Clone, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct DisplayOptions {
     /// Initial display orientation (without inverts)
     pub orientation: Orientation,
