@@ -135,6 +135,10 @@ pub struct DisplayOptions {
     pub color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
+    /// Offsets (x, y) for windowing in physically cropped displays (e.g. Pico v1)
+    pub offset: (u16, u16),
+    /// Display size (w, h) for the display
+    pub size: (u16, u16)    
 }
 
 impl DisplayOptions {
