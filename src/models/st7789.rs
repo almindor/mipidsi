@@ -17,7 +17,7 @@ impl Model for ST7789 {
 
     fn new(options: DisplayOptions) -> Self {
         // use 240x240 display if not specified by user in options
-        Self(options.with_display_size(240, 240))
+        Self(options.with_display_size(240, 320))
     }
 
     fn init<RST, DELAY, DI>(
@@ -92,7 +92,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] with a
-    /// hard reset Pin
+    /// hard reset Pin and display size of 240x320
     ///
     /// # Arguments
     ///
@@ -104,6 +104,44 @@ where
     pub fn st7789(di: DI, rst: RST, options: DisplayOptions) -> Self {
         Self::with_model(di, Some(rst), ST7789::new(options))
     }
+
+    ///
+    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
+    /// hard reset Pin and display size of 240x240
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `rst` - display hard reset [OutputPin]
+    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
+    ///
+    pub fn st7789_240x240(di: DI, rst: RST, options: DisplayOptions) -> Self {
+        Self::with_model(
+            di,
+            Some(rst),
+            ST7789::new(options.with_display_size(240, 240)),
+        )
+    }
+
+    ///
+    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
+    /// hard reset Pin and display size of 135x240
+    ///
+    /// # Arguments
+    ///
+    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `rst` - display hard reset [OutputPin]
+    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
+    ///
+    pub fn st7789_135x240(di: DI, rst: RST, mut options: DisplayOptions) -> Self {
+        // pico v1 is cropped to 135x240 size with an offset of (40, 53)
+        options.window_offset = (40, 53);
+        options.display_size = (135, 240);
+        options.framebuffer_size = (135, 240);
+        Self::with_model(di, Some(rst), ST7789::new(options))
+    }
 }
 
 impl<DI> Display<DI, NoPin, ST7789>
@@ -112,7 +150,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] without
-    /// a hard reset Pin
+    /// a hard reset Pin with display size of 240x320
     ///
     /// # Arguments
     ///
