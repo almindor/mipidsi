@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error, Orientation};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
 use super::{write_command, Model};
 
@@ -23,7 +23,7 @@ impl Model for ILI9342CRgb565 {
     type ColorFormat = Rgb565;
 
     fn new(options: DisplayOptions) -> Self {
-        Self(options)
+        Self(options.with_display_size(320, 240))
     }
 
     fn init<RST, DELAY, DI>(
@@ -61,9 +61,9 @@ impl Model for ILI9342CRgb565 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.display_size(320, 240, orientation)
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(320, 240, orientation)
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0
@@ -74,7 +74,7 @@ impl Model for ILI9342CRgb666 {
     type ColorFormat = Rgb666;
 
     fn new(options: DisplayOptions) -> Self {
-        Self(options)
+        Self(options.with_display_size(320, 240))
     }
 
     fn init<RST, DELAY, DI>(
@@ -117,12 +117,12 @@ impl Model for ILI9342CRgb666 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 240),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (240, 320),
-        }
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     match orientation {
+    //         Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 240),
+    //         Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (240, 320),
+    //     }
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0

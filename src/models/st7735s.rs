@@ -3,8 +3,8 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
+use crate::DisplayOptions;
 use crate::{instruction::Instruction, Display, Error};
-use crate::{DisplayOptions, Orientation};
 
 use super::{write_command, Model};
 
@@ -16,7 +16,7 @@ impl Model for ST7735s {
     type ColorFormat = Rgb565;
 
     fn new(options: DisplayOptions) -> Self {
-        Self(options)
+        Self(options.with_sizes((80, 160), (132, 162)))
     }
 
     fn init<RST, DELAY, DI>(
@@ -92,13 +92,13 @@ impl Model for ST7735s {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.display_size(80, 160, orientation)
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(80, 160, orientation)
+    // }
 
-    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.framebuffer_size(132, 162, orientation)
-    }
+    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.framebuffer_size(132, 162, orientation)
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0

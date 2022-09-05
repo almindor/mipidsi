@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error, Orientation};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
 use super::{write_command, Model};
 
@@ -23,7 +23,7 @@ impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
 
     fn new(options: DisplayOptions) -> Self {
-        Self(options)
+        Self(options.with_display_size(320, 480))
     }
 
     fn init<RST, DELAY, DI>(
@@ -58,9 +58,9 @@ impl Model for ILI9486Rgb565 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.display_size(320, 480, orientation)
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(320, 480, orientation)
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0
@@ -112,9 +112,9 @@ impl Model for ILI9486Rgb666 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.display_size(320, 480, orientation)
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(320, 480, orientation)
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0

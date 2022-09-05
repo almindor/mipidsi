@@ -136,7 +136,7 @@ pub struct DisplayOptions {
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
     /// Offsets (x, y) for windowing in physically cropped displays (e.g. Pico v1)
-    pub offset: (u16, u16),
+    pub window_offset: (u16, u16),
     /// Display size (w, h) override for the display/model, (0, 0) for no override
     pub display_size: (u16, u16),
     /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
@@ -162,36 +162,43 @@ impl DisplayOptions {
     }
 
     ///
+    /// Sets the display size value if not set previously yet and returns the
+    /// same [DisplayOptions] object back
+    ///
+    pub fn with_display_size(mut self, width: u16, height: u16) -> Self {
+        if self.display_size == (0, 0) {
+            self.display_size = (width, height);
+        }
+
+        self
+    }
+
+    ///
+    /// Sets the display and frame buffer size values if not set previously yet
+    /// and returns the same [DisplayOptions] object back
+    ///
+    pub fn with_sizes(mut self, display_size: (u16, u16), framebuffer_size: (u16, u16)) -> Self {
+        if self.framebuffer_size == (0, 0) {
+            self.framebuffer_size = framebuffer_size;
+        }
+
+        self.with_display_size(display_size.0, display_size.1)
+    }
+
+    ///
     /// Returns display size based on current orientation and display options.
     /// Used by models.
     ///
-    pub fn display_size(&self, width: u16, height: u16, orientation: Orientation) -> (u16, u16) {
-        let size = if self.display_size == (0, 0) {
-            (width, height)
-        } else {
-            self.display_size
-        };
-
-        Self::orient_size(size, orientation)
+    pub fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+        Self::orient_size(self.display_size, orientation)
     }
 
     ///
     /// Returns framebuffer size based on current orientation and display options.
     /// Used by models.
     ///
-    pub fn framebuffer_size(
-        &self,
-        width: u16,
-        height: u16,
-        orientation: Orientation,
-    ) -> (u16, u16) {
-        let size = if self.framebuffer_size == (0, 0) {
-            (width, height)
-        } else {
-            self.framebuffer_size
-        };
-
-        Self::orient_size(size, orientation)
+    pub fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+        Self::orient_size(self.framebuffer_size, orientation)
     }
 
     // Flip size according to orientation, in general

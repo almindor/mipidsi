@@ -3,8 +3,8 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::no_pin::NoPin;
+use crate::DisplayOptions;
 use crate::{instruction::Instruction, Display, Error};
-use crate::{DisplayOptions, Orientation};
 
 use super::{write_command, Model};
 
@@ -16,7 +16,8 @@ impl Model for ST7789 {
     type ColorFormat = Rgb565;
 
     fn new(options: DisplayOptions) -> Self {
-        Self(options)
+        // use 240x240 display if not specified by user in options
+        Self(options.with_display_size(240, 240))
     }
 
     fn init<RST, DELAY, DI>(
@@ -69,13 +70,13 @@ impl Model for ST7789 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.display_size(240, 240, orientation)
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(240, 240, orientation)
+    // }
 
-    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        self.0.framebuffer_size(240, 320, orientation)
-    }
+    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.framebuffer_size(240, 320, orientation)
+    // }
 
     fn options(&self) -> &DisplayOptions {
         &self.0
