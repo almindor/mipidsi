@@ -12,18 +12,18 @@ use super::{write_command, Model};
 /// ILI9342C display with Reset pin
 /// in Rgb565 color mode
 /// Backlight pin is not controlled
-pub struct ILI9342CRgb565;
+pub struct ILI9342CRgb565(DisplayOptions);
 
 /// ILI9342C display with Reset pin
 /// in Rgb666 color mode
 /// Backlight pin is not controlled
-pub struct ILI9342CRgb666;
+pub struct ILI9342CRgb666(DisplayOptions);
 
 impl Model for ILI9342CRgb565 {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
+    fn new(options: DisplayOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -31,7 +31,6 @@ impl Model for ILI9342CRgb565 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -47,7 +46,7 @@ impl Model for ILI9342CRgb565 {
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
 
-        init_common(di, delay, options).map_err(|_| Error::DisplayError)
+        init_common(di, delay, &self.0).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -63,18 +62,19 @@ impl Model for ILI9342CRgb565 {
     }
 
     fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 240),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (240, 320),
-        }
+        self.0.display_size(320, 240, orientation)
+    }
+
+    fn options(&self) -> &DisplayOptions {
+        &self.0
     }
 }
 
 impl Model for ILI9342CRgb666 {
     type ColorFormat = Rgb666;
 
-    fn new() -> Self {
-        Self
+    fn new(options: DisplayOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -82,7 +82,6 @@ impl Model for ILI9342CRgb666 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -98,7 +97,7 @@ impl Model for ILI9342CRgb666 {
 
         write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 262k colors
 
-        init_common(di, delay, options).map_err(|_| Error::DisplayError)
+        init_common(di, delay, &self.0).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -124,6 +123,10 @@ impl Model for ILI9342CRgb666 {
             Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (240, 320),
         }
     }
+
+    fn options(&self) -> &DisplayOptions {
+        &self.0
+    }
 }
 
 // simplified constructor for Display
@@ -143,8 +146,8 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `model` - the display [Model]
     ///
-    pub fn ili9342c_rgb565(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9342CRgb565::new())
+    pub fn ili9342c_rgb565(di: DI, rst: RST, options: DisplayOptions) -> Self {
+        Self::with_model(di, Some(rst), ILI9342CRgb565::new(options))
     }
 }
 
@@ -161,9 +164,10 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
     /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9342c_rgb666(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9342CRgb666::new())
+    pub fn ili9342c_rgb666(di: DI, rst: RST, options: DisplayOptions) -> Self {
+        Self::with_model(di, Some(rst), ILI9342CRgb666::new(options))
     }
 }
 
@@ -171,7 +175,7 @@ where
 fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
-    options: DisplayOptions,
+    options: &DisplayOptions,
 ) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,

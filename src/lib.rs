@@ -137,8 +137,10 @@ pub struct DisplayOptions {
     pub invert_horizontal_refresh: bool,
     /// Offsets (x, y) for windowing in physically cropped displays (e.g. Pico v1)
     pub offset: (u16, u16),
-    /// Display size (w, h) for the display
-    pub size: (u16, u16)    
+    /// Display size (w, h) override for the display/model, (0, 0) for no override
+    pub display_size: (u16, u16),
+    /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
+    pub framebuffer_size: (u16, u16),
 }
 
 impl DisplayOptions {
@@ -157,6 +159,47 @@ impl DisplayOptions {
         }
 
         value
+    }
+
+    ///
+    /// Returns display size based on current orientation and display options.
+    /// Used by models.
+    ///
+    pub fn display_size(&self, width: u16, height: u16, orientation: Orientation) -> (u16, u16) {
+        let size = if self.display_size == (0, 0) {
+            (width, height)
+        } else {
+            self.display_size
+        };
+
+        Self::orient_size(size, orientation)
+    }
+
+    ///
+    /// Returns framebuffer size based on current orientation and display options.
+    /// Used by models.
+    ///
+    pub fn framebuffer_size(
+        &self,
+        width: u16,
+        height: u16,
+        orientation: Orientation,
+    ) -> (u16, u16) {
+        let size = if self.framebuffer_size == (0, 0) {
+            (width, height)
+        } else {
+            self.framebuffer_size
+        };
+
+        Self::orient_size(size, orientation)
+    }
+
+    // Flip size according to orientation, in general
+    fn orient_size(size: (u16, u16), orientation: Orientation) -> (u16, u16) {
+        match orientation {
+            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => size,
+            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (size.1, size.0),
+        }
     }
 }
 
@@ -191,11 +234,13 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn with_model(di: DI, rst: Option<RST>, model: M) -> Self {
+        let orientation = model.options().orientation;
+
         Self {
             di,
             rst,
             model,
-            orientation: Orientation::default(),
+            orientation,
             madctl: 0,
         }
     }
@@ -207,15 +252,8 @@ where
     ///
     /// * `delay_source` - mutable reference to a [DelayUs] provider
     ///
-    pub fn init(
-        &mut self,
-        delay_source: &mut impl DelayUs<u32>,
-        options: DisplayOptions,
-    ) -> Result<(), Error<RST::Error>> {
-        self.madctl = self
-            .model
-            .init(&mut self.di, &mut self.rst, delay_source, options)?;
-        self.orientation = options.orientation;
+    pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
+        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
         Ok(())
     }
 

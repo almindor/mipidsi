@@ -18,7 +18,7 @@ pub trait Model {
     type ColorFormat: RgbColor;
 
     /// Common model constructor
-    fn new() -> Self;
+    fn new(options: DisplayOptions) -> Self;
 
     /// Initializes the display for this model
     /// and returns the value of MADCTL set by init
@@ -27,7 +27,6 @@ pub trait Model {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -64,6 +63,8 @@ pub trait Model {
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
         self.display_size(orientation)
     }
+
+    fn options(&self) -> &DisplayOptions;
 }
 
 // helper for models

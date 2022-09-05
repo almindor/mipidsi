@@ -10,13 +10,13 @@ use super::{write_command, Model};
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7789;
+pub struct ST7789(DisplayOptions);
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
+    fn new(options: DisplayOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -24,14 +24,13 @@ impl Model for ST7789 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = options.madctl();
+        let madctl = self.0.madctl();
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -70,15 +69,16 @@ impl Model for ST7789 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, _orientation: Orientation) -> (u16, u16) {
-        (240, 240)
+    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+        self.0.display_size(240, 240, orientation)
     }
 
     fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (240, 320),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (320, 240),
-        }
+        self.0.framebuffer_size(240, 320, orientation)
+    }
+
+    fn options(&self) -> &DisplayOptions {
+        &self.0
     }
 }
 
@@ -98,9 +98,10 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
     /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7789::new())
+    pub fn st7789(di: DI, rst: RST, options: DisplayOptions) -> Self {
+        Self::with_model(di, Some(rst), ST7789::new(options))
     }
 }
 
@@ -116,8 +117,9 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7789::new())
+    pub fn st7789_without_rst(di: DI, options: DisplayOptions) -> Self {
+        Self::with_model(di, None, ST7789::new(options))
     }
 }
