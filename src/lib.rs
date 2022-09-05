@@ -395,6 +395,10 @@ where
         ex: u16,
         ey: u16,
     ) -> Result<(), Error<RST::Error>> {
+        // add clipping offsets if present
+        let offset = self.model.options().window_offset;
+        let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
+
         self.write_command(Instruction::CASET)?;
         self.write_data(&sx.to_be_bytes())?;
         self.write_data(&ex.to_be_bytes())?;
