@@ -137,7 +137,7 @@ where
     ///
     pub fn st7789_135x240(di: DI, rst: RST, mut options: DisplayOptions) -> Self {
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
-        options.window_offset = (40, 53);
+        options.window_offset = (52, 40);
         options.display_size = (135, 240);
         options.framebuffer_size = (135, 240);
         Self::with_model(di, Some(rst), ST7789::new(options))
