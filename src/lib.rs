@@ -201,6 +201,14 @@ impl DisplayOptions {
         Self::orient_size(self.framebuffer_size, orientation)
     }
 
+    ///
+    /// Returns window offset based on current orientation and display options.
+    /// Used by [Display::set_address_window]
+    ///
+    pub fn window_offset(&self, orientation: Orientation) -> (u16, u16) {
+        Self::orient_size(self.window_offset, orientation)
+    }
+
     // Flip size according to orientation, in general
     fn orient_size(size: (u16, u16), orientation: Orientation) -> (u16, u16) {
         match orientation {
@@ -396,7 +404,7 @@ where
         ey: u16,
     ) -> Result<(), Error<RST::Error>> {
         // add clipping offsets if present
-        let offset = self.model.options().window_offset;
+        let offset = self.model.options().window_offset(self.orientation);
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
         self.write_command(Instruction::CASET)?;
