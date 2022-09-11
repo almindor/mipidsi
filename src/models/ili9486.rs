@@ -136,7 +136,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9486_rgb565(di: DI, rst: RST, options: DisplayOptions) -> Self {
@@ -156,7 +155,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9486_rgb666(di: DI, rst: RST, options: DisplayOptions) -> Self {

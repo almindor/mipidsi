@@ -144,7 +144,7 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9342c_rgb565(di: DI, rst: RST, options: DisplayOptions) -> Self {
         Self::with_model(di, Some(rst), ILI9342CRgb565::new(options))
@@ -163,7 +163,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9342c_rgb666(di: DI, rst: RST, options: DisplayOptions) -> Self {

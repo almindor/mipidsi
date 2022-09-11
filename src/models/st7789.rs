@@ -98,7 +98,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789(di: DI, rst: RST, options: DisplayOptions) -> Self {
@@ -113,7 +112,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789_240x240(di: DI, rst: RST, options: DisplayOptions) -> Self {
@@ -132,7 +130,6 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789_135x240(di: DI, rst: RST, mut options: DisplayOptions) -> Self {
@@ -155,7 +152,6 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `model` - the display [Model]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789_without_rst(di: DI, options: DisplayOptions) -> Self {
