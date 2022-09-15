@@ -138,8 +138,8 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb565(di: DI, rst: RST, options: DisplayOptions) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb565::new(options))
+    pub fn ili9486_rgb565(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+        Self::with_model(di, rst, ILI9486Rgb565::new(options))
     }
 }
 
@@ -157,8 +157,8 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb666(di: DI, rst: RST, options: DisplayOptions) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb666::new(options))
+    pub fn ili9486_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+        Self::with_model(di, rst, ILI9486Rgb666::new(options))
     }
 }
 

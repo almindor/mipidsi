@@ -2,7 +2,6 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::no_pin::NoPin;
 use crate::DisplayOptions;
 use crate::{instruction::Instruction, Display, Error};
 
@@ -122,25 +121,7 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7735s(di: DI, rst: RST, options: DisplayOptions) -> Self {
-        Self::with_model(di, Some(rst), ST7735s::new(options))
-    }
-}
-
-impl<DI> Display<DI, NoPin, ST7735s>
-where
-    DI: WriteOnlyDataCommand,
-{
-    ///
-    /// Creates a new [Display] instance with [ST7735s] as the [Model] without
-    /// a hard reset Pin
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
-    ///
-    pub fn st7735s_without_rst(di: DI, options: DisplayOptions) -> Self {
-        Self::with_model(di, None, ST7735s::new(options))
+    pub fn st7735s(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+        Self::with_model(di, rst, ST7735s::new(options))
     }
 }

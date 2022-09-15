@@ -125,7 +125,7 @@ impl Default for ColorOrder {
 ///
 /// Options for displays used on initialization
 ///
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct DisplayOptions {
     /// Initial display orientation (without inverts)
     pub orientation: Orientation,
@@ -135,12 +135,31 @@ pub struct DisplayOptions {
     pub color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
-    /// Offsets (x, y) for windowing in physically cropped displays (e.g. Pico v1)
-    pub window_offset: (u16, u16),
+    /// Offset override function returning (w, h) offset for current
+    /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
+    pub window_offset_handler: fn(Orientation) -> (u16, u16),
     /// Display size (w, h) override for the display/model, (0, 0) for no override
     pub display_size: (u16, u16),
     /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
     pub framebuffer_size: (u16, u16),
+}
+
+fn no_offset(_: Orientation) -> (u16, u16) {
+    (0, 0)
+}
+
+impl Default for DisplayOptions {
+    fn default() -> Self {
+        Self {
+            orientation: Orientation::default(),
+            invert_vertical_refresh: false,
+            color_order: ColorOrder::default(),
+            invert_horizontal_refresh: false,
+            window_offset_handler: no_offset,
+            display_size: (0, 0),
+            framebuffer_size: (0, 0),
+        }
+    }
 }
 
 impl DisplayOptions {
@@ -206,7 +225,7 @@ impl DisplayOptions {
     /// Used by [Display::set_address_window]
     ///
     pub fn window_offset(&self, orientation: Orientation) -> (u16, u16) {
-        Self::orient_size(self.window_offset, orientation)
+        (self.window_offset_handler)(orientation)
     }
 
     // Flip size according to orientation, in general

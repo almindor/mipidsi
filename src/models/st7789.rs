@@ -2,11 +2,13 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::no_pin::NoPin;
 use crate::DisplayOptions;
-use crate::{instruction::Instruction, Display, Error};
+use crate::{instruction::Instruction, Error};
 
 use super::{write_command, Model};
+
+/// Module containing all ST7789 variants and helper constructors for [Display]
+mod variants;
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
@@ -80,81 +82,5 @@ impl Model for ST7789 {
 
     fn options(&self) -> &DisplayOptions {
         &self.0
-    }
-}
-
-// simplified constructor on Display
-
-impl<DI, RST> Display<DI, RST, ST7789>
-where
-    DI: WriteOnlyDataCommand,
-    RST: OutputPin,
-{
-    ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
-    /// hard reset Pin and display size of 240x320
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `options` - the [DisplayOptions] for this display/model
-    ///
-    pub fn st7789(di: DI, rst: RST, options: DisplayOptions) -> Self {
-        Self::with_model(di, Some(rst), ST7789::new(options))
-    }
-
-    ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
-    /// hard reset Pin and display size of 240x240
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `options` - the [DisplayOptions] for this display/model
-    ///
-    pub fn st7789_240x240(di: DI, rst: RST, options: DisplayOptions) -> Self {
-        Self::with_model(
-            di,
-            Some(rst),
-            ST7789::new(options.with_display_size(240, 240)),
-        )
-    }
-
-    ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model] with a
-    /// hard reset Pin and display size of 135x240
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `options` - the [DisplayOptions] for this display/model
-    ///
-    pub fn st7789_135x240(di: DI, rst: RST, mut options: DisplayOptions) -> Self {
-        // pico v1 is cropped to 135x240 size with an offset of (40, 53)
-        options.window_offset = (52, 40);
-        options.display_size = (135, 240);
-        options.framebuffer_size = (135, 240);
-        Self::with_model(di, Some(rst), ST7789::new(options))
-    }
-}
-
-impl<DI> Display<DI, NoPin, ST7789>
-where
-    DI: WriteOnlyDataCommand,
-{
-    ///
-    /// Creates a new [Display] instance with [ST7789] as the [Model] without
-    /// a hard reset Pin with display size of 240x320
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
-    ///
-    pub fn st7789_without_rst(di: DI, options: DisplayOptions) -> Self {
-        Self::with_model(di, None, ST7789::new(options))
     }
 }
