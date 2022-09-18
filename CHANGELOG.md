@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- split [DisplayOptions] into [DisplayOptions] and [ModelOptions] with sizing initialization safety constructors
 - refactored `Display::init` and constructors to match new variant code
 - fixed off by one error in fill operations
 
