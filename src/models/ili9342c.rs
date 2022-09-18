@@ -7,23 +7,23 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
-use super::{write_command, Model};
+use super::{write_command, Model, ModelOptions};
 
 /// ILI9342C display with Reset pin
 /// in Rgb565 color mode
 /// Backlight pin is not controlled
-pub struct ILI9342CRgb565(DisplayOptions);
+pub struct ILI9342CRgb565(ModelOptions);
 
 /// ILI9342C display with Reset pin
 /// in Rgb666 color mode
 /// Backlight pin is not controlled
-pub struct ILI9342CRgb666(DisplayOptions);
+pub struct ILI9342CRgb666(ModelOptions);
 
 impl Model for ILI9342CRgb565 {
     type ColorFormat = Rgb565;
 
-    fn new(options: DisplayOptions) -> Self {
-        Self(options.with_display_size(320, 240))
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -65,7 +65,7 @@ impl Model for ILI9342CRgb565 {
     //     self.0.display_size(320, 240, orientation)
     // }
 
-    fn options(&self) -> &DisplayOptions {
+    fn options(&self) -> &ModelOptions {
         &self.0
     }
 }
@@ -73,8 +73,8 @@ impl Model for ILI9342CRgb565 {
 impl Model for ILI9342CRgb666 {
     type ColorFormat = Rgb666;
 
-    fn new(options: DisplayOptions) -> Self {
-        Self(options.with_display_size(320, 240))
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -124,7 +124,7 @@ impl Model for ILI9342CRgb666 {
     //     }
     // }
 
-    fn options(&self) -> &DisplayOptions {
+    fn options(&self) -> &ModelOptions {
         &self.0
     }
 }
@@ -147,7 +147,11 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9342c_rgb565(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(di, rst, ILI9342CRgb565::new(options))
+        Self::with_model(
+            di,
+            rst,
+            ILI9342CRgb565::new(ModelOptions::with_display_size(options, 320, 240)),
+        )
     }
 }
 
@@ -166,7 +170,11 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn ili9342c_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(di, rst, ILI9342CRgb666::new(options))
+        Self::with_model(
+            di,
+            rst,
+            ILI9342CRgb666::new(ModelOptions::with_display_size(options, 320, 240)),
+        )
     }
 }
 
@@ -174,7 +182,7 @@ where
 fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
-    options: &DisplayOptions,
+    options: &ModelOptions,
 ) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- support for model variants via `DisplayOptions`
+- support for `raspberry pico1` variant of the `ST7789` display
+- support for the `waveshare` variants of the `ST7789` display
+
+### Changed
+
+- refactored `Display::init` and constructors to match new variant code
+- fixed off by one error in fill operations
+
+### Removed
+
+- removed "no reset pin" constructor helpers (uses `Option` now)
+
 ## [v0.3.0] - 2022-08-30
 
 ### Added

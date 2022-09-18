@@ -1,7 +1,10 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_hal::digital::v2::OutputPin;
 
-use crate::{models::Model, Display, DisplayOptions, Orientation};
+use crate::{
+    models::{Model, ModelOptions},
+    Display, DisplayOptions, Orientation,
+};
 
 use super::ST7789;
 
@@ -21,7 +24,11 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(di, rst, ST7789::new(options.with_display_size(240, 320)))
+        Self::with_model(
+            di,
+            rst,
+            ST7789::new(ModelOptions::with_display_size(options, 240, 320)),
+        )
     }
 
     ///
@@ -35,7 +42,11 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7789_240x240(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(di, rst, ST7789::new(options.with_display_size(240, 240)))
+        Self::with_model(
+            di,
+            rst,
+            ST7789::new(ModelOptions::with_display_size(options, 240, 240)),
+        )
     }
 
     ///
@@ -48,12 +59,18 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_pico1(di: DI, rst: Option<RST>, mut options: DisplayOptions) -> Self {
+    pub fn st7789_pico1(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
-        options.window_offset_handler = pico1_offset;
-        options.display_size = (135, 240);
-        options.framebuffer_size = (135, 240);
-        Self::with_model(di, rst, ST7789::new(options))
+        Self::with_model(
+            di,
+            rst,
+            ST7789::new(ModelOptions::with_all(
+                options,
+                (135, 240),
+                (135, 240),
+                pico1_offset,
+            )),
+        )
     }
 }
 

@@ -2,20 +2,19 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::DisplayOptions;
-use crate::{instruction::Instruction, Display, Error};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
-use super::{write_command, Model};
+use super::{write_command, Model, ModelOptions};
 
 /// ST7735s SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7735s(DisplayOptions);
+pub struct ST7735s(ModelOptions);
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
 
-    fn new(options: DisplayOptions) -> Self {
-        Self(options.with_sizes((80, 160), (132, 162)))
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -99,7 +98,7 @@ impl Model for ST7735s {
     //     self.0.framebuffer_size(132, 162, orientation)
     // }
 
-    fn options(&self) -> &DisplayOptions {
+    fn options(&self) -> &ModelOptions {
         &self.0
     }
 }
@@ -122,6 +121,10 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7735s(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(di, rst, ST7735s::new(options))
+        Self::with_model(
+            di,
+            rst,
+            ST7735s::new(ModelOptions::with_sizes(options, (80, 160), (132, 162))),
+        )
     }
 }

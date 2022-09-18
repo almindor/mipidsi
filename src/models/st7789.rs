@@ -2,24 +2,23 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::DisplayOptions;
 use crate::{instruction::Instruction, Error};
 
-use super::{write_command, Model};
+use super::{write_command, Model, ModelOptions};
 
 /// Module containing all ST7789 variants and helper constructors for [Display]
 mod variants;
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7789(DisplayOptions);
+pub struct ST7789(ModelOptions);
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
 
-    fn new(options: DisplayOptions) -> Self {
+    fn new(options: ModelOptions) -> Self {
         // use 240x240 display if not specified by user in options
-        Self(options.with_display_size(240, 320))
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -80,7 +79,7 @@ impl Model for ST7789 {
     //     self.0.framebuffer_size(240, 320, orientation)
     // }
 
-    fn options(&self) -> &DisplayOptions {
+    fn options(&self) -> &ModelOptions {
         &self.0
     }
 }

@@ -125,7 +125,7 @@ impl Default for ColorOrder {
 ///
 /// Options for displays used on initialization
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DisplayOptions {
     /// Initial display orientation (without inverts)
     pub orientation: Orientation,
@@ -135,112 +135,6 @@ pub struct DisplayOptions {
     pub color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
-    /// Offset override function returning (w, h) offset for current
-    /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
-    pub window_offset_handler: fn(Orientation) -> (u16, u16),
-    /// Display size (w, h) override for the display/model, (0, 0) for no override
-    pub display_size: (u16, u16),
-    /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
-    pub framebuffer_size: (u16, u16),
-}
-
-fn no_offset(_: Orientation) -> (u16, u16) {
-    (0, 0)
-}
-
-impl Default for DisplayOptions {
-    fn default() -> Self {
-        Self {
-            orientation: Orientation::default(),
-            invert_vertical_refresh: false,
-            color_order: ColorOrder::default(),
-            invert_horizontal_refresh: false,
-            window_offset_handler: no_offset,
-            display_size: (0, 0),
-            framebuffer_size: (0, 0),
-        }
-    }
-}
-
-impl DisplayOptions {
-    /// Returns MADCTL register value for given display options
-    pub fn madctl(&self) -> u8 {
-        let mut value = self.orientation.value_u8();
-        if self.invert_vertical_refresh {
-            value |= 0b0001_0000;
-        }
-        match self.color_order {
-            ColorOrder::Rgb => {}
-            ColorOrder::Bgr => value |= 0b0000_1000,
-        }
-        if self.invert_horizontal_refresh {
-            value |= 0b0000_0100;
-        }
-
-        value
-    }
-
-    ///
-    /// Sets the display size value if not set previously yet and returns the
-    /// same [DisplayOptions] object back
-    ///
-    pub fn with_display_size(mut self, width: u16, height: u16) -> Self {
-        if self.display_size == (0, 0) {
-            self.display_size = (width, height);
-        }
-
-        self
-    }
-
-    ///
-    /// Sets the display and frame buffer size values if not set previously yet
-    /// and returns the same [DisplayOptions] object back
-    ///
-    pub fn with_sizes(mut self, display_size: (u16, u16), framebuffer_size: (u16, u16)) -> Self {
-        if self.framebuffer_size == (0, 0) {
-            self.framebuffer_size = framebuffer_size;
-        }
-
-        self.with_display_size(display_size.0, display_size.1)
-    }
-
-    ///
-    /// Returns display size based on current orientation and display options.
-    /// Used by models.
-    ///
-    pub fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        Self::orient_size(self.display_size, orientation)
-    }
-
-    ///
-    /// Returns framebuffer size based on current orientation and display options.
-    /// Used by models. Uses display_size if framebuffer_size is not set.
-    ///
-    pub fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        let size = if self.framebuffer_size == (0, 0) {
-            self.display_size
-        } else {
-            self.framebuffer_size
-        };
-
-        Self::orient_size(size, orientation)
-    }
-
-    ///
-    /// Returns window offset based on current orientation and display options.
-    /// Used by [Display::set_address_window]
-    ///
-    pub fn window_offset(&self, orientation: Orientation) -> (u16, u16) {
-        (self.window_offset_handler)(orientation)
-    }
-
-    // Flip size according to orientation, in general
-    fn orient_size(size: (u16, u16), orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => size,
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (size.1, size.0),
-        }
-    }
 }
 
 ///
@@ -274,7 +168,7 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn with_model(di: DI, rst: Option<RST>, model: M) -> Self {
-        let orientation = model.options().orientation;
+        let orientation = model.options().orientation();
 
         Self {
             di,
