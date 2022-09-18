@@ -214,10 +214,16 @@ impl DisplayOptions {
 
     ///
     /// Returns framebuffer size based on current orientation and display options.
-    /// Used by models.
+    /// Used by models. Uses display_size if framebuffer_size is not set.
     ///
     pub fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        Self::orient_size(self.framebuffer_size, orientation)
+        let size = if self.framebuffer_size == (0, 0) {
+            self.display_size
+        } else {
+            self.framebuffer_size
+        };
+
+        Self::orient_size(size, orientation)
     }
 
     ///
