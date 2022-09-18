@@ -70,7 +70,7 @@ where
         let fb_size = self.model.options().framebuffer_size(self.orientation);
         let fb_rect = Rectangle::with_corners(
             Point::new(0, 0),
-            Point::new(fb_size.0 as i32, fb_size.1 as i32),
+            Point::new(fb_size.0 as i32 - 1, fb_size.1 as i32 - 1),
         );
         let area = area.intersection(&fb_rect);
 
