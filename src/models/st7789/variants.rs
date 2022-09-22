@@ -76,10 +76,14 @@ where
 
 // ST7789 pico1 variant with variable offset
 pub(crate) fn pico1_offset(orientation: Orientation) -> (u16, u16) {
-    // PortraitInverted(false) and Landscape(true) x offset is 53,
-    // for Landscape(false) and PortraitInverted(true) it is 52
     match orientation {
-        Orientation::Landscape(true) | Orientation::PortraitInverted(false) => (53, 40),
-        _ => (52, 40),
+        Orientation::Portrait(false) => (52, 40),
+        Orientation::Portrait(true) => (53, 40),
+        Orientation::Landscape(false) => (40, 52),
+        Orientation::Landscape(true) => (40, 53),
+        Orientation::PortraitInverted(false) => (53, 40),
+        Orientation::PortraitInverted(true) => (52, 40),
+        Orientation::LandscapeInverted(false) => (40, 53),
+        Orientation::LandscapeInverted(true) => (40, 52),
     }
 }
