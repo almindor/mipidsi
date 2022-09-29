@@ -67,10 +67,10 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.model.framebuffer_size(self.orientation);
+        let fb_size = self.model.options().framebuffer_size(self.orientation);
         let fb_rect = Rectangle::with_corners(
             Point::new(0, 0),
-            Point::new(fb_size.0 as i32, fb_size.1 as i32),
+            Point::new(fb_size.0 as i32 - 1, fb_size.1 as i32 - 1),
         );
         let area = area.intersection(&fb_rect);
 
@@ -95,7 +95,7 @@ where
     }
 
     fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.model.framebuffer_size(self.orientation);
+        let fb_size = self.model.options().framebuffer_size(self.orientation);
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
         self.set_pixels(0, 0, fb_size.0 - 1, fb_size.1 - 1, colors)
@@ -109,7 +109,7 @@ where
     MODEL: Model,
 {
     fn size(&self) -> Size {
-        let ds = self.model.display_size(self.orientation);
+        let ds = self.model.options().display_size(self.orientation);
         let (width, height) = (u32::from(ds.0), u32::from(ds.1));
         Size::new(width, height)
     }

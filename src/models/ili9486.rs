@@ -5,25 +5,25 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error, Orientation};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
-use super::{write_command, Model};
+use super::{write_command, Model, ModelOptions};
 
 /// ILI9486 display with Reset pin
 /// in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled
-pub struct ILI9486Rgb565;
+pub struct ILI9486Rgb565(ModelOptions);
 
 /// ILI9486 display with Reset pin
 /// in Rgb666 color mode (works with SPI)
 /// Backlight pin is not controlled
-pub struct ILI9486Rgb666;
+pub struct ILI9486Rgb666(ModelOptions);
 
 impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -31,7 +31,6 @@ impl Model for ILI9486Rgb565 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -44,7 +43,7 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        init_common(di, delay, options).map_err(|_| Error::DisplayError)
+        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -59,19 +58,20 @@ impl Model for ILI9486Rgb565 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 480),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (480, 320),
-        }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(320, 480, orientation)
+    // }
+
+    fn options(&self) -> &ModelOptions {
+        &self.0
     }
 }
 
 impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
 
-    fn new() -> Self {
-        Self
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -79,7 +79,6 @@ impl Model for ILI9486Rgb666 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
@@ -93,7 +92,7 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        init_common(di, delay, options).map_err(|_| Error::DisplayError)
+        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
@@ -113,11 +112,12 @@ impl Model for ILI9486Rgb666 {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (320, 480),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (480, 320),
-        }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(320, 480, orientation)
+    // }
+
+    fn options(&self) -> &ModelOptions {
+        &self.0
     }
 }
 
@@ -136,10 +136,10 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb565(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb565::new())
+    pub fn ili9486_rgb565(di: DI, rst: Option<RST>, options: ModelOptions) -> Self {
+        Self::with_model(di, rst, ILI9486Rgb565::new(options))
     }
 }
 
@@ -155,10 +155,14 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb666(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ILI9486Rgb666::new())
+    pub fn ili9486_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+        Self::with_model(
+            di,
+            rst,
+            ILI9486Rgb666::new(ModelOptions::with_display_size(options, 320, 480)),
+        )
     }
 }
 
@@ -166,7 +170,7 @@ where
 fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
-    options: DisplayOptions,
+    options: &ModelOptions,
 ) -> Result<u8, DisplayError>
 where
     DELAY: DelayUs<u32>,

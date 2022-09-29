@@ -2,21 +2,19 @@ use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::no_pin::NoPin;
-use crate::{instruction::Instruction, Display, Error};
-use crate::{DisplayOptions, Orientation};
+use crate::{instruction::Instruction, Display, DisplayOptions, Error};
 
-use super::{write_command, Model};
+use super::{write_command, Model, ModelOptions};
 
 /// ST7735s SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7735s;
+pub struct ST7735s(ModelOptions);
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
 
-    fn new() -> Self {
-        Self
+    fn new(options: ModelOptions) -> Self {
+        Self(options)
     }
 
     fn init<RST, DELAY, DI>(
@@ -24,14 +22,13 @@ impl Model for ST7735s {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-        options: DisplayOptions,
     ) -> Result<u8, Error<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
+        let madctl = self.options().madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -93,18 +90,16 @@ impl Model for ST7735s {
         di.send_data(buf)
     }
 
-    fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (80, 160),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (160, 80),
-        }
-    }
+    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.display_size(80, 160, orientation)
+    // }
 
-    fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => (132, 162),
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (162, 132),
-        }
+    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+    //     self.0.framebuffer_size(132, 162, orientation)
+    // }
+
+    fn options(&self) -> &ModelOptions {
+        &self.0
     }
 }
 
@@ -123,27 +118,13 @@ where
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
+    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7735s(di: DI, rst: RST) -> Self {
-        Self::with_model(di, Some(rst), ST7735s::new())
-    }
-}
-
-impl<DI> Display<DI, NoPin, ST7735s>
-where
-    DI: WriteOnlyDataCommand,
-{
-    ///
-    /// Creates a new [Display] instance with [ST7735s] as the [Model] without
-    /// a hard reset Pin
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `model` - the display [Model]
-    ///
-    pub fn st7735s_without_rst(di: DI) -> Self {
-        Self::with_model(di, None, ST7735s::new())
+    pub fn st7735s(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+        Self::with_model(
+            di,
+            rst,
+            ST7735s::new(ModelOptions::with_sizes(options, (80, 160), (132, 162))),
+        )
     }
 }

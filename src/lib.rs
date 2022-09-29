@@ -125,7 +125,7 @@ impl Default for ColorOrder {
 ///
 /// Options for displays used on initialization
 ///
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Clone, Default)]
 pub struct DisplayOptions {
     /// Initial display orientation (without inverts)
     pub orientation: Orientation,
@@ -135,25 +135,6 @@ pub struct DisplayOptions {
     pub color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
     pub invert_horizontal_refresh: bool,
-}
-
-impl DisplayOptions {
-    /// Returns MADCTL register value for given display options
-    pub fn madctl(&self) -> u8 {
-        let mut value = self.orientation.value_u8();
-        if self.invert_vertical_refresh {
-            value |= 0b0001_0000;
-        }
-        match self.color_order {
-            ColorOrder::Rgb => {}
-            ColorOrder::Bgr => value |= 0b0000_1000,
-        }
-        if self.invert_horizontal_refresh {
-            value |= 0b0000_0100;
-        }
-
-        value
-    }
 }
 
 ///
@@ -187,11 +168,13 @@ where
     /// * `model` - the display [Model]
     ///
     pub fn with_model(di: DI, rst: Option<RST>, model: M) -> Self {
+        let orientation = model.options().orientation();
+
         Self {
             di,
             rst,
             model,
-            orientation: Orientation::default(),
+            orientation,
             madctl: 0,
         }
     }
@@ -203,15 +186,8 @@ where
     ///
     /// * `delay_source` - mutable reference to a [DelayUs] provider
     ///
-    pub fn init(
-        &mut self,
-        delay_source: &mut impl DelayUs<u32>,
-        options: DisplayOptions,
-    ) -> Result<(), Error<RST::Error>> {
-        self.madctl = self
-            .model
-            .init(&mut self.di, &mut self.rst, delay_source, options)?;
-        self.orientation = options.orientation;
+    pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
+        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
         Ok(())
     }
 
@@ -346,6 +322,10 @@ where
         ex: u16,
         ey: u16,
     ) -> Result<(), Error<RST::Error>> {
+        // add clipping offsets if present
+        let offset = self.model.options().window_offset(self.orientation);
+        let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
+
         self.write_command(Instruction::CASET)?;
         self.write_data(&sx.to_be_bytes())?;
         self.write_data(&ex.to_be_bytes())?;
