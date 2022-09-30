@@ -9,21 +9,27 @@ An optional batching of draws is supported via the `batch` feature (default on)
 
 ## Architecture
 
-The `Display` driver itself contains most of the functionality. Each specific display model implements the `Model` trait for every color format it supports.
+The `Display` driver itself contains most of the functionality. Each specific display model implements the `Model` trait for every color format it supports. Each model can also have different variants which are handled via the `ModelOptions` struct.
 
 [embedded-graphics-core](https://crates.io/crates/embedded-graphics-core) is used to provide the drawing API.
 
 ## Models
 
-Each supported display model can be used either through the `Display::with_model` call or through a shortcut function such as `Display::st7789` if provided (only available to in-tree models, external crate models must use the `with_model` constructor).
+Each supported display model can be used either through the `Display::with_model` call or through a shortcut function such as `Display::st7789` if provided. External crates can be used to provide additional models, and can even expand the display constructor pool via trait extension.
+
+Variants that require different screen sizes and window addressing offsets are now supported via the `ModelOptions` logic (see docs).
+
+## Migration
+
+See [MIGRATION.md](MIGRATION.md) document.
 
 ### Example
 ```rust
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
 let di = SPIInterfaceNoCS::new(spi, dc);
 // create the ILI9486 display driver in rgb666 color mode from the display interface and RST pin
-let mut display = Display::ili9486_rgb666(di, rst);
-display.init(&mut delay::Ets, DisplayOptions::default())?;
+let mut display = Display::ili9486_rgb666(di, rst, DisplayOptions::default())
+display.init(&mut delay)?; // delay provider from your MCU
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```

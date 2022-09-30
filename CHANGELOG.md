@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.4.0] - 2022-09-30
+
 ### Added
 
 - support for model variants via `DisplayOptions`
