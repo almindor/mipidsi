@@ -110,7 +110,8 @@ pub(crate) fn pico1_offset(orientation: Orientation) -> (u16, u16) {
     }
 }
 
-// ST7789 240x240 with a frame buffer of 240x320
+// An offset of 80 y pixels for the st7789 when the display is 240x240 but the frame buffer
+// is 240x320
 pub(crate) fn y80_offset(orientation: Orientation) -> (u16, u16) {
     match orientation {
         Orientation::Portrait(false) => (0, 0),
