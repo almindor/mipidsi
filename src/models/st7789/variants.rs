@@ -66,7 +66,7 @@ where
                 options,
                 (240, 240),
                 (240, 320),
-                st7789_offset,
+                y80_offset,
             )),
         )
     }
@@ -110,8 +110,8 @@ pub(crate) fn pico1_offset(orientation: Orientation) -> (u16, u16) {
     }
 }
 
-// ST7789 pico1 variant with variable offset
-pub(crate) fn st7789_offset(orientation: Orientation) -> (u16, u16) {
+// ST7789 240x240 with a frame buffer of 240x320
+pub(crate) fn y80_offset(orientation: Orientation) -> (u16, u16) {
     match orientation {
         Orientation::Portrait(false) => (0, 0),
         Orientation::Portrait(true) => (0, 0),
