@@ -183,6 +183,7 @@ where
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+    write_command(di, Instruction::FRMCTR1, &[0b1011_0000, 0b00010001])?; // frame rate controls
 
     // optional gamma setup
     // write_command(di, Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
