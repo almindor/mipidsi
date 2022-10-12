@@ -2,7 +2,7 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -105,10 +105,6 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7735s(di: DI) -> Self {
-        Self::new(
-            di,
-            ST7735s,
-            ModelOptions::with_sizes(DisplayOptions::default(), (80, 160), (132, 162)),
-        )
+        Self::new(di, ST7735s, ModelOptions::with_sizes((80, 160), (132, 162)))
     }
 }

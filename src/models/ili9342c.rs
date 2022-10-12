@@ -5,9 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{
-    error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error, ModelOptions,
-};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error, ModelOptions};
 
 use super::{write_command, Model};
 
@@ -124,7 +122,7 @@ where
         Self::new(
             di,
             ILI9342CRgb565,
-            ModelOptions::with_display_size(DisplayOptions::default(), 320, 240),
+            ModelOptions::with_display_size(320, 240),
         )
     }
 }
@@ -144,7 +142,7 @@ where
         Self::new(
             di,
             ILI9342CRgb666,
-            ModelOptions::with_display_size(DisplayOptions::default(), 320, 240),
+            ModelOptions::with_display_size(320, 240),
         )
     }
 }

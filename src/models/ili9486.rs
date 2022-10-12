@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -112,11 +112,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9486_rgb565(di: DI) -> Self {
-        Self::new(
-            di,
-            ILI9486Rgb565,
-            ModelOptions::with_display_size(DisplayOptions::default(), 320, 480),
-        )
+        Self::new(di, ILI9486Rgb565, ModelOptions::with_display_size(320, 480))
     }
 }
 
@@ -132,11 +128,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9486_rgb666(di: DI) -> Self {
-        Self::new(
-            di,
-            ILI9486Rgb666,
-            ModelOptions::with_display_size(DisplayOptions::default(), 320, 480),
-        )
+        Self::new(di, ILI9486Rgb666, ModelOptions::with_display_size(320, 480))
     }
 }
 

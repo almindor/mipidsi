@@ -1,19 +1,4 @@
-//! Module holding [DisplayOptions] and other helper types for [super::Display]
-
-///
-/// Options for displays used on initialization
-///
-#[derive(Debug, Clone, Default)]
-pub(crate) struct DisplayOptions {
-    /// Initial display orientation (without inverts)
-    pub(crate) orientation: Orientation,
-    /// Set to make display vertical refresh bottom to top
-    invert_vertical_refresh: bool,
-    /// Specify display color ordering
-    color_order: ColorOrder,
-    /// Set to make display horizontal refresh right to left
-    invert_horizontal_refresh: bool,
-}
+//! Module holding [ModelOptions] and other helper types for [super::Display]
 
 ///
 /// [DisplayOptions] that have been initialized with at minimum `display_size`
@@ -23,8 +8,14 @@ pub(crate) struct DisplayOptions {
 ///
 #[derive(Debug, Clone)]
 pub(crate) struct ModelOptions {
-    /// Display options
-    pub(crate) display_options: DisplayOptions,
+    /// Specify display color ordering
+    color_order: ColorOrder,
+    /// Initial display orientation (without inverts)
+    pub(crate) orientation: Orientation,
+    /// Set to make display vertical refresh bottom to top
+    invert_vertical_refresh: bool,
+    /// Set to make display horizontal refresh right to left
+    invert_horizontal_refresh: bool,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
     window_offset_handler: fn(Orientation) -> (u16, u16),
@@ -43,13 +34,12 @@ impl ModelOptions {
     /// Constructs a [ModelOptions] from [DisplayOptions]
     /// with given display size
     ///
-    pub fn with_display_size(
-        display_options: DisplayOptions,
-        width: u16,
-        height: u16,
-    ) -> ModelOptions {
+    pub fn with_display_size(width: u16, height: u16) -> ModelOptions {
         ModelOptions {
-            display_options,
+            color_order: ColorOrder::default(),
+            orientation: Orientation::default(),
+            invert_horizontal_refresh: false,
+            invert_vertical_refresh: false,
             window_offset_handler: no_offset,
             display_size: (width, height),
             framebuffer_size: (0, 0),
@@ -60,13 +50,12 @@ impl ModelOptions {
     /// Constructs a [ModelOptions] from [DisplayOptions]
     /// with given display and framebuffer sizes
     ///
-    pub fn with_sizes(
-        display_options: DisplayOptions,
-        display_size: (u16, u16),
-        framebuffer_size: (u16, u16),
-    ) -> ModelOptions {
+    pub fn with_sizes(display_size: (u16, u16), framebuffer_size: (u16, u16)) -> ModelOptions {
         ModelOptions {
-            display_options,
+            color_order: ColorOrder::default(),
+            orientation: Orientation::default(),
+            invert_horizontal_refresh: false,
+            invert_vertical_refresh: false,
             window_offset_handler: no_offset,
             display_size,
             framebuffer_size,
@@ -78,13 +67,15 @@ impl ModelOptions {
     /// with given display and framebuffer sizes and provided window offset handler
     ///
     pub fn with_all(
-        display_options: DisplayOptions,
         display_size: (u16, u16),
         framebuffer_size: (u16, u16),
         window_offset_handler: fn(Orientation) -> (u16, u16),
     ) -> ModelOptions {
         ModelOptions {
-            display_options,
+            color_order: ColorOrder::default(),
+            orientation: Orientation::default(),
+            invert_horizontal_refresh: false,
+            invert_vertical_refresh: false,
             window_offset_handler,
             display_size,
             framebuffer_size,
@@ -95,15 +86,15 @@ impl ModelOptions {
     /// Returns MADCTL register value for given display options
     ///
     pub fn madctl(&self) -> u8 {
-        let mut value = self.display_options.orientation.value_u8();
-        if self.display_options.invert_vertical_refresh {
+        let mut value = self.orientation.value_u8();
+        if self.invert_vertical_refresh {
             value |= 0b0001_0000;
         }
-        match self.display_options.color_order {
+        match self.color_order {
             ColorOrder::Rgb => {}
             ColorOrder::Bgr => value |= 0b0000_1000,
         }
-        if self.display_options.invert_horizontal_refresh {
+        if self.invert_horizontal_refresh {
             value |= 0b0000_0100;
         }
 
@@ -141,7 +132,7 @@ impl ModelOptions {
     }
 
     pub fn orientation(&self) -> Orientation {
-        self.display_options.orientation
+        self.orientation
     }
 
     // Flip size according to orientation, in general

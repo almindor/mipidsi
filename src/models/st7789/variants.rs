@@ -1,6 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{models::ModelOptions, DisplayBuilder, DisplayOptions, Orientation};
+use crate::{models::ModelOptions, DisplayBuilder, Orientation};
 
 use super::ST7789;
 
@@ -17,11 +17,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn st7789(di: DI) -> Self {
-        Self::new(
-            di,
-            ST7789,
-            ModelOptions::with_display_size(DisplayOptions::default(), 240, 320),
-        )
+        Self::new(di, ST7789, ModelOptions::with_display_size(240, 320))
     }
 
     ///
@@ -33,11 +29,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn st7789_240x240(di: DI) -> Self {
-        Self::new(
-            di,
-            ST7789,
-            ModelOptions::with_display_size(DisplayOptions::default(), 240, 240),
-        )
+        Self::new(di, ST7789, ModelOptions::with_display_size(240, 240))
     }
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] with
@@ -51,12 +43,7 @@ where
         Self::new(
             di,
             ST7789,
-            ModelOptions::with_all(
-                DisplayOptions::default(),
-                (240, 240),
-                (240, 320),
-                y80_offset,
-            ),
+            ModelOptions::with_all((240, 240), (240, 320), y80_offset),
         )
     }
 
@@ -73,12 +60,7 @@ where
         Self::new(
             di,
             ST7789,
-            ModelOptions::with_all(
-                DisplayOptions::default(),
-                (135, 240),
-                (135, 240),
-                pico1_offset,
-            ),
+            ModelOptions::with_all((135, 240), (135, 240), pico1_offset),
         )
     }
 }
