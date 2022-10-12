@@ -80,7 +80,7 @@ where
         let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
-        self.options.orientation = orientation;
+        self.options.set_orientation(orientation);
         self.madctl = value;
         Ok(())
     }

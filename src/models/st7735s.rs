@@ -2,9 +2,9 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error, ModelOptions};
 
-use super::{write_command, Model, ModelOptions};
+use super::{write_command, Model};
 
 /// ST7735s SPI display with Reset pin
 /// Only SPI with DC pin interface is supported

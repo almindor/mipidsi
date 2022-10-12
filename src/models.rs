@@ -1,4 +1,4 @@
-use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
+use crate::{error::InitError, instruction::Instruction, Error};
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};

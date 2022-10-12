@@ -5,9 +5,9 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error, ModelOptions};
 
-use super::{write_command, Model, ModelOptions};
+use super::{write_command, Model};
 
 /// ILI9486 display in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled

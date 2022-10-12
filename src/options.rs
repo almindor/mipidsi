@@ -7,11 +7,11 @@
 /// clipped displays such as the `Pico1`
 ///
 #[derive(Debug, Clone)]
-pub(crate) struct ModelOptions {
+pub struct ModelOptions {
     /// Specify display color ordering
     color_order: ColorOrder,
     /// Initial display orientation (without inverts)
-    pub(crate) orientation: Orientation,
+    orientation: Orientation,
     /// Set to make display vertical refresh bottom to top
     invert_vertical_refresh: bool,
     /// Set to make display horizontal refresh right to left
@@ -31,11 +31,10 @@ fn no_offset(_: Orientation) -> (u16, u16) {
 
 impl ModelOptions {
     ///
-    /// Constructs a [ModelOptions] from [DisplayOptions]
-    /// with given display size
+    /// Constructs a [ModelOptions] with given display size
     ///
-    pub fn with_display_size(width: u16, height: u16) -> ModelOptions {
-        ModelOptions {
+    pub fn with_display_size(width: u16, height: u16) -> Self {
+        Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
             invert_horizontal_refresh: false,
@@ -47,11 +46,11 @@ impl ModelOptions {
     }
 
     ///
-    /// Constructs a [ModelOptions] from [DisplayOptions]
+    /// Constructs a [ModelOptions]
     /// with given display and framebuffer sizes
     ///
-    pub fn with_sizes(display_size: (u16, u16), framebuffer_size: (u16, u16)) -> ModelOptions {
-        ModelOptions {
+    pub fn with_sizes(display_size: (u16, u16), framebuffer_size: (u16, u16)) -> Self {
+        Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
             invert_horizontal_refresh: false,
@@ -63,15 +62,15 @@ impl ModelOptions {
     }
 
     ///
-    /// Constructs a [ModelOptions] from [DisplayOptions]
+    /// Constructs a [ModelOptions]
     /// with given display and framebuffer sizes and provided window offset handler
     ///
     pub fn with_all(
         display_size: (u16, u16),
         framebuffer_size: (u16, u16),
         window_offset_handler: fn(Orientation) -> (u16, u16),
-    ) -> ModelOptions {
-        ModelOptions {
+    ) -> Self {
+        Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
             invert_horizontal_refresh: false,
@@ -133,6 +132,13 @@ impl ModelOptions {
 
     pub fn orientation(&self) -> Orientation {
         self.orientation
+    }
+
+    ///
+    /// Sets the current [Orientation]
+    ///
+    pub fn set_orientation(&mut self, orientation: Orientation) {
+        self.orientation = orientation;
     }
 
     // Flip size according to orientation, in general

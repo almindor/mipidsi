@@ -1,6 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{models::ModelOptions, DisplayBuilder, Orientation};
+use crate::{DisplayBuilder, ModelOptions, Orientation};
 
 use super::ST7789;
 
