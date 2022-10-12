@@ -17,15 +17,13 @@ pub use st7789::*;
 pub trait Model {
     type ColorFormat: RgbColor;
 
-    /// Common model constructor
-    fn new(options: ModelOptions) -> Self;
-
     /// Initializes the display for this model
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
+        madctl: u8,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -55,8 +53,6 @@ pub trait Model {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
-
-    fn options(&self) -> &ModelOptions;
 }
 
 // helper for models

@@ -4,27 +4,23 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{error::InitError, instruction::Instruction, Error};
 
-use super::{write_command, Model, ModelOptions};
+use super::{write_command, Model};
 
 /// Module containing all ST7789 variants and helper constructors for [Display]
 mod variants;
 
 /// ST7789 SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7789(ModelOptions);
+pub struct ST7789;
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
-
-    fn new(options: ModelOptions) -> Self {
-        // use 240x240 display if not specified by user in options
-        Self(options)
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
+        madctl: u8,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -32,7 +28,6 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = self.0.madctl();
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -70,17 +65,5 @@ impl Model for ST7789 {
         let buf = DataFormat::U16BEIter(&mut iter);
         di.send_data(buf)?;
         Ok(())
-    }
-
-    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.display_size(240, 240, orientation)
-    // }
-
-    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.framebuffer_size(240, 320, orientation)
-    // }
-
-    fn options(&self) -> &ModelOptions {
-        &self.0
     }
 }

@@ -55,8 +55,8 @@ where
     di: DI,
     // Model
     model: MODEL,
-    // Current orientation
-    orientation: Orientation,
+    // Model Options, includes current orientation
+    options: ModelOptions,
     // Current MADCTL value
     madctl: u8,
 }
@@ -70,7 +70,7 @@ where
     /// Returns currently set [Orientation]
     ///
     pub fn orientation(&self) -> Orientation {
-        self.orientation
+        self.options.orientation()
     }
 
     ///
@@ -80,7 +80,7 @@ where
         let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
-        self.orientation = orientation;
+        self.options.display_options.orientation = orientation;
         self.madctl = value;
         Ok(())
     }
@@ -177,7 +177,7 @@ where
     // Sets the address window for the display.
     fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
         // add clipping offsets if present
-        let offset = self.model.options().window_offset(self.orientation);
+        let offset = self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
         self.write_command(Instruction::CASET)?;

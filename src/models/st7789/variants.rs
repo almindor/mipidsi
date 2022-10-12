@@ -1,9 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{
-    models::{Model, ModelOptions},
-    DisplayBuilder, DisplayOptions, Orientation,
-};
+use crate::{models::ModelOptions, DisplayBuilder, DisplayOptions, Orientation};
 
 use super::ST7789;
 
@@ -18,12 +15,12 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789(di: DI, options: DisplayOptions) -> Self {
+    pub fn st7789(di: DI) -> Self {
         Self::new(
             di,
-            ST7789::new(ModelOptions::with_display_size(options, 240, 320)),
+            ST7789,
+            ModelOptions::with_display_size(DisplayOptions::default(), 240, 320),
         )
     }
 
@@ -34,12 +31,12 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_240x240(di: DI, options: DisplayOptions) -> Self {
+    pub fn st7789_240x240(di: DI) -> Self {
         Self::new(
             di,
-            ST7789::new(ModelOptions::with_display_size(options, 240, 240)),
+            ST7789,
+            ModelOptions::with_display_size(DisplayOptions::default(), 240, 240),
         )
     }
     ///
@@ -49,17 +46,17 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_240x240_b240x320(di: DI, options: DisplayOptions) -> Self {
+    pub fn st7789_240x240_b240x320(di: DI) -> Self {
         Self::new(
             di,
-            ST7789::new(ModelOptions::with_all(
-                options,
+            ST7789,
+            ModelOptions::with_all(
+                DisplayOptions::default(),
                 (240, 240),
                 (240, 320),
                 y80_offset,
-            )),
+            ),
         )
     }
 
@@ -70,18 +67,18 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_pico1(di: DI, options: DisplayOptions) -> Self {
+    pub fn st7789_pico1(di: DI) -> Self {
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
         Self::new(
             di,
-            ST7789::new(ModelOptions::with_all(
-                options,
+            ST7789,
+            ModelOptions::with_all(
+                DisplayOptions::default(),
                 (135, 240),
                 (135, 240),
                 pico1_offset,
-            )),
+            ),
         )
     }
 }

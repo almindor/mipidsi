@@ -3,7 +3,7 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, models::Model, Display};
+use crate::{error::InitError, models::Model, Display, ModelOptions};
 
 pub struct DisplayBuilder<DI, MODEL>
 where
@@ -12,6 +12,7 @@ where
 {
     di: DI,
     model: MODEL,
+    options: ModelOptions,
 }
 
 impl<DI, MODEL> DisplayBuilder<DI, MODEL>
@@ -20,10 +21,11 @@ where
     MODEL: Model,
 {
     ///
-    /// Constructs a new builder from given [WriteOnlyDataCommand] and [Model]
+    /// Constructs a new builder from given [WriteOnlyDataCommand], [Model]
+    /// and [ModelOptions]. For use by [Model] helpers, not public
     ///
-    pub fn new(di: DI, model: MODEL) -> Self {
-        Self { di, model }
+    pub(crate) fn new(di: DI, model: MODEL, options: ModelOptions) -> Self {
+        Self { di, model, options }
     }
 
     ///
@@ -38,18 +40,19 @@ where
     where
         RST: OutputPin,
     {
-        let orientation = self.model.options().orientation();
+        let options = self.options;
+        let madctl = options.madctl();
 
         let mut display = Display {
             di: self.di,
             model: self.model,
-            orientation,
-            madctl: 0,
+            options,
+            madctl,
         };
 
         display.madctl = display
             .model
-            .init(&mut display.di, delay_source, &mut rst)?;
+            .init(&mut display.di, delay_source, madctl, &mut rst)?;
 
         Ok(display)
     }

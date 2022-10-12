@@ -8,19 +8,16 @@ use super::{write_command, Model, ModelOptions};
 
 /// ST7735s SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7735s(ModelOptions);
+pub struct ST7735s;
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
-
-    fn new(options: ModelOptions) -> Self {
-        Self(options)
-    }
 
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
+        madctl: u8,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -28,7 +25,7 @@ impl Model for ST7735s {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = self.options().madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
+        let madctl = madctl ^ 0b0000_1000; // this model has flipped RGB/BGR bit
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -90,18 +87,6 @@ impl Model for ST7735s {
         di.send_data(buf)?;
         Ok(())
     }
-
-    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.display_size(80, 160, orientation)
-    // }
-
-    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.framebuffer_size(132, 162, orientation)
-    // }
-
-    fn options(&self) -> &ModelOptions {
-        &self.0
-    }
 }
 
 // simplified constructor on Display
@@ -119,10 +104,11 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7735s(di: DI, options: DisplayOptions) -> Self {
+    pub fn st7735s(di: DI) -> Self {
         Self::new(
             di,
-            ST7735s::new(ModelOptions::with_sizes(options, (80, 160), (132, 162))),
+            ST7735s,
+            ModelOptions::with_sizes(DisplayOptions::default(), (80, 160), (132, 162)),
         )
     }
 }

@@ -4,15 +4,15 @@
 /// Options for displays used on initialization
 ///
 #[derive(Debug, Clone, Default)]
-pub struct DisplayOptions {
+pub(crate) struct DisplayOptions {
     /// Initial display orientation (without inverts)
-    pub orientation: Orientation,
+    pub(crate) orientation: Orientation,
     /// Set to make display vertical refresh bottom to top
-    pub invert_vertical_refresh: bool,
+    invert_vertical_refresh: bool,
     /// Specify display color ordering
-    pub color_order: ColorOrder,
+    color_order: ColorOrder,
     /// Set to make display horizontal refresh right to left
-    pub invert_horizontal_refresh: bool,
+    invert_horizontal_refresh: bool,
 }
 
 ///
@@ -22,9 +22,9 @@ pub struct DisplayOptions {
 /// clipped displays such as the `Pico1`
 ///
 #[derive(Debug, Clone)]
-pub struct ModelOptions {
+pub(crate) struct ModelOptions {
     /// Display options
-    display_options: DisplayOptions,
+    pub(crate) display_options: DisplayOptions,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
     window_offset_handler: fn(Orientation) -> (u16, u16),
@@ -114,30 +114,30 @@ impl ModelOptions {
     /// Returns display size based on current orientation and display options.
     /// Used by models.
     ///
-    pub fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-        Self::orient_size(self.display_size, orientation)
+    pub fn display_size(&self) -> (u16, u16) {
+        Self::orient_size(self.display_size, self.orientation())
     }
 
     ///
     /// Returns framebuffer size based on current orientation and display options.
     /// Used by models. Uses display_size if framebuffer_size is not set.
     ///
-    pub fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
+    pub fn framebuffer_size(&self) -> (u16, u16) {
         let size = if self.framebuffer_size == (0, 0) {
             self.display_size
         } else {
             self.framebuffer_size
         };
 
-        Self::orient_size(size, orientation)
+        Self::orient_size(size, self.orientation())
     }
 
     ///
     /// Returns window offset based on current orientation and display options.
     /// Used by [Display::set_address_window]
     ///
-    pub fn window_offset(&self, orientation: Orientation) -> (u16, u16) {
-        (self.window_offset_handler)(orientation)
+    pub fn window_offset(&self) -> (u16, u16) {
+        (self.window_offset_handler)(self.orientation())
     }
 
     pub fn orientation(&self) -> Orientation {
