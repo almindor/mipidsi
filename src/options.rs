@@ -16,13 +16,11 @@ pub struct ModelOptions {
     pub(crate) invert_horizontal_refresh: bool,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
-    pub(crate) window_offset_handler: fn(&ModelOptions) -> WindowOffsetResult,
+    pub(crate) window_offset_handler: fn(&ModelOptions) -> (u16, u16),
     /// Display size (w, h) override for the display/model, (0, 0) for no override
     pub(crate) display_size: (u16, u16),
     /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
     pub(crate) framebuffer_size: (u16, u16),
-    // cached offset values in case we can re-use them
-    cached_offset: WindowOffsetResult,
 }
 
 impl ModelOptions {
@@ -39,7 +37,6 @@ impl ModelOptions {
             window_offset_handler: no_offset,
             display_size,
             framebuffer_size,
-            cached_offset: WindowOffsetResult::default(),
         }
     }
 
@@ -50,7 +47,7 @@ impl ModelOptions {
     pub fn with_all(
         display_size: (u16, u16),
         framebuffer_size: (u16, u16),
-        window_offset_handler: fn(&ModelOptions) -> WindowOffsetResult,
+        window_offset_handler: fn(&ModelOptions) -> (u16, u16),
     ) -> Self {
         Self {
             color_order: ColorOrder::default(),
@@ -60,7 +57,6 @@ impl ModelOptions {
             window_offset_handler,
             display_size,
             framebuffer_size,
-            cached_offset: WindowOffsetResult::default(),
         }
     }
 
@@ -110,17 +106,7 @@ impl ModelOptions {
     /// Used by [Display::set_address_window]
     ///
     pub fn window_offset(&mut self) -> (u16, u16) {
-        if self.cached_offset.cachable {
-            self.cached_offset.into()
-        } else {
-            let result = (self.window_offset_handler)(self);
-
-            if result.cachable {
-                self.cached_offset = result;
-            }
-
-            result.into()
-        }
+        (self.window_offset_handler)(self)
     }
 
     pub fn orientation(&self) -> Orientation {
@@ -143,34 +129,11 @@ impl ModelOptions {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
-pub struct WindowOffsetResult {
-    pub x: u16,
-    pub y: u16,
-    pub cachable: bool,
-}
-
-impl From<(u16, u16)> for WindowOffsetResult {
-    fn from(offset: (u16, u16)) -> Self {
-        WindowOffsetResult {
-            x: offset.0,
-            y: offset.1,
-            cachable: false,
-        }
-    }
-}
-
-impl From<WindowOffsetResult> for (u16, u16) {
-    fn from(offset: WindowOffsetResult) -> Self {
-        (offset.x, offset.y)
-    }
-}
-
 ///
 /// `no_offset` is the default offset provider. It results to 0, 0 in case display_size is == framebuffer_size
 /// and to framebuffer_size - display_size otherwise.
 ///
-fn no_offset(options: &ModelOptions) -> WindowOffsetResult {
+fn no_offset(options: &ModelOptions) -> (u16, u16) {
     let fb_w = options.framebuffer_size.0;
     let fb_h = options.framebuffer_size.1;
     let d_w = options.display_size.0;
@@ -187,11 +150,7 @@ fn no_offset(options: &ModelOptions) -> WindowOffsetResult {
         y = fb_h - d_h;
     }
 
-    WindowOffsetResult {
-        x,
-        y,
-        cachable: true,
-    }
+    (x, y)
 }
 
 ///
