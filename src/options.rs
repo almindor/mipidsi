@@ -22,7 +22,7 @@ pub struct ModelOptions {
     /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
     pub(crate) framebuffer_size: (u16, u16),
     // cached offset values in case we can re-use them
-    cached_offset: Option<WindowOffsetResult>,
+    cached_offset: WindowOffsetResult,
 }
 
 impl ModelOptions {
@@ -39,7 +39,7 @@ impl ModelOptions {
             window_offset_handler: no_offset,
             display_size,
             framebuffer_size,
-            cached_offset: None,
+            cached_offset: WindowOffsetResult::default(),
         }
     }
 
@@ -60,7 +60,7 @@ impl ModelOptions {
             window_offset_handler,
             display_size,
             framebuffer_size,
-            cached_offset: None,
+            cached_offset: WindowOffsetResult::default(),
         }
     }
 
@@ -110,13 +110,13 @@ impl ModelOptions {
     /// Used by [Display::set_address_window]
     ///
     pub fn window_offset(&mut self) -> (u16, u16) {
-        if let Some(cached) = self.cached_offset {
-            cached.into()
+        if self.cached_offset.cachable {
+            self.cached_offset.into()
         } else {
             let result = (self.window_offset_handler)(self);
 
             if result.cachable {
-                self.cached_offset = Some(result);
+                self.cached_offset = result;
             }
 
             result.into()
