@@ -3,16 +3,23 @@
 use display_interface::DisplayError;
 
 ///
-/// An error holding its source (pins or SPI)
+/// An error holding its source [embedded_hal::digital::v2::OutputPin::Error]
+/// or [display_interface::DisplayError]
 ///
 #[derive(Debug)]
-pub enum Error<PE> {
+pub enum InitError<PE> {
     DisplayError,
     Pin(PE),
 }
 
-impl<PE> From<DisplayError> for Error<PE> {
+///
+/// Alias of [DisplayError] for out-of-init use cases
+/// since the pin error is only possible during [super::Builder] use
+///
+pub type Error = DisplayError;
+
+impl<PE> From<DisplayError> for InitError<PE> {
     fn from(_: DisplayError) -> Self {
-        Error::DisplayError
+        InitError::DisplayError
     }
 }

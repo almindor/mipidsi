@@ -1,17 +1,15 @@
 use display_interface::WriteOnlyDataCommand;
-use embedded_hal::digital::v2::OutputPin;
 
 use crate::{
     models::{Model, ModelOptions},
-    Display, DisplayOptions, Orientation,
+    DisplayBuilder, DisplayOptions, Orientation,
 };
 
 use super::ST7789;
 
-impl<DI, RST> Display<DI, RST, ST7789>
+impl<DI> DisplayBuilder<DI, ST7789>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [Model] with
@@ -20,13 +18,11 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn st7789(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ST7789::new(ModelOptions::with_display_size(options, 240, 320)),
         )
     }
@@ -38,13 +34,11 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_240x240(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn st7789_240x240(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ST7789::new(ModelOptions::with_display_size(options, 240, 240)),
         )
     }
@@ -55,13 +49,11 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_240x240_b240x320(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn st7789_240x240_b240x320(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ST7789::new(ModelOptions::with_all(
                 options,
                 (240, 240),
@@ -78,14 +70,12 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7789_pico1(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
+    pub fn st7789_pico1(di: DI, options: DisplayOptions) -> Self {
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
-        Self::with_model(
+        Self::new(
             di,
-            rst,
             ST7789::new(ModelOptions::with_all(
                 options,
                 (135, 240),

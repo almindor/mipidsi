@@ -2,19 +2,16 @@ use embedded_graphics_core::prelude::{DrawTarget, Point, Size};
 use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
 
-use embedded_hal::digital::v2::OutputPin;
-
 use crate::models::Model;
 use crate::{Display, Error};
 use display_interface::WriteOnlyDataCommand;
 
-impl<DI, RST, M> DrawTarget for Display<DI, RST, M>
+impl<DI, M> DrawTarget for Display<DI, M>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
     M: Model,
 {
-    type Error = Error<RST::Error>;
+    type Error = Error;
     type Color = M::ColorFormat;
 
     #[cfg(not(feature = "batch"))]
@@ -102,10 +99,9 @@ where
     }
 }
 
-impl<DI, RST, MODEL, PinE> OriginDimensions for Display<DI, RST, MODEL>
+impl<DI, MODEL> OriginDimensions for Display<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin<Error = PinE>,
     MODEL: Model,
 {
     fn size(&self) -> Size {

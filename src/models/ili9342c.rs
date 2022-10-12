@@ -1,11 +1,11 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -31,7 +31,7 @@ impl Model for ILI9342CRgb565 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -46,10 +46,10 @@ impl Model for ILI9342CRgb565 {
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
 
-        init_common(di, delay, &self.0).map_err(|_| Error::DisplayError)
+        Ok(init_common(di, delay, &self.0)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -82,7 +82,7 @@ impl Model for ILI9342CRgb666 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -97,10 +97,10 @@ impl Model for ILI9342CRgb666 {
 
         write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 262k colors
 
-        init_common(di, delay, &self.0).map_err(|_| Error::DisplayError)
+        Ok(init_common(di, delay, &self.0)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -131,10 +131,9 @@ impl Model for ILI9342CRgb666 {
 
 // simplified constructor for Display
 
-impl<DI, RST> Display<DI, RST, ILI9342CRgb565>
+impl<DI> DisplayBuilder<DI, ILI9342CRgb565>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9342C] as the [Model]
@@ -146,19 +145,17 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9342c_rgb565(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn ili9342c_rgb565(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ILI9342CRgb565::new(ModelOptions::with_display_size(options, 320, 240)),
         )
     }
 }
 
-impl<DI, RST> Display<DI, RST, ILI9342CRgb666>
+impl<DI> DisplayBuilder<DI, ILI9342CRgb666>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9342C] as the [Model]
@@ -169,10 +166,9 @@ where
     /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9342c_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn ili9342c_rgb666(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ILI9342CRgb666::new(ModelOptions::with_display_size(options, 320, 240)),
         )
     }
@@ -183,7 +179,7 @@ fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
     options: &ModelOptions,
-) -> Result<u8, DisplayError>
+) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,

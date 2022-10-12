@@ -23,14 +23,15 @@ use crate::instruction::Instruction;
 
 use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
-use embedded_hal::blocking::delay::DelayUs;
-use embedded_hal::digital::v2::OutputPin;
 
 pub mod error;
 pub use error::Error;
 
 pub mod options;
 pub use options::*;
+
+pub mod builder;
+pub use builder::DisplayBuilder;
 
 pub mod models;
 use models::Model;
@@ -45,16 +46,13 @@ mod batch;
 ///
 /// Display driver to connect to TFT displays.
 ///
-pub struct Display<DI, RST, MODEL>
+pub struct Display<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
     MODEL: Model,
 {
     // Display interface
     di: DI,
-    // Reset pin.
-    rst: Option<RST>,
     // Model
     model: MODEL,
     // Current orientation
@@ -63,45 +61,11 @@ where
     madctl: u8,
 }
 
-impl<DI, RST, M> Display<DI, RST, M>
+impl<DI, M> Display<DI, M>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
     M: Model,
 {
-    ///
-    /// Creates a new [Display] driver instance with given [Model]
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `model` - the display [Model]
-    ///
-    pub fn with_model(di: DI, rst: Option<RST>, model: M) -> Self {
-        let orientation = model.options().orientation();
-
-        Self {
-            di,
-            rst,
-            model,
-            orientation,
-            madctl: 0,
-        }
-    }
-
-    ///
-    /// Runs commands to initialize the display
-    ///
-    /// # Arguments
-    ///
-    /// * `delay_source` - mutable reference to a [DelayUs] provider
-    ///
-    pub fn init(&mut self, delay_source: &mut impl DelayUs<u32>) -> Result<(), Error<RST::Error>> {
-        self.madctl = self.model.init(&mut self.di, &mut self.rst, delay_source)?;
-        Ok(())
-    }
-
     ///
     /// Returns currently set [Orientation]
     ///
@@ -112,7 +76,7 @@ where
     ///
     /// Sets display [Orientation]
     ///
-    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error<RST::Error>> {
+    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
         let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
@@ -130,12 +94,7 @@ where
     /// * `y` - y coordinate
     /// * `color` - the color value in pixel format of the display [Model]
     ///
-    pub fn set_pixel(
-        &mut self,
-        x: u16,
-        y: u16,
-        color: M::ColorFormat,
-    ) -> Result<(), Error<RST::Error>> {
+    pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
         self.set_address_window(x, y, x, y)?;
         self.model
             .write_pixels(&mut self.di, core::iter::once(color))?;
@@ -161,7 +120,7 @@ where
         ex: u16,
         ey: u16,
         colors: T,
-    ) -> Result<(), Error<RST::Error>>
+    ) -> Result<(), Error>
     where
         T: IntoIterator<Item = M::ColorFormat>,
     {
@@ -179,12 +138,7 @@ where
     /// * `vsa` - Vertical scrolling area
     /// * `bfa` - Bottom fixed area
     ///
-    pub fn set_scroll_region(
-        &mut self,
-        tfa: u16,
-        vsa: u16,
-        bfa: u16,
-    ) -> Result<(), Error<RST::Error>> {
+    pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
         self.write_command(Instruction::VSCRDER)?;
         self.write_data(&tfa.to_be_bytes())?;
         self.write_data(&vsa.to_be_bytes())?;
@@ -199,7 +153,7 @@ where
     ///
     /// * `offset` - scroll offset in pixels
     ///
-    pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error<RST::Error>> {
+    pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
         self.write_command(Instruction::VSCAD)?;
         self.write_data(&offset.to_be_bytes())
     }
@@ -208,31 +162,20 @@ where
     /// Release resources allocated to this driver back.
     /// This returns the display interface and the RST pin deconstructing the driver.
     ///
-    pub fn release(self) -> (DI, Option<RST>, M) {
-        (self.di, self.rst, self.model)
+    pub fn release(self) -> (DI, M) {
+        (self.di, self.model)
     }
 
-    fn write_command(&mut self, command: Instruction) -> Result<(), Error<RST::Error>> {
-        self.di
-            .send_commands(DataFormat::U8(&[command as u8]))
-            .map_err(|_| Error::DisplayError)?;
-        Ok(())
+    fn write_command(&mut self, command: Instruction) -> Result<(), Error> {
+        self.di.send_commands(DataFormat::U8(&[command as u8]))
     }
 
-    fn write_data(&mut self, data: &[u8]) -> Result<(), Error<RST::Error>> {
-        self.di
-            .send_data(DataFormat::U8(data))
-            .map_err(|_| Error::DisplayError)
+    fn write_data(&mut self, data: &[u8]) -> Result<(), Error> {
+        self.di.send_data(DataFormat::U8(data))
     }
 
     // Sets the address window for the display.
-    fn set_address_window(
-        &mut self,
-        sx: u16,
-        sy: u16,
-        ex: u16,
-        ey: u16,
-    ) -> Result<(), Error<RST::Error>> {
+    fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
         // add clipping offsets if present
         let offset = self.model.options().window_offset(self.orientation);
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
@@ -248,10 +191,7 @@ where
     ///
     /// Configures the tearing effect output.
     ///
-    pub fn set_tearing_effect(
-        &mut self,
-        tearing_effect: TearingEffect,
-    ) -> Result<(), Error<RST::Error>> {
+    pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
         match tearing_effect {
             TearingEffect::Off => self.write_command(Instruction::TEOFF),
             TearingEffect::Vertical => {

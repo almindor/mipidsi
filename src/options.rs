@@ -15,7 +15,6 @@ pub struct DisplayOptions {
     pub invert_horizontal_refresh: bool,
 }
 
-
 ///
 /// Display orientation.
 ///

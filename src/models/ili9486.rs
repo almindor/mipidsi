@@ -1,11 +1,11 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -31,7 +31,7 @@ impl Model for ILI9486Rgb565 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -43,10 +43,10 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
+        Ok(init_common(di, delay, self.options())?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -79,7 +79,7 @@ impl Model for ILI9486Rgb666 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -92,10 +92,10 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
+        Ok(init_common(di, delay, self.options())?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -123,10 +123,9 @@ impl Model for ILI9486Rgb666 {
 
 // simplified constructor for Display
 
-impl<DI, RST> Display<DI, RST, ILI9486Rgb565>
+impl<DI> DisplayBuilder<DI, ILI9486Rgb565>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
@@ -135,18 +134,16 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb565(di: DI, rst: Option<RST>, options: ModelOptions) -> Self {
-        Self::with_model(di, rst, ILI9486Rgb565::new(options))
+    pub fn ili9486_rgb565(di: DI, options: ModelOptions) -> Self {
+        Self::new(di, ILI9486Rgb565::new(options))
     }
 }
 
-impl<DI, RST> Display<DI, RST, ILI9486Rgb666>
+impl<DI> DisplayBuilder<DI, ILI9486Rgb666>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
@@ -154,13 +151,11 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn ili9486_rgb666(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ILI9486Rgb666::new(ModelOptions::with_display_size(options, 320, 480)),
         )
     }
@@ -171,7 +166,7 @@ fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
     options: &ModelOptions,
-) -> Result<u8, DisplayError>
+) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,

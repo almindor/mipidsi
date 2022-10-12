@@ -1,8 +1,8 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Error};
+use crate::{error::InitError, instruction::Instruction, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -26,7 +26,7 @@ impl Model for ST7789 {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -59,7 +59,7 @@ impl Model for ST7789 {
         Ok(madctl)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -68,7 +68,8 @@ impl Model for ST7789 {
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)
+        di.send_data(buf)?;
+        Ok(())
     }
 
     // fn display_size(&self, orientation: Orientation) -> (u16, u16) {

@@ -1,8 +1,8 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, DisplayBuilder, DisplayOptions, Error};
 
 use super::{write_command, Model, ModelOptions};
 
@@ -22,7 +22,7 @@ impl Model for ST7735s {
         di: &mut DI,
         rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -78,7 +78,7 @@ impl Model for ST7735s {
         Ok(madctl)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -87,7 +87,8 @@ impl Model for ST7735s {
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)
+        di.send_data(buf)?;
+        Ok(())
     }
 
     // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
@@ -105,10 +106,9 @@ impl Model for ST7735s {
 
 // simplified constructor on Display
 
-impl<DI, RST> Display<DI, RST, ST7735s>
+impl<DI> DisplayBuilder<DI, ST7735s>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ST7735s] as the [Model] with a
@@ -117,13 +117,11 @@ where
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7735s(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
+    pub fn st7735s(di: DI, options: DisplayOptions) -> Self {
+        Self::new(
             di,
-            rst,
             ST7735s::new(ModelOptions::with_sizes(options, (80, 160), (132, 162))),
         )
     }
