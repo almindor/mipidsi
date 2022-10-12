@@ -32,8 +32,8 @@ where
     ///
     pub fn init<RST>(
         self,
-        mut rst: Option<RST>,
         delay_source: &mut impl DelayUs<u32>,
+        mut rst: Option<RST>,
     ) -> Result<Display<DI, MODEL>, InitError<RST::Error>>
     where
         RST: OutputPin,
@@ -49,7 +49,7 @@ where
 
         display.madctl = display
             .model
-            .init(&mut display.di, &mut rst, delay_source)?;
+            .init(&mut display.di, delay_source, &mut rst)?;
 
         Ok(display)
     }

@@ -165,8 +165,8 @@ pub trait Model {
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
+        rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,

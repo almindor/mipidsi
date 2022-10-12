@@ -29,8 +29,8 @@ impl Model for ILI9486Rgb565 {
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
+        rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
@@ -77,8 +77,8 @@ impl Model for ILI9486Rgb666 {
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
+        rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
