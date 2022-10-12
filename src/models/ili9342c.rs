@@ -57,6 +57,10 @@ impl Model for ILI9342CRgb565 {
         let buf = DataFormat::U16BEIter(&mut iter);
         di.send_data(buf)
     }
+
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 240), (320, 240))
+    }
 }
 
 impl Model for ILI9342CRgb666 {
@@ -102,6 +106,10 @@ impl Model for ILI9342CRgb666 {
         let buf = DataFormat::U8Iter(&mut iter);
         di.send_data(buf)
     }
+
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 240), (320, 240))
+    }
 }
 
 // simplified constructor for Display
@@ -122,7 +130,7 @@ where
         Self::new(
             di,
             ILI9342CRgb565,
-            ModelOptions::with_display_size(320, 240),
+            ModelOptions::with_sizes((320, 240), (320, 240)),
         )
     }
 }
@@ -142,7 +150,7 @@ where
         Self::new(
             di,
             ILI9342CRgb666,
-            ModelOptions::with_display_size(320, 240),
+            ModelOptions::with_sizes((320, 240), (320, 240)),
         )
     }
 }

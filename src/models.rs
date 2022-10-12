@@ -1,4 +1,4 @@
-use crate::{error::InitError, instruction::Instruction, Error};
+use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
@@ -53,6 +53,13 @@ pub trait Model {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
+
+    ///
+    /// Creates default [ModelOptions] for this particular [Model]. This serves
+    /// as a "sane default". There can be additional variants which will be provided via
+    /// helper constructors.
+    ///
+    fn default_options() -> ModelOptions;
 }
 
 // helper for models

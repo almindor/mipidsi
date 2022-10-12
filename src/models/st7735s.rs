@@ -87,6 +87,10 @@ impl Model for ST7735s {
         di.send_data(buf)?;
         Ok(())
     }
+
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((80, 160), (132, 162))
+    }
 }
 
 // simplified constructor on Display

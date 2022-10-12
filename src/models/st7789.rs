@@ -2,7 +2,7 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, Error};
+use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
 
 use super::{write_command, Model};
 
@@ -65,5 +65,9 @@ impl Model for ST7789 {
         let buf = DataFormat::U16BEIter(&mut iter);
         di.send_data(buf)?;
         Ok(())
+    }
+
+    fn default_options() -> crate::ModelOptions {
+        ModelOptions::with_sizes((240, 320), (240, 320))
     }
 }

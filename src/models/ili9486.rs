@@ -52,6 +52,10 @@ impl Model for ILI9486Rgb565 {
         let buf = DataFormat::U16BEIter(&mut iter);
         di.send_data(buf)
     }
+
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
+    }
 }
 
 impl Model for ILI9486Rgb666 {
@@ -95,6 +99,10 @@ impl Model for ILI9486Rgb666 {
         let buf = DataFormat::U8Iter(&mut iter);
         di.send_data(buf)
     }
+
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
+    }
 }
 
 // simplified constructor for Display
@@ -112,7 +120,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9486_rgb565(di: DI) -> Self {
-        Self::new(di, ILI9486Rgb565, ModelOptions::with_display_size(320, 480))
+        Self::with_model(di, ILI9486Rgb565)
     }
 }
 
@@ -128,7 +136,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9486_rgb666(di: DI) -> Self {
-        Self::new(di, ILI9486Rgb666, ModelOptions::with_display_size(320, 480))
+        Self::with_model(di, ILI9486Rgb666)
     }
 }
 
