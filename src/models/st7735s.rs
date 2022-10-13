@@ -2,7 +2,7 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error, ModelOptions};
+use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
 use super::{write_command, Model};
 
@@ -95,7 +95,7 @@ impl Model for ST7735s {
 
 // simplified constructor on Display
 
-impl<DI> DisplayBuilder<DI, ST7735s>
+impl<DI> Builder<DI, ST7735s>
 where
     DI: WriteOnlyDataCommand,
 {

@@ -5,7 +5,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, DisplayBuilder, Error, ModelOptions};
+use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
 use super::{write_command, Model};
 
@@ -114,7 +114,7 @@ impl Model for ILI9342CRgb666 {
 
 // simplified constructor for Display
 
-impl<DI> DisplayBuilder<DI, ILI9342CRgb565>
+impl<DI> Builder<DI, ILI9342CRgb565>
 where
     DI: WriteOnlyDataCommand,
 {
@@ -135,7 +135,7 @@ where
     }
 }
 
-impl<DI> DisplayBuilder<DI, ILI9342CRgb666>
+impl<DI> Builder<DI, ILI9342CRgb666>
 where
     DI: WriteOnlyDataCommand,
 {

@@ -17,7 +17,7 @@ pub use st7789::*;
 pub trait Model {
     type ColorFormat: RgbColor;
 
-    /// Initializes the display for this model
+    /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(
         &mut self,

@@ -12,8 +12,9 @@
 //! ```rust
 //! // create a DisplayInterface from SPI and DC pin, with no manual CS control
 //! let di = SPIInterfaceNoCS::new(spi, dc);
-//! // create the ILI9486 display driver from the display interface and RST pin
-//! let mut display = Display::ili9486(di, rst);
+//! // create the ILI9486 display driver from the display interface and optional RST pin
+//! let mut display = Builder::ili9486(di)
+//!     .init(&mut delay, Some(rst));
 //! // clear the display to black
 //! display.clear(Rgb666::BLACK)?;
 
@@ -31,14 +32,12 @@ pub mod options;
 pub use options::*;
 
 pub mod builder;
-pub use builder::DisplayBuilder;
+pub use builder::Builder;
 
 pub mod models;
 use models::Model;
 
 mod graphics;
-mod no_pin;
-pub use no_pin::*;
 
 #[cfg(feature = "batch")]
 mod batch;
@@ -160,7 +159,7 @@ where
 
     ///
     /// Release resources allocated to this driver back.
-    /// This returns the display interface and the RST pin deconstructing the driver.
+    /// This returns the display interface and the model deconstructing the driver.
     ///
     pub fn release(self) -> (DI, M) {
         (self.di, self.model)

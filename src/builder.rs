@@ -5,7 +5,11 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation};
 
-pub struct DisplayBuilder<DI, MODEL>
+///
+/// Constructor helper for creating [Display] instances
+/// Exposes all possible display options
+///
+pub struct Builder<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,
     MODEL: Model,
@@ -15,7 +19,7 @@ where
     options: ModelOptions,
 }
 
-impl<DI, MODEL> DisplayBuilder<DI, MODEL>
+impl<DI, MODEL> Builder<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,
     MODEL: Model,

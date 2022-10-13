@@ -1,10 +1,10 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{DisplayBuilder, ModelOptions, Orientation};
+use crate::{Builder, ModelOptions, Orientation};
 
 use super::ST7789;
 
-impl<DI> DisplayBuilder<DI, ST7789>
+impl<DI> Builder<DI, ST7789>
 where
     DI: WriteOnlyDataCommand,
 {
