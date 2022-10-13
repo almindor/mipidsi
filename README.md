@@ -27,9 +27,9 @@ See [MIGRATION.md](MIGRATION.md) document.
 ```rust
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
 let di = SPIInterfaceNoCS::new(spi, dc);
-// create the ILI9486 display driver in rgb666 color mode from the display interface and RST pin
-let mut display = Display::ili9486_rgb666(di, rst, DisplayOptions::default())
-display.init(&mut delay)?; // delay provider from your MCU
+// create the ILI9486 display driver in rgb666 color mode from the display interface and use a HW reset pin during init
+let mut display = Builder::ili9486_rgb666(di, DisplayOptions::default())
+    .init(&mut delay, Some(rst))?; // delay provider from your MCU
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```
