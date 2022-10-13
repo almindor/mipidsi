@@ -38,7 +38,8 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        Ok(init_common(di, delay, madctl)?)
+        let colmod = 0b0101_0101; // 16bit colors
+        Ok(init_common(di, delay, madctl, colmod)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -80,7 +81,8 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        Ok(init_common(di, delay, madctl)?)
+        let colmod = 0b0110_0110; // 18bit colors
+        Ok(init_common(di, delay, madctl, colmod)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -141,13 +143,18 @@ where
 }
 
 // common init for all color format models
-fn init_common<DELAY, DI>(di: &mut DI, delay: &mut DELAY, madctl: u8) -> Result<u8, Error>
+fn init_common<DELAY, DI>(
+    di: &mut DI,
+    delay: &mut DELAY,
+    madctl: u8,
+    colmod: u8,
+) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-    write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
+    write_command(di, Instruction::COLMOD, &[colmod])?; // 18bit 256k colors
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
