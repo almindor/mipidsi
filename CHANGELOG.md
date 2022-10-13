@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - added the `Builder` as construction method for displays to simplify configuration
 and protect against use-before-init bugs
+- added `Model::default_options()` so that each model can provide a sane default regardless of helper constructors
 
 ### Changed
 

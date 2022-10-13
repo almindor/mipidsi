@@ -24,6 +24,7 @@ let display = Builder::st7789(di) // known model or with_model(model)
 ### Model writers and specific variants
 
 `Model::new` was reverted and is no longer necessary. Models now don't own the `ModelOptions` which has been moved off to the `Display` directly. `Model::init` has changed to include `madctl` parameter which is now provided by the `Display` and should be used as-is unless overrides are required.
+`Model::default_options` was added to facilitate "generic variant" construction.
 
 Helper constructors have been moved from `Display` to `Builder` with similar implementations as before.
 `DisplayOptions` and `ModelOptions` values are now a function of the `Builder` and do not necessitate a constructor helper anymore. e.g. `Display::st7789_240x240(...)` becomes `Builder::st7789(...).with_display_size(240, 240)` controlled by the user.
