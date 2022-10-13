@@ -17,9 +17,9 @@ pub struct ModelOptions {
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
     pub(crate) window_offset_handler: fn(&ModelOptions) -> (u16, u16),
-    /// Display size (w, h) override for the display/model, (0, 0) for no override
+    /// Display size (w, h) for given display/model
     pub(crate) display_size: (u16, u16),
-    /// Framebuffer size (w, h) override for the display/model, (0, 0) for no override
+    /// Framebuffer size (w, h) for given display/model
     pub(crate) framebuffer_size: (u16, u16),
 }
 
@@ -134,23 +134,24 @@ impl ModelOptions {
 /// and to framebuffer_size - display_size otherwise.
 ///
 fn no_offset(options: &ModelOptions) -> (u16, u16) {
-    let fb_w = options.framebuffer_size.0;
-    let fb_h = options.framebuffer_size.1;
-    let d_w = options.display_size.0;
-    let d_h = options.display_size.1;
+    // do FB size - Display size offset for inverted setups
+    match options.orientation {
+        Orientation::PortraitInverted(_) | Orientation::LandscapeInverted(_) => {
+            let hdiff = options.framebuffer_size.1 - options.display_size.1;
 
-    let mut x = 0;
-    let mut y = 0;
+            let mut x = 0;
+            let mut y = 0;
 
-    if fb_w > d_w {
-        x = fb_w - d_w;
+            match options.orientation {
+                Orientation::PortraitInverted(_) => y = hdiff,
+                Orientation::LandscapeInverted(_) => x = hdiff,
+                _ => {}
+            }
+
+            (x, y)
+        }
+        _ => (0, 0),
     }
-
-    if fb_h > d_w {
-        y = fb_h - d_h;
-    }
-
-    (x, y)
 }
 
 ///
