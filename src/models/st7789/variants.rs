@@ -10,7 +10,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7789] as the [super::Model] with
-    /// general variant using display size of 240x320
+    /// general variant using display framebuffer size of 240x320
     ///
     /// # Arguments
     ///
@@ -22,7 +22,7 @@ where
 
     ///
     /// Creates a new [Display] instance with [ST7789] as the [super::Model] with
-    /// pico1 variant using display size of 135x240 and a clipping offset
+    /// pico1 variant using display and framebuffer size of 135x240 and a clipping offset
     ///
     /// # Arguments
     ///

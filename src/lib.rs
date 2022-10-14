@@ -26,9 +26,12 @@ use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
+use embedded_hal::blocking::delay::DelayUs;
+use embedded_hal::digital::v2::OutputPin;
 pub use error::Error;
 
 pub mod options;
+use error::InitError;
 pub use options::*;
 
 pub mod builder;
@@ -45,26 +48,37 @@ mod batch;
 ///
 /// Display driver to connect to TFT displays.
 ///
-pub struct Display<DI, MODEL>
+pub struct Display<DI, MODEL, RST>
 where
     DI: WriteOnlyDataCommand,
     MODEL: Model,
+    RST: OutputPin,
 {
     // Display interface
     di: DI,
     // Model
     model: MODEL,
+    // Reset pin
+    rst: Option<RST>,
     // Model Options, includes current orientation
     options: ModelOptions,
     // Current MADCTL value
     madctl: u8,
 }
 
-impl<DI, M> Display<DI, M>
+impl<DI, M, RST> Display<DI, M, RST>
 where
     DI: WriteOnlyDataCommand,
     M: Model,
+    RST: OutputPin,
 {
+    pub(crate) fn init(
+        &mut self,
+        delay_source: &mut impl DelayUs<u32>,
+    ) -> Result<u8, InitError<RST::Error>> {
+        self.model
+            .init(&mut self.di, delay_source, self.madctl, &mut self.rst)
+    }
     ///
     /// Returns currently set [Orientation]
     ///
@@ -159,10 +173,10 @@ where
 
     ///
     /// Release resources allocated to this driver back.
-    /// This returns the display interface and the model deconstructing the driver.
+    /// This returns the display interface, reset pin and and the model deconstructing the driver.
     ///
-    pub fn release(self) -> (DI, M) {
-        (self.di, self.model)
+    pub fn release(self) -> (DI, M, Option<RST>) {
+        (self.di, self.model, self.rst)
     }
 
     fn write_command(&mut self, command: Instruction) -> Result<(), Error> {

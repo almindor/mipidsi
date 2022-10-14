@@ -43,8 +43,6 @@ pub trait Model {
         rst.set_low().map_err(InitError::Pin)?;
         delay.delay_us(10);
         rst.set_high().map_err(InitError::Pin)?;
-        delay.delay_us(10);
-        rst.set_low().map_err(InitError::Pin)?; // reset back so we can drop the pin
 
         Ok(())
     }

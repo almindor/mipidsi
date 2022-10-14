@@ -4,6 +4,7 @@
 use crate::{models::Model, Display, Error};
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::*;
+use embedded_hal::digital::v2::OutputPin;
 
 pub trait DrawBatch<DI, M, I>
 where
@@ -14,11 +15,12 @@ where
     fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error>;
 }
 
-impl<DI, M, I> DrawBatch<DI, M, I> for Display<DI, M>
+impl<DI, M, RST, I> DrawBatch<DI, M, I> for Display<DI, M, RST>
 where
     DI: WriteOnlyDataCommand,
     M: Model,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
+    RST: OutputPin,
 {
     fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error> {
         //  Get the pixels for the item to be rendered.

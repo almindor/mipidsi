@@ -115,6 +115,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
+    /// with the default framebuffer size and display size of 320x480
     /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9486!
     ///
     /// # Arguments
@@ -132,6 +133,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
+    /// with the default framebuffer size and display size of 320x480
     ///
     /// # Arguments
     ///

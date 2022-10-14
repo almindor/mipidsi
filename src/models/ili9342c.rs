@@ -120,6 +120,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ILI9342C] as the [Model]
+    /// with the default framebuffer size and display size of 320x240
     /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9342C!
     ///
     /// # Arguments
@@ -141,6 +142,7 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ILI9342C] as the [Model]
+    /// with the default framebuffer size and display size of 320x240
     ///
     /// # Arguments
     ///

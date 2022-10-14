@@ -101,7 +101,8 @@ where
 {
     ///
     /// Creates a new [Display] instance with [ST7735s] as the [Model] with a
-    /// hard reset Pin
+    /// hard reset Pin with the default framebuffer size of 132x162
+    /// and display size of 80x160
     ///
     /// # Arguments
     ///

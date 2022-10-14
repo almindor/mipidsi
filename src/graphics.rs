@@ -1,15 +1,17 @@
 use embedded_graphics_core::prelude::{DrawTarget, Point, Size};
 use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
+use embedded_hal::digital::v2::OutputPin;
 
 use crate::models::Model;
 use crate::{Display, Error};
 use display_interface::WriteOnlyDataCommand;
 
-impl<DI, M> DrawTarget for Display<DI, M>
+impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
     DI: WriteOnlyDataCommand,
     M: Model,
+    RST: OutputPin,
 {
     type Error = Error;
     type Color = M::ColorFormat;
@@ -99,10 +101,11 @@ where
     }
 }
 
-impl<DI, MODEL> OriginDimensions for Display<DI, MODEL>
+impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
     DI: WriteOnlyDataCommand,
     MODEL: Model,
+    RST: OutputPin,
 {
     fn size(&self) -> Size {
         let ds = self.options.display_size();
