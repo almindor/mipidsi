@@ -95,6 +95,9 @@ where
     ///
     /// Consumes the builder to create a new [Display] with an optional reset [OutputPin].
     /// Blocks using the provided [DelayUs] `delay_source` to perform the display initialization.
+    /// ### WARNING
+    /// the reset pin if provided is not bound to the resulting [Display]
+    ///  - this means that the user accepts responsibility for doing out of bound resets during display operation
     ///
     pub fn init<RST>(
         self,
