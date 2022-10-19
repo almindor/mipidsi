@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.5.0] - 2022-10-19
+
 ### Added
 
 - added the `Builder` as construction method for displays to simplify configuration
