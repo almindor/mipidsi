@@ -1,37 +1,32 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
-use super::{write_command, Model, ModelOptions};
+use super::{write_command, Model};
 
-/// ILI9486 display with Reset pin
-/// in Rgb565 color mode (does *NOT* work with SPI)
+/// ILI9486 display in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled
-pub struct ILI9486Rgb565(ModelOptions);
+pub struct ILI9486Rgb565;
 
-/// ILI9486 display with Reset pin
-/// in Rgb666 color mode (works with SPI)
+/// ILI9486 display in Rgb666 color mode (works with SPI)
 /// Backlight pin is not controlled
-pub struct ILI9486Rgb666(ModelOptions);
+pub struct ILI9486Rgb666;
 
 impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
 
-    fn new(options: ModelOptions) -> Self {
-        Self(options)
-    }
-
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+        madctl: u8,
+        rst: &mut Option<RST>,
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -43,10 +38,11 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
+        let colmod = 0b0101_0101; // 16bit colors
+        Ok(init_common(di, delay, madctl, colmod)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -58,28 +54,21 @@ impl Model for ILI9486Rgb565 {
         di.send_data(buf)
     }
 
-    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.display_size(320, 480, orientation)
-    // }
-
-    fn options(&self) -> &ModelOptions {
-        &self.0
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
     }
 }
 
 impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
 
-    fn new(options: ModelOptions) -> Self {
-        Self(options)
-    }
-
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+        madctl: u8,
+        rst: &mut Option<RST>,
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -92,10 +81,11 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        init_common(di, delay, self.options()).map_err(|_| Error::DisplayError)
+        let colmod = 0b0110_0110; // 18bit colors
+        Ok(init_common(di, delay, madctl, colmod)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -112,57 +102,45 @@ impl Model for ILI9486Rgb666 {
         di.send_data(buf)
     }
 
-    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.display_size(320, 480, orientation)
-    // }
-
-    fn options(&self) -> &ModelOptions {
-        &self.0
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
     }
 }
 
 // simplified constructor for Display
 
-impl<DI, RST> Display<DI, RST, ILI9486Rgb565>
+impl<DI> Builder<DI, ILI9486Rgb565>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
+    /// with the default framebuffer size and display size of 320x480
     /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9486!
     ///
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb565(di: DI, rst: Option<RST>, options: ModelOptions) -> Self {
-        Self::with_model(di, rst, ILI9486Rgb565::new(options))
+    pub fn ili9486_rgb565(di: DI) -> Self {
+        Self::with_model(di, ILI9486Rgb565)
     }
 }
 
-impl<DI, RST> Display<DI, RST, ILI9486Rgb666>
+impl<DI> Builder<DI, ILI9486Rgb666>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ILI9486] as the [Model]
+    /// with the default framebuffer size and display size of 320x480
     ///
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
-    /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn ili9486_rgb666(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
-            di,
-            rst,
-            ILI9486Rgb666::new(ModelOptions::with_display_size(options, 320, 480)),
-        )
+    pub fn ili9486_rgb666(di: DI) -> Self {
+        Self::with_model(di, ILI9486Rgb666)
     }
 }
 
@@ -170,16 +148,15 @@ where
 fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
-    options: &ModelOptions,
-) -> Result<u8, DisplayError>
+    madctl: u8,
+    colmod: u8,
+) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
-    let madctl = options.madctl();
-
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-    write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 256k colors
+    write_command(di, Instruction::COLMOD, &[colmod])?; // 18bit 256k colors
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]

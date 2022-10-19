@@ -6,24 +6,23 @@ use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::*;
 use embedded_hal::digital::v2::OutputPin;
 
-pub trait DrawBatch<DI, RST, M, I>
+pub trait DrawBatch<DI, M, I>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
     M: Model,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error<RST::Error>>;
+    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error>;
 }
 
-impl<DI, RST, M, I> DrawBatch<DI, RST, M, I> for Display<DI, RST, M>
+impl<DI, M, RST, I> DrawBatch<DI, M, I> for Display<DI, M, RST>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
     M: Model,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
+    RST: OutputPin,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error<RST::Error>> {
+    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error> {
         //  Get the pixels for the item to be rendered.
         let pixels = item_pixels.into_iter();
         //  Batch the pixels into Pixel Rows.

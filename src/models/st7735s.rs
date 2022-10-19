@@ -1,34 +1,31 @@
-use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{instruction::Instruction, Display, DisplayOptions, Error};
+use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
-use super::{write_command, Model, ModelOptions};
+use super::{write_command, Model};
 
 /// ST7735s SPI display with Reset pin
 /// Only SPI with DC pin interface is supported
-pub struct ST7735s(ModelOptions);
+pub struct ST7735s;
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
 
-    fn new(options: ModelOptions) -> Self {
-        Self(options)
-    }
-
     fn init<RST, DELAY, DI>(
         &mut self,
         di: &mut DI,
-        rst: &mut Option<RST>,
         delay: &mut DELAY,
-    ) -> Result<u8, Error<RST::Error>>
+        madctl: u8,
+        rst: &mut Option<RST>,
+    ) -> Result<u8, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = self.options().madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit
+        let madctl = madctl ^ 0b0000_1000; // this model has flipped RGB/BGR bit
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -78,7 +75,7 @@ impl Model for ST7735s {
         Ok(madctl)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), DisplayError>
+    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
@@ -87,44 +84,32 @@ impl Model for ST7735s {
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)
+        di.send_data(buf)?;
+        Ok(())
     }
 
-    // fn display_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.display_size(80, 160, orientation)
-    // }
-
-    // fn framebuffer_size(&self, orientation: Orientation) -> (u16, u16) {
-    //     self.0.framebuffer_size(132, 162, orientation)
-    // }
-
-    fn options(&self) -> &ModelOptions {
-        &self.0
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((80, 160), (132, 162))
     }
 }
 
 // simplified constructor on Display
 
-impl<DI, RST> Display<DI, RST, ST7735s>
+impl<DI> Builder<DI, ST7735s>
 where
     DI: WriteOnlyDataCommand,
-    RST: OutputPin,
 {
     ///
     /// Creates a new [Display] instance with [ST7735s] as the [Model] with a
-    /// hard reset Pin
+    /// hard reset Pin with the default framebuffer size of 132x162
+    /// and display size of 80x160
     ///
     /// # Arguments
     ///
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `rst` - display hard reset [OutputPin]
     /// * `options` - the [DisplayOptions] for this display/model
     ///
-    pub fn st7735s(di: DI, rst: Option<RST>, options: DisplayOptions) -> Self {
-        Self::with_model(
-            di,
-            rst,
-            ST7735s::new(ModelOptions::with_sizes(options, (80, 160), (132, 162))),
-        )
+    pub fn st7735s(di: DI) -> Self {
+        Self::new(di, ST7735s, ModelOptions::with_sizes((80, 160), (132, 162)))
     }
 }

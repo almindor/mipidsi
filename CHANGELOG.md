@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- added the `Builder` as construction method for displays to simplify configuration
+and protect against use-before-init bugs
+- added `Model::default_options()` so that each model can provide a sane default regardless of helper constructors
+
+### Changed
+
+- `Model` no longer has to own `ModelOptions`
+- `Model::new` was removed
+- the optional `RST` reset hw pin is now only used during the `Builder::init` call
+
+### Removed
+
+- removed direct `Display` constructors. Use `Builder` instead (see migration guide)
+- removed `DisplayOptions` in favour of `Builder` settings
+
 ## [v0.4.0] - 2022-09-30
 
 ### Added
