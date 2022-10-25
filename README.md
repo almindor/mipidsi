@@ -19,6 +19,13 @@ Each supported display model can be used either through the `Builder::with_model
 
 Variants that require different screen sizes and window addressing offsets are now supported via the `Builder` logic as well (see docs).
 
+### List of supported models
+
+* ST7789
+* ST7735
+* ILI9486
+* ILI9342C
+
 ## Migration
 
 See [MIGRATION.md](MIGRATION.md) document.

@@ -7,6 +7,13 @@
 //! Currently only supports SPI with DC pin setups via the [display_interface]
 //!
 //! An optional batching of draws is supported via the `batch` feature (default on)
+//! 
+//! ### List of supported models
+//!
+//! * ST7789
+//! * ST7735
+//! * ILI9486
+//! * ILI9342C
 //!
 //! ## Example
 //! ```rust
