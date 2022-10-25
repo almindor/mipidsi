@@ -7,7 +7,7 @@
 //! Currently only supports SPI with DC pin setups via the [display_interface]
 //!
 //! An optional batching of draws is supported via the `batch` feature (default on)
-//! 
+//!
 //! ### List of supported models
 //!
 //! * ST7789
