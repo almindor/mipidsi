@@ -26,7 +26,7 @@ impl Model for ILI9342CRgb565 {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -43,7 +43,7 @@ impl Model for ILI9342CRgb565 {
 
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
 
-        Ok(init_common(di, delay, madctl)?)
+        Ok(init_common(di, delay, options)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -70,7 +70,7 @@ impl Model for ILI9342CRgb666 {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -87,7 +87,7 @@ impl Model for ILI9342CRgb666 {
 
         write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 262k colors
 
-        Ok(init_common(di, delay, madctl)?)
+        Ok(init_common(di, delay, options)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -158,16 +158,21 @@ where
 }
 
 // common init for all color format models
-fn init_common<DELAY, DI>(di: &mut DI, delay: &mut DELAY, madctl: u8) -> Result<u8, Error>
+fn init_common<DELAY, DI>(
+    di: &mut DI,
+    delay: &mut DELAY,
+    options: &ModelOptions,
+) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
-    let madctl = madctl ^ 0b0000_1000; // this model has flipped RGB/BGR bit;
+    let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit;
 
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+    write_command(di, options.invert_command(), &[])?; // set color inversion
 
     write_command(di, Instruction::NORON, &[])?; // turn to normal mode
     write_command(di, Instruction::DISPON, &[])?; // turn on display

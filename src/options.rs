@@ -1,5 +1,7 @@
 //! Module holding [ModelOptions] and other helper types for [super::Display]
 
+use crate::instruction::Instruction;
+
 ///
 /// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
@@ -10,6 +12,8 @@ pub struct ModelOptions {
     pub(crate) color_order: ColorOrder,
     /// Initial display orientation (without inverts)
     pub(crate) orientation: Orientation,
+    /// Whether to invert colors for this display/model (INVON)
+    pub(crate) invert_colors: bool,
     /// Set to make display vertical refresh bottom to top
     pub(crate) invert_vertical_refresh: bool,
     /// Set to make display horizontal refresh right to left
@@ -32,6 +36,7 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
+            invert_colors: false,
             invert_horizontal_refresh: false,
             invert_vertical_refresh: false,
             window_offset_handler: no_offset,
@@ -52,6 +57,7 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
+            invert_colors: false,
             invert_horizontal_refresh: false,
             invert_vertical_refresh: false,
             window_offset_handler,
@@ -77,6 +83,13 @@ impl ModelOptions {
         }
 
         value
+    }
+
+    pub fn invert_command(&self) -> Instruction {
+        match self.invert_colors {
+            false => Instruction::INVOFF,
+            true => Instruction::INVON,
+        }
     }
 
     ///

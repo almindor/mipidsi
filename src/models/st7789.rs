@@ -20,7 +20,7 @@ impl Model for ST7789 {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -28,6 +28,7 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
+        let madctl = options.madctl();
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
@@ -37,12 +38,10 @@ impl Model for ST7789 {
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(10_000);
 
-        write_command(di, Instruction::INVOFF, &[])?;
         write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
         write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
-
+        write_command(di, options.invert_command(), &[])?; // set color inversion
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
-        write_command(di, Instruction::INVON, &[])?;
         delay.delay_us(10_000);
         write_command(di, Instruction::NORON, &[])?; // turn to normal mode
         delay.delay_us(10_000);

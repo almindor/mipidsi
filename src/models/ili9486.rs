@@ -24,7 +24,7 @@ impl Model for ILI9486Rgb565 {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -39,7 +39,7 @@ impl Model for ILI9486Rgb565 {
         delay.delay_us(120_000);
 
         let colmod = 0b0101_0101; // 16bit colors
-        Ok(init_common(di, delay, madctl, colmod)?)
+        Ok(init_common(di, delay, options, colmod)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -66,7 +66,7 @@ impl Model for ILI9486Rgb666 {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -82,7 +82,7 @@ impl Model for ILI9486Rgb666 {
         delay.delay_us(120_000);
 
         let colmod = 0b0110_0110; // 18bit colors
-        Ok(init_common(di, delay, madctl, colmod)?)
+        Ok(init_common(di, delay, options, colmod)?)
     }
 
     fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
@@ -148,18 +148,20 @@ where
 fn init_common<DELAY, DI>(
     di: &mut DI,
     delay: &mut DELAY,
-    madctl: u8,
+    options: &ModelOptions,
     colmod: u8,
 ) -> Result<u8, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
+    let madctl = options.madctl();
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::COLMOD, &[colmod])?; // 18bit 256k colors
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+    write_command(di, options.invert_command(), &[])?; // set color inversion
 
     // optional gamma setup
     // write_command(di, Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control

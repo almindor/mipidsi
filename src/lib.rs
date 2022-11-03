@@ -84,7 +84,7 @@ where
         delay_source: &mut impl DelayUs<u32>,
     ) -> Result<u8, InitError<RST::Error>> {
         self.model
-            .init(&mut self.di, delay_source, self.madctl, &mut self.rst)
+            .init(&mut self.di, delay_source, &self.options, &mut self.rst)
     }
     ///
     /// Returns currently set [Orientation]

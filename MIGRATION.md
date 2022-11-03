@@ -1,5 +1,15 @@
 # Migration guide for MIPIDSI driver
 
+## v0.5 -> 0.6
+
+### Users
+
+* no change, addition of `Builder::with_invert_colors(bool)` allows more combinations of display variants.
+
+### Model writers and specific variants
+
+`Model::init` now expects the `options: &ModelOptions` instead of just `madcl: u8` argument. This allows the use of the `invert_colors` field during init.
+
 ## v0.4 -> 0.5
 
 ### Users
