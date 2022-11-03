@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Removed
+
+ - removed duplicated `INVON` call in `ST7735s` model init
+
 ## [v0.5.0] - 2022-10-19
 
 ### Added
