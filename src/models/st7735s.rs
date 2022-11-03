@@ -36,8 +36,6 @@ impl Model for ST7735s {
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(120_000);
 
-        write_command(di, Instruction::INVON, &[])?; // turn inversion on
-        write_command(di, Instruction::INVON, &[])?; // turn inversion on
         write_command(di, Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
         write_command(di, Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
         write_command(
