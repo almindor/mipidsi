@@ -128,11 +128,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9342c_rgb565(di: DI) -> Self {
-        Self::new(
-            di,
-            ILI9342CRgb565,
-            ModelOptions::with_sizes((320, 240), (320, 240)),
-        )
+        Self::with_model(di, ILI9342CRgb565)
     }
 }
 
@@ -149,11 +145,7 @@ where
     /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
     ///
     pub fn ili9342c_rgb666(di: DI) -> Self {
-        Self::new(
-            di,
-            ILI9342CRgb666,
-            ModelOptions::with_sizes((320, 240), (320, 240)),
-        )
+        Self::with_model(di, ILI9342CRgb666)
     }
 }
 
@@ -167,7 +159,7 @@ where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
-    let madctl = options.madctl() ^ 0b0000_1000; // this model has flipped RGB/BGR bit;
+    let madctl = options.madctl();
 
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB

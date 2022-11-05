@@ -66,6 +66,11 @@ impl ModelOptions {
         }
     }
 
+    pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
+        self.invert_colors = invert_colors;
+        self
+    }
+
     ///
     /// Returns MADCTL register value for given display options
     ///

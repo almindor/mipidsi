@@ -67,6 +67,6 @@ impl Model for ST7789 {
     }
 
     fn default_options() -> crate::ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320))
+        ModelOptions::with_sizes((240, 320), (240, 320)).with_invert_colors(true)
     }
 }
