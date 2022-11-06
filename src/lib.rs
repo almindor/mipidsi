@@ -29,8 +29,12 @@ pub mod instruction;
 
 use crate::instruction::Instruction;
 
+use display_driver_hal::MemoryMapping;
+use display_driver_hal::Orientation;
 use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
+
+pub use display_driver_hal as hal;
 
 pub mod error;
 use embedded_hal::blocking::delay::DelayUs;
@@ -97,7 +101,7 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
+        let value = (self.madctl & 0b0001_1111) | orientation_to_madctl(orientation);
         self.write_command(Instruction::MADCTL)?;
         self.write_data(&[value])?;
         self.options.set_orientation(orientation);
@@ -224,4 +228,21 @@ where
             }
         }
     }
+}
+
+fn orientation_to_madctl(orientation: Orientation) -> u8 {
+    let mut value = 0;
+
+    let memory_mapping = MemoryMapping::from(orientation);
+    if memory_mapping.reverse_rows {
+        value |= 1 << 7;
+    }
+    if memory_mapping.reverse_columns {
+        value |= 1 << 6;
+    }
+    if memory_mapping.swap_rows_and_columns {
+        value |= 1 << 5;
+    }
+
+    value
 }

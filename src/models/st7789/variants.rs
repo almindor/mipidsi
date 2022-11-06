@@ -1,6 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{Builder, ModelOptions, Orientation};
+use crate::{Builder, ModelOptions};
 
 use super::ST7789;
 
@@ -40,14 +40,17 @@ where
 
 // ST7789 pico1 variant with variable offset
 pub(crate) fn pico1_offset(options: &ModelOptions) -> (u16, u16) {
-    match options.orientation() {
-        Orientation::Portrait(false) => (52, 40),
-        Orientation::Portrait(true) => (53, 40),
-        Orientation::Landscape(false) => (40, 52),
-        Orientation::Landscape(true) => (40, 53),
-        Orientation::PortraitInverted(false) => (53, 40),
-        Orientation::PortraitInverted(true) => (52, 40),
-        Orientation::LandscapeInverted(false) => (40, 53),
-        Orientation::LandscapeInverted(true) => (40, 52),
-    }
+    (0, 0)
+
+    //TODO: fix
+    // match options.orientation() {
+    //     Orientation::Portrait(false) => (52, 40),
+    //     Orientation::Portrait(true) => (53, 40),
+    //     Orientation::Landscape(false) => (40, 52),
+    //     Orientation::Landscape(true) => (40, 53),
+    //     Orientation::PortraitInverted(false) => (53, 40),
+    //     Orientation::PortraitInverted(true) => (52, 40),
+    //     Orientation::LandscapeInverted(false) => (40, 53),
+    //     Orientation::LandscapeInverted(true) => (40, 52),
+    // }
 }

@@ -1,5 +1,9 @@
 //! Module holding [ModelOptions] and other helper types for [super::Display]
 
+use display_driver_hal::{Orientation, Rotation};
+
+use crate::orientation_to_madctl;
+
 ///
 /// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
@@ -64,16 +68,19 @@ impl ModelOptions {
     /// Returns MADCTL register value for given display options
     ///
     pub fn madctl(&self) -> u8 {
-        let mut value = self.orientation.value_u8();
+        let mut value = orientation_to_madctl(self.orientation);
+
         if self.invert_vertical_refresh {
-            value |= 0b0001_0000;
+            value |= 1 << 4
         }
+
         match self.color_order {
             ColorOrder::Rgb => {}
-            ColorOrder::Bgr => value |= 0b0000_1000,
+            ColorOrder::Bgr => value |= 1 << 3,
         }
+
         if self.invert_horizontal_refresh {
-            value |= 0b0000_0100;
+            value |= 1 << 2;
         }
 
         value
@@ -122,9 +129,9 @@ impl ModelOptions {
 
     // Flip size according to orientation, in general
     fn orient_size(size: (u16, u16), orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => size,
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (size.1, size.0),
+        match orientation.rotation {
+            Rotation::Deg0 | Rotation::Deg180 => size,
+            Rotation::Deg90 | Rotation::Deg270 => (size.1, size.0),
         }
     }
 }
@@ -134,60 +141,26 @@ impl ModelOptions {
 /// and to framebuffer_size - display_size otherwise.
 ///
 fn no_offset(options: &ModelOptions) -> (u16, u16) {
-    // do FB size - Display size offset for inverted setups
-    match options.orientation {
-        Orientation::PortraitInverted(_) | Orientation::LandscapeInverted(_) => {
-            let hdiff = options.framebuffer_size.1 - options.display_size.1;
+    //TODO: fix
+    (0, 0)
+    // // do FB size - Display size offset for inverted setups
+    // match options.orientation {
+    //     Orientation::PortraitInverted(_) | Orientation::LandscapeInverted(_) => {
+    //         let hdiff = options.framebuffer_size.1 - options.display_size.1;
 
-            let mut x = 0;
-            let mut y = 0;
+    //         let mut x = 0;
+    //         let mut y = 0;
 
-            match options.orientation {
-                Orientation::PortraitInverted(_) => y = hdiff,
-                Orientation::LandscapeInverted(_) => x = hdiff,
-                _ => {}
-            }
+    //         match options.orientation {
+    //             Orientation::PortraitInverted(_) => y = hdiff,
+    //             Orientation::LandscapeInverted(_) => x = hdiff,
+    //             _ => {}
+    //         }
 
-            (x, y)
-        }
-        _ => (0, 0),
-    }
-}
-
-///
-/// Display orientation.
-///
-#[derive(Debug, Clone, Copy)]
-pub enum Orientation {
-    /// Portrait orientation, with mirror image parameter
-    Portrait(bool),
-    /// Landscape orientation, with mirror image parameter
-    Landscape(bool),
-    /// Inverted Portrait orientation, with mirror image parameter
-    PortraitInverted(bool),
-    /// Inverted Lanscape orientation, with mirror image parameter
-    LandscapeInverted(bool),
-}
-
-impl Default for Orientation {
-    fn default() -> Self {
-        Self::Portrait(false)
-    }
-}
-
-impl Orientation {
-    pub fn value_u8(&self) -> u8 {
-        match self {
-            Orientation::Portrait(false) => 0b0000_0000,
-            Orientation::Portrait(true) => 0b0100_0000,
-            Orientation::PortraitInverted(false) => 0b1100_0000,
-            Orientation::PortraitInverted(true) => 0b1000_0000,
-            Orientation::Landscape(false) => 0b0010_0000,
-            Orientation::Landscape(true) => 0b0110_0000,
-            Orientation::LandscapeInverted(false) => 0b1110_0000,
-            Orientation::LandscapeInverted(true) => 0b1010_0000,
-        }
-    }
+    //         (x, y)
+    //     }
+    //     _ => (0, 0),
+    // }
 }
 
 ///

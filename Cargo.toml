@@ -16,6 +16,7 @@ display-interface = "0.4.1"
 embedded-graphics-core = "0.3.3"
 embedded-hal = "0.2.7"
 nb = "1.0.0"
+display-driver-hal = { git = "https://github.com/embedded-graphics/display-driver-hal.git" }
 
 [dependencies.heapless]
 optional = true
