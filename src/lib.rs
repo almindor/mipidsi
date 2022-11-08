@@ -50,7 +50,8 @@ use models::Model;
 mod graphics;
 
 #[cfg(feature = "batch")]
-mod batch;
+pub mod batch;
+pub use batch::DrawBatch;
 
 ///
 /// Display driver to connect to TFT displays.
