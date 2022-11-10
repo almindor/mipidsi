@@ -44,6 +44,9 @@ pub use options::*;
 pub mod builder;
 pub use builder::Builder;
 
+mod dcs;
+use dcs::*;
+
 pub mod models;
 use models::Model;
 
