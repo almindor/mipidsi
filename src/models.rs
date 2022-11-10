@@ -23,7 +23,7 @@ pub trait Model {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where

@@ -45,6 +45,14 @@ where
     }
 
     ///
+    /// Sets the invert color flag
+    ///
+    pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
+        self.options.invert_colors = invert_colors;
+        self
+    }
+
+    ///
     /// Sets the [ColorOrder]
     ///
     pub fn with_color_order(mut self, color_order: ColorOrder) -> Self {

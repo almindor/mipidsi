@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+ - added `ModelOptions::invert_colors` flag
+ - added `Builder::with_invert_colors(bool)` method
+
+### Changed
+
+ - `Model::init` changed to expect `options: &ModelOptions`
+
 ### Removed
 
  - removed duplicated `INVON` call in `ST7735s` model init

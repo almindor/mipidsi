@@ -17,7 +17,7 @@ impl Model for ST7735s {
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
-        madctl: u8,
+        options: &ModelOptions,
         rst: &mut Option<RST>,
     ) -> Result<u8, InitError<RST::Error>>
     where
@@ -25,7 +25,7 @@ impl Model for ST7735s {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = madctl ^ 0b0000_1000; // this model has flipped RGB/BGR bit
+        let madctl = options.madctl();
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
@@ -36,7 +36,7 @@ impl Model for ST7735s {
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(120_000);
 
-        write_command(di, Instruction::INVON, &[])?; // turn inversion on
+        write_command(di, options.invert_command(), &[])?; // set color inversion
         write_command(di, Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
         write_command(di, Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
         write_command(
@@ -88,7 +88,7 @@ impl Model for ST7735s {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((80, 160), (132, 162))
+        ModelOptions::with_sizes((80, 160), (132, 162)).with_invert_colors(true)
     }
 }
 
@@ -109,6 +109,6 @@ where
     /// * `options` - the [DisplayOptions] for this display/model
     ///
     pub fn st7735s(di: DI) -> Self {
-        Self::new(di, ST7735s, ModelOptions::with_sizes((80, 160), (132, 162)))
+        Self::with_model(di, ST7735s)
     }
 }

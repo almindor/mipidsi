@@ -33,7 +33,7 @@ where
         Self::new(
             di,
             ST7789,
-            ModelOptions::with_all((135, 240), (135, 240), pico1_offset),
+            ModelOptions::with_all((135, 240), (135, 240), pico1_offset).with_invert_colors(true),
         )
     }
 }
