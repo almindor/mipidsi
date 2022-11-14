@@ -175,7 +175,7 @@ fn no_offset(options: &ModelOptions) -> (u16, u16) {
 ///
 /// Display orientation.
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Orientation {
     /// Portrait orientation, with mirror image parameter
     Portrait(bool),
@@ -209,9 +209,24 @@ impl Orientation {
 }
 
 ///
+/// Display refresh order, defaults to left to right, top to bottom
+/// 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum RefreshOrder {
+    /// Left to Right and Top to Bottom
+    Normal,
+    /// Right to Left and Top to Bottom
+    RightToLeft,
+    /// Left to Right and Bottom to Top
+    BottomToTop,
+    /// Right to Left and Bottom to Top
+    Inverted,
+}
+
+///
 /// Tearing effect output setting.
 ///
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum TearingEffect {
     /// Disable output.
     Off,

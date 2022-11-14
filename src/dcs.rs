@@ -2,14 +2,31 @@ use display_interface::{WriteOnlyDataCommand, DataFormat};
 
 use crate::{Error, instruction::Instruction};
 
+mod madctl;
+use madctl::*;
+
+
+///
+/// Provides a constructor for complex commands
+/// e.g. `Madctl::new().with_bgr(true).bytes()`
+/// 
+pub trait DcsCommand {
+    fn instruction(&self) -> Instruction;
+    fn bytes(&self) -> &[u8];
+}
+
 ///
 /// Representation of the MIPI Display Command Set
 /// Allows calling commands as methods with builder pattern
-/// for the more complicated ones. Any unimplemented commands
-/// can be executed directly using the [Dcs::write_command] method.
+/// for the more complicated ones. Any command can be executed directly using the [Dcs::write_command] method.
+/// Raw instructions can be sent using [Dcs::write_instruction].
+/// Display interface can be accessed directly for data transfers using the `di` public field.
 /// 
 struct Dcs<DI> {
-    di: DI,
+    /// 
+    /// Display interface instance
+    /// 
+    pub di: DI,
 }
 
 impl<DI> Dcs<DI>
@@ -27,7 +44,7 @@ where
     /// Perform a software reset on the display
     /// 
     pub fn sw_reset(&mut self) -> Result<(), Error> {
-        self.write_command(Instruction::SWRESET, &[])
+        self.write_instruction(Instruction::SWRESET, &[])
     }
 
     ///
@@ -59,11 +76,18 @@ where
     }
 
     ///
-    /// Writes the specified command and parameters "write only"
-    /// using the provided display interface.
+    /// Writes the specified DCS command "write only" using the provided display interface.
     /// 
-    pub fn write_command(&mut self, command: Instruction, params: &[u8]) -> Result<(), Error> {
-        self.di.send_commands(DataFormat::U8(&[command as u8]))?;
+    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
+        self.write_instruction(command.instruction(), command.bytes())
+    }
+
+    ///
+    /// Writes the specified DCS instruction and &[u8] parameters "write only"
+    /// using the provided display interface. Use of `write_command` is preferred.
+    /// 
+    pub fn write_instruction(&mut self, instruction: Instruction, params: &[u8]) -> Result<(), Error> {
+        self.di.send_commands(DataFormat::U8(&[instruction as u8]))?;
 
         if !params.is_empty() {
             self.di.send_data(DataFormat::U8(params))?;
@@ -76,8 +100,8 @@ where
     // helper for "on/off" commands
     fn flip_command(&mut self, val: bool, cmd_on: Instruction, cmd_off: Instruction) -> Result<(), Error> {
         match val {
-            true => self.write_command(cmd_on, &[]),
-            false => self.write_command(cmd_off, &[]),
+            true => self.write_instruction(cmd_on, &[]),
+            false => self.write_instruction(cmd_off, &[]),
         }
     }
 }
