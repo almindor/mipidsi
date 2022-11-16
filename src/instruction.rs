@@ -19,7 +19,7 @@ pub enum Instruction {
     RAMWR = 0x2C,
     RAMRD = 0x2E,
     PTLAR = 0x30,
-    VSCRDER = 0x33,
+    VSCRDEF = 0x33,
     TEOFF = 0x34,
     TEON = 0x35,
     MADCTL = 0x36,

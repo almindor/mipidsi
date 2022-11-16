@@ -38,7 +38,7 @@ impl Model for ST7789 {
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
         delay.delay_us(10_000);
 
-        write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
+        write_command(di, Instruction::VSCRDEF, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
         write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
         write_command(di, options.invert_command(), &[])?; // set color inversion
         write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors

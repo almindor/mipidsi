@@ -4,7 +4,10 @@ use crate::{Error, instruction::Instruction};
 
 mod madctl;
 use madctl::*;
-
+mod colmod;
+use colmod::*;
+mod vscrdef;
+use vscrdef::*;
 
 ///
 /// Provides a constructor for complex commands
@@ -12,7 +15,7 @@ use madctl::*;
 /// 
 pub trait DcsCommand {
     fn instruction(&self) -> Instruction;
-    fn bytes(&self) -> &[u8];
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error>;
 }
 
 ///
@@ -78,23 +81,23 @@ where
     ///
     /// Writes the specified DCS command "write only" using the provided display interface.
     /// 
-    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
-        self.write_instruction(command.instruction(), command.bytes())
+    pub fn write_command(&mut self, mut command: impl DcsCommand) -> Result<(), Error> {
+        let mut param_bytes: [u8; 4] = [0; 4];
+        let n = command.fill_params_buf(&mut param_bytes)?;
+        self.write_instruction(command.instruction(), &param_bytes[..n])
     }
 
     ///
     /// Writes the specified DCS instruction and &[u8] parameters "write only"
     /// using the provided display interface. Use of `write_command` is preferred.
     /// 
-    pub fn write_instruction(&mut self, instruction: Instruction, params: &[u8]) -> Result<(), Error> {
+    pub fn write_instruction(&mut self, instruction: Instruction, param_bytes: &[u8]) -> Result<(), Error> {
         self.di.send_commands(DataFormat::U8(&[instruction as u8]))?;
 
-        if !params.is_empty() {
-            self.di.send_data(DataFormat::U8(params))?;
-            Ok(())
-        } else {
-            Ok(())
+        if !param_bytes.is_empty() {
+            self.di.send_data(DataFormat::U8(param_bytes))?; // TODO: empty guard?
         }
+        Ok(())
     }
 
     // helper for "on/off" commands

@@ -1,16 +1,13 @@
 //! Module for the MADCTL instruction constructors
 
-use crate::{instruction::Instruction, ColorOrder, Orientation, RefreshOrder};
+use crate::{instruction::Instruction, ColorOrder, Orientation, RefreshOrder, Error};
 
 use super::DcsCommand;
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Madctl(u8);
 
 impl Madctl {
-    pub fn new() -> Self {
-        Self(0)
-    }
-
     pub fn color_order(mut self, color_order: ColorOrder) -> Self {
         match color_order {
             ColorOrder::Rgb => self.0 &= 0b1111_0111,
@@ -55,8 +52,9 @@ impl DcsCommand for Madctl {
         Instruction::MADCTL
     }
 
-    fn bytes(&self) -> &[u8] {
-        core::slice::from_ref(&self.0)
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
+        buffer[0] = self.0;
+        Ok(1)
     }
 }
 
@@ -65,20 +63,28 @@ mod tests {
     use super::*;
 
     #[test]
-    fn madctl_bit_operations() {
-        let madctl = Madctl::new()
+    fn madctl_bit_operations() -> Result<(), Error> {
+        let madctl = Madctl::default()
             .color_order(ColorOrder::Bgr)
             .refresh_order(RefreshOrder::Inverted)
             .orientation(Orientation::LandscapeInverted(true));
-        assert_eq!(madctl.bytes(), &[0b1011_1100]);
+
+        let mut bytes = [0u8];
+        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(bytes, [0b1011_1100u8]);
 
         let madctl = madctl.orientation(Orientation::default());
-        assert_eq!(madctl.bytes(), &[0b0001_1100]);
+        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(bytes, [0b0001_1100u8]);
 
         let madctl = madctl.color_order(ColorOrder::Rgb);
-        assert_eq!(madctl.bytes(), &[0b0001_0100]);
+        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(bytes, [0b0001_0100u8]);
 
         let madctl = madctl.refresh_order(RefreshOrder::Normal);
-        assert_eq!(madctl.bytes(), &[0b0000_0000]);
+        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(bytes, [0b0000_0000u8]);
+
+        Ok(())
     }
 }
