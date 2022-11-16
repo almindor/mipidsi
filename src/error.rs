@@ -1,7 +1,5 @@
 //! [Error] module for [super::Display]
 
-use core::fmt::Display;
-
 use display_interface::DisplayError;
 
 ///

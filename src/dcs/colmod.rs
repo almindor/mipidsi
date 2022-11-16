@@ -1,6 +1,6 @@
 //! Module for the COLMOD instruction constructors
 
-use embedded_graphics_core::prelude::{RawData, PixelColor};
+use embedded_graphics_core::prelude::{PixelColor, RawData};
 
 use crate::{instruction::Instruction, Error};
 
@@ -13,7 +13,7 @@ impl Colmod {
     ///
     /// Set the color format that the MCU will be sending to this
     /// display. Uses RawData::BITS_PER_PIXEL to decide.
-    /// 
+    ///
     pub const fn new<PF>() -> Self
     where
         PF: PixelColor,
@@ -22,7 +22,7 @@ impl Colmod {
             16 => Self(0b0101_0101),
             18 => Self(0b0110_0110),
             24 => Self(0b0110_0111), // not sure if this is right
-            _ => panic!("Incompatible PixelFormat size")
+            _ => panic!("Incompatible PixelFormat size"),
         }
     }
 }

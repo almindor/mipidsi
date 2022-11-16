@@ -29,23 +29,22 @@ pub mod instruction;
 
 use crate::instruction::Instruction;
 
+use dcs::Dcs;
+use dcs::Madctl;
 use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
-use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
 pub use error::Error;
 
 pub mod options;
-use error::InitError;
 pub use options::*;
 
 pub mod builder;
 pub use builder::Builder;
 
-mod dcs;
-use dcs::*;
+pub mod dcs;
 
 pub mod models;
 use models::Model;
@@ -73,7 +72,7 @@ where
     // Model Options, includes current orientation
     options: ModelOptions,
     // Current MADCTL value
-    madctl: u8,
+    madctl: Madctl,
 }
 
 impl<DI, M, RST> Display<DI, M, RST>
@@ -82,13 +81,6 @@ where
     M: Model,
     RST: OutputPin,
 {
-    pub(crate) fn init(
-        &mut self,
-        delay_source: &mut impl DelayUs<u32>,
-    ) -> Result<u8, InitError<RST::Error>> {
-        self.model
-            .init(&mut self.di, delay_source, &self.options, &mut self.rst)
-    }
     ///
     /// Returns currently set [Orientation]
     ///
@@ -100,11 +92,9 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
-        self.write_command(Instruction::MADCTL)?;
-        self.write_data(&[value])?;
-        self.options.set_orientation(orientation);
-        self.madctl = value;
+        let mut dcs = Dcs::write_only(&mut self.di);
+        dcs.write_command(&self.madctl.orientation(orientation))?;
+
         Ok(())
     }
 

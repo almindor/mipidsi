@@ -1,7 +1,5 @@
 //! Module holding [ModelOptions] and other helper types for [super::Display]
 
-use crate::instruction::Instruction;
-
 ///
 /// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
@@ -14,10 +12,8 @@ pub struct ModelOptions {
     pub(crate) orientation: Orientation,
     /// Whether to invert colors for this display/model (INVON)
     pub(crate) invert_colors: bool,
-    /// Set to make display vertical refresh bottom to top
-    pub(crate) invert_vertical_refresh: bool,
-    /// Set to make display horizontal refresh right to left
-    pub(crate) invert_horizontal_refresh: bool,
+    /// Display refresh order
+    pub(crate) refresh_order: RefreshOrder,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
     pub(crate) window_offset_handler: fn(&ModelOptions) -> (u16, u16),
@@ -37,8 +33,7 @@ impl ModelOptions {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
             invert_colors: false,
-            invert_horizontal_refresh: false,
-            invert_vertical_refresh: false,
+            refresh_order: RefreshOrder::default(),
             window_offset_handler: no_offset,
             display_size,
             framebuffer_size,
@@ -58,8 +53,7 @@ impl ModelOptions {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
             invert_colors: false,
-            invert_horizontal_refresh: false,
-            invert_vertical_refresh: false,
+            refresh_order: RefreshOrder::default(),
             window_offset_handler,
             display_size,
             framebuffer_size,
@@ -69,32 +63,6 @@ impl ModelOptions {
     pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
         self.invert_colors = invert_colors;
         self
-    }
-
-    ///
-    /// Returns MADCTL register value for given display options
-    ///
-    pub fn madctl(&self) -> u8 {
-        let mut value = self.orientation.value_u8();
-        if self.invert_vertical_refresh {
-            value |= 0b0001_0000;
-        }
-        match self.color_order {
-            ColorOrder::Rgb => {}
-            ColorOrder::Bgr => value |= 0b0000_1000,
-        }
-        if self.invert_horizontal_refresh {
-            value |= 0b0000_0100;
-        }
-
-        value
-    }
-
-    pub fn invert_command(&self) -> Instruction {
-        match self.invert_colors {
-            false => Instruction::INVOFF,
-            true => Instruction::INVON,
-        }
     }
 
     ///
@@ -117,6 +85,20 @@ impl ModelOptions {
         };
 
         Self::orient_size(size, self.orientation())
+    }
+
+    ///
+    /// Returns the larger of framebuffer width or height. Used for scroll
+    /// area setups.
+    ///
+    pub fn framebuffer_size_max(&self) -> u16 {
+        let fb_size = self.framebuffer_size();
+
+        if fb_size.0 > fb_size.1 {
+            fb_size.0
+        } else {
+            fb_size.1
+        }
     }
 
     ///
@@ -210,7 +192,7 @@ impl Orientation {
 
 ///
 /// Display refresh order, defaults to left to right, top to bottom
-/// 
+///
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RefreshOrder {
     /// Left to Right and Top to Bottom
@@ -221,6 +203,12 @@ pub enum RefreshOrder {
     BottomToTop,
     /// Right to Left and Bottom to Top
     Inverted,
+}
+
+impl Default for RefreshOrder {
+    fn default() -> Self {
+        Self::Normal
+    }
 }
 
 ///

@@ -16,7 +16,7 @@ impl Vscrdef {
     /// Construct a new Vscrdef with zero TFA and VSA
     /// and the specified vsa. This should default to the display's
     /// height (or width) framebuffer size.
-    /// 
+    ///
     pub fn new(vsa: u16) -> Self {
         Self {
             tfa: 0,

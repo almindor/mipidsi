@@ -1,6 +1,6 @@
 //! Module for the MADCTL instruction constructors
 
-use crate::{instruction::Instruction, ColorOrder, Orientation, RefreshOrder, Error};
+use crate::{instruction::Instruction, ColorOrder, Error, ModelOptions, Orientation, RefreshOrder};
 
 use super::DcsCommand;
 
@@ -55,6 +55,15 @@ impl DcsCommand for Madctl {
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
         buffer[0] = self.0;
         Ok(1)
+    }
+}
+
+impl From<&ModelOptions> for Madctl {
+    fn from(options: &ModelOptions) -> Self {
+        Self::default()
+            .color_order(options.color_order)
+            .orientation(options.orientation)
+            .refresh_order(options.refresh_order)
     }
 }
 
