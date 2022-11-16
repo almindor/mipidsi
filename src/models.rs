@@ -1,4 +1,4 @@
-use crate::{dcs::Madctl, error::InitError, Error, ModelOptions};
+use crate::{dcs::{Madctl, Dcs}, error::InitError, Error, ModelOptions};
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
@@ -21,7 +21,7 @@ pub trait Model {
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
@@ -49,7 +49,7 @@ pub trait Model {
 
     /// Writes pixels to the display IC via the given DisplayInterface
     /// Any pixel color format conversion is done here
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;

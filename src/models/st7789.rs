@@ -22,7 +22,7 @@ impl Model for ST7789 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
@@ -32,7 +32,6 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let mut dcs = Dcs::write_only(di);
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => dcs.sw_reset()?,
@@ -43,7 +42,7 @@ impl Model for ST7789 {
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
-        let vcsrdef = Vscrdef::new(options.framebuffer_size_max());
+        let vcsrdef = Vscrdef::new(0, options.framebuffer_size_max(), 0);
         dcs.write_command(&vcsrdef)?;
         let madctl = Madctl::from(options);
         dcs.write_command(&madctl)?;
@@ -54,7 +53,7 @@ impl Model for ST7789 {
         delay.delay_us(10_000);
         dcs.mode_normal(true)?;
         delay.delay_us(10_000);
-        dcs.display(true)?;
+        dcs.display_on(true)?;
 
         // DISPON requires some time otherwise we risk SPI data issues
         delay.delay_us(120_000);
@@ -62,18 +61,17 @@ impl Model for ST7789 {
         Ok(madctl)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        let mut dcs = Dcs::write_only(di);
         dcs.prep_ram_write()?;
 
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)?;
+        dcs.di.send_data(buf)?;
         Ok(())
     }
 

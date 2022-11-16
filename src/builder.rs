@@ -4,7 +4,7 @@ use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation, RefreshOrder,
+    error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation, RefreshOrder, dcs::Dcs,
 };
 
 ///
@@ -109,11 +109,12 @@ where
     where
         RST: OutputPin,
     {
+        let mut dcs = Dcs::write_only(self.di);
         let madctl = self
             .model
-            .init(&mut self.di, delay_source, &self.options, &mut rst)?;
+            .init(&mut dcs, delay_source, &self.options, &mut rst)?;
         let display = Display {
-            di: self.di,
+            dcs,
             model: self.model,
             rst,
             options: self.options,

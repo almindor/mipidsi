@@ -27,11 +27,7 @@
 
 pub mod instruction;
 
-use crate::instruction::Instruction;
-
 use dcs::Dcs;
-use dcs::Madctl;
-use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
@@ -63,8 +59,8 @@ where
     MODEL: Model,
     RST: OutputPin,
 {
-    // Display interface
-    di: DI,
+    // DCS provider
+    dcs: Dcs<DI>,
     // Model
     model: MODEL,
     // Reset pin
@@ -72,7 +68,7 @@ where
     // Model Options, includes current orientation
     options: ModelOptions,
     // Current MADCTL value
-    madctl: Madctl,
+    madctl: dcs::Madctl,
 }
 
 impl<DI, M, RST> Display<DI, M, RST>
@@ -92,8 +88,7 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        let mut dcs = Dcs::write_only(&mut self.di);
-        dcs.write_command(&self.madctl.orientation(orientation))?;
+        self.dcs.write_command(&self.madctl.orientation(orientation))?;
 
         Ok(())
     }
@@ -110,7 +105,7 @@ where
     pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
         self.set_address_window(x, y, x, y)?;
         self.model
-            .write_pixels(&mut self.di, core::iter::once(color))?;
+            .write_pixels(&mut self.dcs, core::iter::once(color))?;
 
         Ok(())
     }
@@ -138,7 +133,7 @@ where
         T: IntoIterator<Item = M::ColorFormat>,
     {
         self.set_address_window(sx, sy, ex, ey)?;
-        self.model.write_pixels(&mut self.di, colors)?;
+        self.model.write_pixels(&mut self.dcs, colors)?;
 
         Ok(())
     }
@@ -152,12 +147,8 @@ where
     /// * `bfa` - Bottom fixed area
     ///
     pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
-        self.write_command(Instruction::VSCRDEF)?;
-        self.write_data(&tfa.to_be_bytes())?;
-        self.write_data(&vsa.to_be_bytes())?;
-        self.write_data(&bfa.to_be_bytes())?;
-
-        Ok(())
+        let vscrdef = dcs::Vscrdef::new(tfa, vsa, bfa);
+        self.dcs.write_command(&vscrdef)
     }
 
     ///
@@ -167,8 +158,8 @@ where
     /// * `offset` - scroll offset in pixels
     ///
     pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
-        self.write_command(Instruction::VSCAD)?;
-        self.write_data(&offset.to_be_bytes())
+        let vscad = dcs::Vscad::new(offset);
+        self.dcs.write_command(&vscad)
     }
 
     ///
@@ -176,15 +167,7 @@ where
     /// This returns the display interface, reset pin and and the model deconstructing the driver.
     ///
     pub fn release(self) -> (DI, M, Option<RST>) {
-        (self.di, self.model, self.rst)
-    }
-
-    fn write_command(&mut self, command: Instruction) -> Result<(), Error> {
-        self.di.send_commands(DataFormat::U8(&[command as u8]))
-    }
-
-    fn write_data(&mut self, data: &[u8]) -> Result<(), Error> {
-        self.di.send_data(DataFormat::U8(data))
+        (self.dcs.release(), self.model, self.rst)
     }
 
     // Sets the address window for the display.
@@ -193,28 +176,14 @@ where
         let offset = self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.write_command(Instruction::CASET)?;
-        self.write_data(&sx.to_be_bytes())?;
-        self.write_data(&ex.to_be_bytes())?;
-        self.write_command(Instruction::RASET)?;
-        self.write_data(&sy.to_be_bytes())?;
-        self.write_data(&ey.to_be_bytes())
+        self.dcs.write_command(&dcs::Caset::new(sx, ex))?;
+        self.dcs.write_command(&dcs::Raset::new(sy, ey))
     }
 
     ///
     /// Configures the tearing effect output.
     ///
     pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
-        match tearing_effect {
-            TearingEffect::Off => self.write_command(Instruction::TEOFF),
-            TearingEffect::Vertical => {
-                self.write_command(Instruction::TEON)?;
-                self.write_data(&[0])
-            }
-            TearingEffect::HorizontalAndVertical => {
-                self.write_command(Instruction::TEON)?;
-                self.write_data(&[1])
-            }
-        }
+        self.dcs.tearing_effect(tearing_effect)
     }
 }

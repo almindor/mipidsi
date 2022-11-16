@@ -1,13 +1,19 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
-use crate::{instruction::Instruction, Error};
+use crate::{instruction::Instruction, Error, TearingEffect};
 
 mod madctl;
 pub use madctl::*;
 mod colmod;
 pub use colmod::*;
+mod caset;
+pub use caset::*;
+mod raset;
+pub use raset::*;
 mod vscrdef;
 pub use vscrdef::*;
+mod vscad;
+pub use vscad::*;
 
 ///
 /// Provides a constructor for complex commands
@@ -25,22 +31,29 @@ pub trait DcsCommand {
 /// Raw instructions can be sent using [Dcs::write_instruction].
 /// Display interface can be accessed directly for data transfers using the `di` public field.
 ///
-pub struct Dcs<'di, DI> {
+pub struct Dcs<DI> {
     ///
     /// Display interface instance
     ///
-    pub di: &'di mut DI,
+    pub di: DI,
 }
 
-impl<'di, DI> Dcs<'di, DI>
+impl<DI> Dcs<DI>
 where
     DI: WriteOnlyDataCommand,
 {
     ///
     /// Create new [Dcs] instance using a [WriteOnlyDataCommand]
     ///
-    pub fn write_only(di: &'di mut DI) -> Self {
+    pub fn write_only(di: DI) -> Self {
         Self { di }
+    }
+
+    ///
+    /// Release the Display Interface back
+    /// 
+    pub fn release(self) -> DI {
+        self.di
     }
 
     ///
@@ -53,7 +66,7 @@ where
     ///
     /// Display on/off using [Instruction::DISPON] or [Instruction::DISPOFF]
     ///
-    pub fn display(&mut self, val: bool) -> Result<(), Error> {
+    pub fn display_on(&mut self, val: bool) -> Result<(), Error> {
         self.flip_command(val, Instruction::DISPON, Instruction::DISPOFF)
     }
 
@@ -76,6 +89,14 @@ where
     ///
     pub fn invert_colors(&mut self, val: bool) -> Result<(), Error> {
         self.flip_command(val, Instruction::INVON, Instruction::INVOFF)
+    }
+
+    pub fn tearing_effect(&mut self, te: TearingEffect) -> Result<(), Error> {
+        match te {
+            TearingEffect::Off => self.write_instruction(Instruction::TEOFF, &[]),
+            TearingEffect::Vertical => self.write_instruction(Instruction::TEON, &[0x0]),
+            TearingEffect::HorizontalAndVertical => self.write_instruction(Instruction::TEON, &[0x1]),
+        }
     }
 
     ///

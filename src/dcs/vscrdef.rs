@@ -13,15 +13,14 @@ pub struct Vscrdef {
 
 impl Vscrdef {
     ///
-    /// Construct a new Vscrdef with zero TFA and VSA
-    /// and the specified vsa. This should default to the display's
-    /// height (or width) framebuffer size.
+    /// Construct a new Vscrdef with TFA, VSA and BFA sizes.
+    /// VSA should default to the display's height (or width) framebuffer size.
     ///
-    pub fn new(vsa: u16) -> Self {
+    pub fn new(tfa: u16, vsa: u16, bfa: u16) -> Self {
         Self {
-            tfa: 0,
+            tfa,
             vsa,
-            bfa: 0,
+            bfa,
         }
     }
 }
@@ -53,7 +52,7 @@ mod tests {
 
     #[test]
     fn vscrdef_fills_buffer_properly() -> Result<(), Error> {
-        let vscrdef = Vscrdef::new(320);
+        let vscrdef = Vscrdef::new(0, 320, 0);
 
         let mut buffer = [0u8; 6];
         assert_eq!(vscrdef.fill_params_buf(&mut buffer)?, 6);
