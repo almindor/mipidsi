@@ -110,7 +110,7 @@ where
     /// Writes the specified DCS command "write only" using the provided display interface.
     ///
     pub fn write_command(&mut self, command: &impl DcsCommand) -> Result<(), Error> {
-        let mut param_bytes: [u8; 4] = [0; 4];
+        let mut param_bytes: [u8; 16] = [0; 16];
         let n = command.fill_params_buf(&mut param_bytes)?;
         self.write_instruction(command.instruction(), &param_bytes[..n])
     }

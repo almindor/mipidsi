@@ -18,7 +18,7 @@ impl Raset {
 
 impl DcsCommand for Raset {
     fn instruction(&self) -> Instruction {
-        Instruction::CASET
+        Instruction::RASET
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

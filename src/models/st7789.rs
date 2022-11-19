@@ -38,7 +38,7 @@ impl Model for ST7789 {
         }
         delay.delay_us(150_000);
 
-        dcs.mode_sleep(false)?; // turn off sleep
+        dcs.mode_sleep(false)?;
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
@@ -68,7 +68,7 @@ impl Model for ST7789 {
     {
         dcs.prep_ram_write()?;
 
-        let mut iter = colors.into_iter().map(|c| c.into_storage());
+        let mut iter = colors.into_iter().map(Rgb565::into_storage);
 
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)?;
