@@ -3,7 +3,7 @@ use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
@@ -26,17 +26,17 @@ impl Model for ILI9486Rgb565 {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).map_err(InitError::DelayError)?;
 
         let colmod = 0b0101_0101; // 16bit colors
         Ok(init_common(di, delay, options, colmod)?)
@@ -68,10 +68,10 @@ impl Model for ILI9486Rgb666 {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
@@ -79,7 +79,7 @@ impl Model for ILI9486Rgb666 {
             None => write_command(di, Instruction::SWRESET, &[])?,
         };
 
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).map_err(InitError::DelayError)?;
 
         let colmod = 0b0110_0110; // 18bit colors
         Ok(init_common(di, delay, options, colmod)?)
@@ -145,14 +145,14 @@ where
 }
 
 // common init for all color format models
-fn init_common<DELAY, DI>(
+fn init_common<DELAY, DI, PE>(
     di: &mut DI,
     delay: &mut DELAY,
     options: &ModelOptions,
     colmod: u8,
-) -> Result<u8, Error>
+) -> Result<u8, InitError<PE, DELAY::Error>>
 where
-    DELAY: DelayUs<u32>,
+    DELAY: DelayUs,
     DI: WriteOnlyDataCommand,
 {
     let madctl = options.madctl();
@@ -172,7 +172,7 @@ where
     write_command(di, Instruction::DISPON, &[])?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
-    delay.delay_us(120_000);
+    delay.delay_us(120_000).map_err(InitError::DelayError)?;
 
     Ok(madctl)
 }

@@ -1,6 +1,6 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
 
@@ -19,10 +19,10 @@ impl Model for ST7735s {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand,
     {
         let madctl = options.madctl();
@@ -31,10 +31,10 @@ impl Model for ST7735s {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
             None => write_command(di, Instruction::SWRESET, &[])?,
         }
-        delay.delay_us(200_000);
+        delay.delay_us(200_000).map_err(InitError::DelayError)?;
 
         write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-        delay.delay_us(120_000);
+        delay.delay_us(120_000).map_err(InitError::DelayError)?;
 
         write_command(di, options.invert_command(), &[])?; // set color inversion
         write_command(di, Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate

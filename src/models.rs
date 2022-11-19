@@ -1,7 +1,7 @@
 use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 // existing model implementations
 mod ili9342c;
@@ -25,23 +25,23 @@ pub trait Model {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<u8, InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand;
 
     fn hard_reset<RST, DELAY>(
         &mut self,
         rst: &mut RST,
         delay: &mut DELAY,
-    ) -> Result<(), InitError<RST::Error>>
+    ) -> Result<(), InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
     {
         rst.set_low().map_err(InitError::Pin)?;
-        delay.delay_us(10);
+        delay.delay_us(10).map_err(InitError::DelayError)?;
         rst.set_high().map_err(InitError::Pin)?;
 
         Ok(())

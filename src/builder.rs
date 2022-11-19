@@ -1,7 +1,7 @@
 //! [super::Display] builder module
 
 use display_interface::WriteOnlyDataCommand;
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 use crate::{error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation};
 
@@ -107,11 +107,11 @@ where
     /// The reset pin needs to be in *high* state in order for the display to operate.
     /// If it wasn't provided the user needs to ensure this is the case.
     ///
-    pub fn init<RST>(
+    pub fn init<RST, DELAY: DelayUs>(
         self,
-        delay_source: &mut impl DelayUs<u32>,
+        delay_source: &mut DELAY,
         rst: Option<RST>,
-    ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>>
+    ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error, DELAY::Error>>
     where
         RST: OutputPin,
     {

@@ -14,7 +14,7 @@ rust-version = "1.59"
 [dependencies]
 display-interface = "0.4.1"
 embedded-graphics-core = "0.3.3"
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0-alpha.8"
 nb = "1.0.0"
 
 [dependencies.heapless]

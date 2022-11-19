@@ -3,13 +3,14 @@
 use display_interface::DisplayError;
 
 ///
-/// An error holding its source [embedded_hal::digital::v2::OutputPin::Error]
+/// An error holding its source [embedded_hal::digital::OutputPin::Error]
 /// or [display_interface::DisplayError]
 ///
 #[derive(Debug)]
-pub enum InitError<PE> {
+pub enum InitError<PE, DE> {
     DisplayError,
     Pin(PE),
+    DelayError(DE),
 }
 
 ///
@@ -18,7 +19,7 @@ pub enum InitError<PE> {
 ///
 pub type Error = DisplayError;
 
-impl<PE> From<DisplayError> for InitError<PE> {
+impl<PE, DE> From<DisplayError> for InitError<PE, DE> {
     fn from(_: DisplayError) -> Self {
         InitError::DisplayError
     }

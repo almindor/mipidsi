@@ -33,8 +33,8 @@ use display_interface::DataFormat;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
-use embedded_hal::blocking::delay::DelayUs;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::delay::DelayUs;
+use embedded_hal::digital::OutputPin;
 pub use error::Error;
 
 pub mod options;
@@ -79,10 +79,10 @@ where
     M: Model,
     RST: OutputPin,
 {
-    pub(crate) fn init(
+    pub(crate) fn init<DELAY: DelayUs>(
         &mut self,
-        delay_source: &mut impl DelayUs<u32>,
-    ) -> Result<u8, InitError<RST::Error>> {
+        delay_source: &mut DELAY,
+    ) -> Result<u8, InitError<RST::Error, DELAY::Error>> {
         self.model
             .init(&mut self.di, delay_source, &self.options, &mut self.rst)
     }
