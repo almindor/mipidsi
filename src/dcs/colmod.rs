@@ -29,7 +29,7 @@ impl Colmod {
 
 impl DcsCommand for Colmod {
     fn instruction(&self) -> Instruction {
-        Instruction::MADCTL
+        Instruction::COLMOD
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
