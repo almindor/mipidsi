@@ -5,9 +5,14 @@ use embedded_graphics_core::{
 };
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions};
+use crate::{
+    dcs::{Colmod, Dcs, Madctl},
+    error::InitError,
+    instruction::Instruction,
+    Builder, Error, ModelOptions,
+};
 
-use super::{write_command, Model};
+use super::Model;
 
 /// ILI9486 display in Rgb565 color mode (does *NOT* work with SPI)
 /// Backlight pin is not controlled
@@ -22,11 +27,11 @@ impl Model for ILI9486Rgb565 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<Madctl, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -34,24 +39,24 @@ impl Model for ILI9486Rgb565 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => dcs.write_command(Instruction::SWRESET.to_command())?,
         }
         delay.delay_us(120_000);
 
-        let colmod = 0b0101_0101; // 16bit colors
-        Ok(init_common(di, delay, options, colmod)?)
+        let colmod = Colmod::new::<Self::ColorFormat>();
+        Ok(init_common(dcs, delay, options, colmod)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        write_command(di, Instruction::RAMWR, &[])?;
+        dcs.write_command(Instruction::RAMWR.to_command())?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)
+        dcs.di.send_data(buf)
     }
 
     fn default_options() -> ModelOptions {
@@ -64,11 +69,11 @@ impl Model for ILI9486Rgb666 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<Madctl, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -76,21 +81,21 @@ impl Model for ILI9486Rgb666 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => dcs.write_command(Instruction::SWRESET.to_command())?,
         };
 
         delay.delay_us(120_000);
 
-        let colmod = 0b0110_0110; // 18bit colors
-        Ok(init_common(di, delay, options, colmod)?)
+        let colmod = Colmod::new::<Self::ColorFormat>();
+        Ok(init_common(dcs, delay, options, colmod)?)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        write_command(di, Instruction::RAMWR, &[])?;
+        dcs.write_command(Instruction::RAMWR.to_command())?;
         let mut iter = colors.into_iter().flat_map(|c| {
             let red = c.r() << 2;
             let green = c.g() << 2;
@@ -99,7 +104,7 @@ impl Model for ILI9486Rgb666 {
         });
 
         let buf = DataFormat::U8Iter(&mut iter);
-        di.send_data(buf)
+        dcs.di.send_data(buf)
     }
 
     fn default_options() -> ModelOptions {
@@ -146,30 +151,30 @@ where
 
 // common init for all color format models
 fn init_common<DELAY, DI>(
-    di: &mut DI,
+    dcs: &mut Dcs<DI>,
     delay: &mut DELAY,
     options: &ModelOptions,
-    colmod: u8,
-) -> Result<u8, Error>
+    colmod: Colmod,
+) -> Result<Madctl, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
 {
-    let madctl = options.madctl();
-    write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
-    write_command(di, Instruction::COLMOD, &[colmod])?; // 18bit 256k colors
-    write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
-    write_command(di, Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
-    write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
-    write_command(di, options.invert_command(), &[])?; // set color inversion
+    let madctl = Madctl::from(options);
+    dcs.write_command(Instruction::SLPOUT.to_command())?; // turn off sleep
+    dcs.write_command(colmod)?; // 18bit 256k colors
+    dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
+                                // dcs.write_command(Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
+                                // dcs.write_command(Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+    dcs.write_command(options.invert_colors)?;
 
     // optional gamma setup
-    // write_command(di, Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
-    // write_command(di, Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
+    // dcs.write_command(Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
+    // dcs.write_command(Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
 
-    write_command(di, Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
-    write_command(di, Instruction::NORON, &[])?; // turn to normal mode
-    write_command(di, Instruction::DISPON, &[])?; // turn on display
+    // dcs.write_command(Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
+    dcs.write_command(Instruction::NORON.to_command())?; // turn to normal mode
+    dcs.write_command(Instruction::DISPON.to_command())?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
     delay.delay_us(120_000);

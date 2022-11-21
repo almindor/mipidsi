@@ -4,7 +4,8 @@ use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation, RefreshOrder, dcs::Dcs,
+    dcs::Dcs, error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation,
+    RefreshOrder,
 };
 
 ///
@@ -50,7 +51,7 @@ where
     /// Sets the invert color flag
     ///
     pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
-        self.options.invert_colors = invert_colors;
+        self.options.invert_colors = invert_colors.into();
         self
     }
 

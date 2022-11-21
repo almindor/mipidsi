@@ -88,7 +88,8 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        self.dcs.write_command(&self.madctl.orientation(orientation))?;
+        self.dcs
+            .write_command(self.madctl.orientation(orientation))?;
 
         Ok(())
     }
@@ -148,7 +149,7 @@ where
     ///
     pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
         let vscrdef = dcs::Vscrdef::new(tfa, vsa, bfa);
-        self.dcs.write_command(&vscrdef)
+        self.dcs.write_command(vscrdef)
     }
 
     ///
@@ -159,7 +160,7 @@ where
     ///
     pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
         let vscad = dcs::Vscad::new(offset);
-        self.dcs.write_command(&vscad)
+        self.dcs.write_command(vscad)
     }
 
     ///
@@ -176,8 +177,8 @@ where
         let offset = self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.dcs.write_command(&dcs::Caset::new(sx, ex))?;
-        self.dcs.write_command(&dcs::Raset::new(sy, ey))
+        self.dcs.write_command(dcs::Caset::new(sx, ex))?;
+        self.dcs.write_command(dcs::Raset::new(sy, ey))
     }
 
     ///

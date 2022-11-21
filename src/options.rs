@@ -11,7 +11,7 @@ pub struct ModelOptions {
     /// Initial display orientation (without inverts)
     pub(crate) orientation: Orientation,
     /// Whether to invert colors for this display/model (INVON)
-    pub(crate) invert_colors: bool,
+    pub(crate) invert_colors: ColorInversion,
     /// Display refresh order
     pub(crate) refresh_order: RefreshOrder,
     /// Offset override function returning (w, h) offset for current
@@ -32,7 +32,7 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
-            invert_colors: false,
+            invert_colors: ColorInversion::default(),
             refresh_order: RefreshOrder::default(),
             window_offset_handler: no_offset,
             display_size,
@@ -52,7 +52,7 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
-            invert_colors: false,
+            invert_colors: ColorInversion::default(),
             refresh_order: RefreshOrder::default(),
             window_offset_handler,
             display_size,
@@ -61,7 +61,7 @@ impl ModelOptions {
     }
 
     pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
-        self.invert_colors = invert_colors;
+        self.invert_colors = invert_colors.into();
         self
     }
 
@@ -186,6 +186,27 @@ impl Orientation {
             Orientation::Landscape(true) => 0b0110_0000,
             Orientation::LandscapeInverted(false) => 0b1110_0000,
             Orientation::LandscapeInverted(true) => 0b1010_0000,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ColorInversion {
+    Normal,
+    Inverted,
+}
+
+impl Default for ColorInversion {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
+impl From<bool> for ColorInversion {
+    fn from(val: bool) -> Self {
+        match val {
+            true => Self::Inverted,
+            false => Self::Normal,
         }
     }
 }

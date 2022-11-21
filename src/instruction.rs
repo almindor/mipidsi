@@ -1,5 +1,6 @@
 /// MIPI DSI compatible instructions.
 #[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Instruction {
     NOP = 0x00,

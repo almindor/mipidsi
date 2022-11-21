@@ -5,6 +5,7 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 use crate::{
     dcs::{Colmod, Dcs, Madctl, Vscrdef},
     error::InitError,
+    instruction::Instruction,
     Error, ModelOptions,
 };
 
@@ -32,28 +33,27 @@ impl Model for ST7789 {
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
+        let madctl = Madctl::from(options);
+
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.sw_reset()?,
+            None => dcs.write_command(Instruction::SWRESET.to_command())?,
         }
         delay.delay_us(150_000);
 
-        dcs.mode_sleep(false)?;
+        dcs.write_command(Instruction::SLPOUT.to_command())?;
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
-        let vcsrdef = Vscrdef::new(0, options.framebuffer_size_max(), 0);
-        dcs.write_command(&vcsrdef)?;
-        let madctl = Madctl::from(options);
-        dcs.write_command(&madctl)?;
+        dcs.write_command(Vscrdef::from(options))?;
+        dcs.write_command(madctl)?;
 
-        dcs.invert_colors(options.invert_colors)?;
-        let colmod = Colmod::new::<Self::ColorFormat>();
-        dcs.write_command(&colmod)?;
+        dcs.write_command(options.invert_colors)?;
+        dcs.write_command(Colmod::new::<Self::ColorFormat>())?;
         delay.delay_us(10_000);
-        dcs.mode_normal(true)?;
+        dcs.write_command(Instruction::NORON.to_command())?;
         delay.delay_us(10_000);
-        dcs.display_on(true)?;
+        dcs.write_command(Instruction::DISPON.to_command())?;
 
         // DISPON requires some time otherwise we risk SPI data issues
         delay.delay_us(120_000);
@@ -66,7 +66,7 @@ impl Model for ST7789 {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.prep_ram_write()?;
+        dcs.write_command(Instruction::RAMWR.to_command())?;
 
         let mut iter = colors.into_iter().map(Rgb565::into_storage);
 

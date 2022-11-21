@@ -1,6 +1,6 @@
 //! Module for the VSCRDEF visual scroll definition instruction constructors
 
-use crate::{instruction::Instruction, Error};
+use crate::{instruction::Instruction, Error, ModelOptions};
 
 use super::DcsCommand;
 
@@ -17,11 +17,7 @@ impl Vscrdef {
     /// VSA should default to the display's height (or width) framebuffer size.
     ///
     pub fn new(tfa: u16, vsa: u16, bfa: u16) -> Self {
-        Self {
-            tfa,
-            vsa,
-            bfa,
-        }
+        Self { tfa, vsa, bfa }
     }
 }
 
@@ -43,6 +39,16 @@ impl DcsCommand for Vscrdef {
         buffer[5] = bfa_bytes[1];
 
         Ok(6)
+    }
+}
+
+impl From<&ModelOptions> for Vscrdef {
+    fn from(options: &ModelOptions) -> Self {
+        Self {
+            tfa: 0,
+            vsa: options.framebuffer_size_max(),
+            bfa: 0,
+        }
     }
 }
 

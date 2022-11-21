@@ -1,16 +1,20 @@
-use crate::{dcs::{Madctl, Dcs}, error::InitError, Error, ModelOptions};
+use crate::{
+    dcs::{Dcs, Madctl},
+    error::InitError,
+    Error, ModelOptions,
+};
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 // existing model implementations
 // mod ili9342c;
-// mod ili9486;
+mod ili9486;
 // mod st7735s;
 mod st7789;
 
 // pub use ili9342c::*;
-// pub use ili9486::*;
+pub use ili9486::*;
 // pub use st7735s::*;
 pub use st7789::*;
 
