@@ -1,10 +1,13 @@
-use core::ops::Deref;
-
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, Builder, Error, ModelOptions, dcs::{Madctl, Colmod}};
+use crate::{
+    dcs::{Colmod, Madctl},
+    error::InitError,
+    instruction::Instruction,
+    Builder, Error, ModelOptions,
+};
 
 use super::{Dcs, Model};
 
@@ -31,35 +34,32 @@ impl Model for ST7735s {
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Instruction::SWRESET.deref())?,
+            None => dcs.write_command(Instruction::SWRESET.to_command())?,
         }
         delay.delay_us(200_000);
 
-        dcs.write_command(Instruction::SLPOUT)?; // turn off sleep
+        dcs.write_command(Instruction::SLPOUT.to_command())?; // turn off sleep
         delay.delay_us(120_000);
 
         dcs.write_command(options.invert_colors)?; // set color inversion
-        dcs.write_instruction(Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
-        dcs.write_instruction(Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
-        dcs.write_instruction(
-            Instruction::FRMCTR3,
-            &[0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A],
-        )?; // set frame rate
-        dcs.write_instruction(Instruction::INVCO, &[0b0000_0011])?; // set inversion control
-        dcs.write_instruction(Instruction::PWR1, &[0x62, 0x02, 0x04])?; // set power control 1
-        dcs.write_instruction(Instruction::PWR2, &[0xC0])?; // set power control 2
-        dcs.write_instruction(Instruction::PWR3, &[0x0D, 0x00])?; // set power control 3
-        dcs.write_instruction(Instruction::PWR4, &[0x8D, 0x6A])?; // set power control 4
-        dcs.write_instruction(Instruction::PWR5, &[0x8D, 0xEE])?; // set power control 5
-        dcs.write_instruction(Instruction::VCMOFSET, &[0x0E])?; // set VCOM control 1
-        dcs.write_instruction(
+        dcs.write_raw(Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
+        dcs.write_raw(Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
+        dcs.write_raw(Instruction::FRMCTR3, &[0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A])?; // set frame rate
+        dcs.write_raw(Instruction::INVCO, &[0b0000_0011])?; // set inversion control
+        dcs.write_raw(Instruction::PWR1, &[0x62, 0x02, 0x04])?; // set power control 1
+        dcs.write_raw(Instruction::PWR2, &[0xC0])?; // set power control 2
+        dcs.write_raw(Instruction::PWR3, &[0x0D, 0x00])?; // set power control 3
+        dcs.write_raw(Instruction::PWR4, &[0x8D, 0x6A])?; // set power control 4
+        dcs.write_raw(Instruction::PWR5, &[0x8D, 0xEE])?; // set power control 5
+        dcs.write_raw(Instruction::VCMOFSET, &[0x0E])?; // set VCOM control 1
+        dcs.write_raw(
             Instruction::PGC,
             &[
                 0x10, 0x0E, 0x02, 0x03, 0x0E, 0x07, 0x02, 0x07, 0x0A, 0x12, 0x27, 0x37, 0x00, 0x0D,
                 0x0E, 0x10,
             ],
         )?; // set GAMMA +Polarity characteristics
-        dcs.write_instruction(
+        dcs.write_raw(
             Instruction::NGC,
             &[
                 0x10, 0x0E, 0x03, 0x03, 0x0F, 0x06, 0x02, 0x08, 0x0A, 0x13, 0x26, 0x36, 0x00, 0x0D,
@@ -68,7 +68,7 @@ impl Model for ST7735s {
         )?; // set GAMMA -Polarity characteristics
         dcs.write_command(Colmod::new::<Self::ColorFormat>())?; // set interface pixel format, 16bit pixel into frame memory
         dcs.write_command(madctl)?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
-        dcs.write_command(Instruction::DISPON)?; // turn on display
+        dcs.write_command(Instruction::DISPON.to_command())?; // turn on display
 
         Ok(madctl)
     }
@@ -78,7 +78,7 @@ impl Model for ST7735s {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Instruction::RAMWR)?;
+        dcs.write_command(Instruction::RAMWR.to_command())?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);

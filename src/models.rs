@@ -8,14 +8,14 @@ use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 // existing model implementations
-// mod ili9342c;
+mod ili9342c;
 mod ili9486;
-// mod st7735s;
+mod st7735s;
 mod st7789;
 
-// pub use ili9342c::*;
+pub use ili9342c::*;
 pub use ili9486::*;
-// pub use st7735s::*;
+pub use st7735s::*;
 pub use st7789::*;
 
 pub trait Model {
