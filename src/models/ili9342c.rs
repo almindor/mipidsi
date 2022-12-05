@@ -6,7 +6,7 @@ use embedded_graphics_core::{
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{Colmod, Dcs, Madctl},
+    dcs::{Colmod, Dcs, Dispon, Madctl, Noron, Ramwr, Slpout, Swreset},
     error::InitError,
     instruction::Instruction,
     Builder, Error, ModelOptions,
@@ -41,7 +41,7 @@ impl Model for ILI9342CRgb565 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Instruction::SWRESET.to_command())?,
+            None => dcs.write_command(Swreset)?,
         }
 
         delay.delay_us(120_000);
@@ -56,7 +56,7 @@ impl Model for ILI9342CRgb565 {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Instruction::RAMWR.to_command())?;
+        dcs.write_command(Ramwr)?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
@@ -85,7 +85,7 @@ impl Model for ILI9342CRgb666 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Instruction::SWRESET.to_command())?,
+            None => dcs.write_command(Swreset)?,
         }
 
         delay.delay_us(120_000);
@@ -100,7 +100,7 @@ impl Model for ILI9342CRgb666 {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Instruction::RAMWR.to_command())?;
+        dcs.write_command(Ramwr)?;
         let mut iter = colors.into_iter().flat_map(|c| {
             let red = c.r() << 2;
             let green = c.g() << 2;
@@ -166,13 +166,13 @@ where
 {
     let madctl = Madctl::from(options);
 
-    dcs.write_command(Instruction::SLPOUT.to_command())?; // turn off sleep
+    dcs.write_command(Slpout)?; // turn off sleep
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
     dcs.write_raw(Instruction::INVCO, &[0x0])?; //Inversion Control [00]
     dcs.write_command(options.invert_colors)?; // set color inversion
 
-    dcs.write_command(Instruction::NORON.to_command())?; // turn to normal mode
-    dcs.write_command(Instruction::DISPON.to_command())?; // turn on display
+    dcs.write_command(Noron)?; // turn to normal mode
+    dcs.write_command(Dispon)?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
     delay.delay_us(120_000);

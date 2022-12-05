@@ -2,8 +2,9 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 
 use crate::{instruction::Instruction, Error, TearingEffect};
 
-mod simple_command;
-pub use simple_command::*;
+#[macro_use]
+mod macros;
+
 mod madctl;
 pub use madctl::*;
 mod colmod;
@@ -89,3 +90,17 @@ where
         Ok(())
     }
 }
+
+// DCS commands that don't use any parameters
+dcs_basic_command!(Swreset, Instruction::SWRESET);
+dcs_basic_command!(Slpin, Instruction::SLPIN);
+dcs_basic_command!(Slpout, Instruction::SLPOUT);
+dcs_basic_command!(Plton, Instruction::PTLON);
+dcs_basic_command!(Noron, Instruction::NORON);
+dcs_basic_command!(Dispoff, Instruction::DISPOFF);
+dcs_basic_command!(Dispon, Instruction::DISPON);
+dcs_basic_command!(Idloff, Instruction::IDLOFF);
+dcs_basic_command!(Idlon, Instruction::IDLON);
+dcs_basic_command!(Invoff, Instruction::INVOFF);
+dcs_basic_command!(Invon, Instruction::INVON);
+dcs_basic_command!(Ramwr, Instruction::RAMWR);

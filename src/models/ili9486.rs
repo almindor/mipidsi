@@ -6,7 +6,7 @@ use embedded_graphics_core::{
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{Colmod, Dcs, Madctl},
+    dcs::{Colmod, Dcs, Dispon, Madctl, Noron, Ramwr, Slpout, Swreset},
     error::InitError,
     instruction::Instruction,
     Builder, Error, ModelOptions,
@@ -39,7 +39,7 @@ impl Model for ILI9486Rgb565 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Instruction::SWRESET.to_command())?,
+            None => dcs.write_command(Swreset)?,
         }
         delay.delay_us(120_000);
 
@@ -52,7 +52,7 @@ impl Model for ILI9486Rgb565 {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Instruction::RAMWR.to_command())?;
+        dcs.write_command(Ramwr)?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);
@@ -81,7 +81,7 @@ impl Model for ILI9486Rgb666 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Instruction::SWRESET.to_command())?,
+            None => dcs.write_command(Swreset)?,
         };
 
         delay.delay_us(120_000);
@@ -95,7 +95,7 @@ impl Model for ILI9486Rgb666 {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Instruction::RAMWR.to_command())?;
+        dcs.write_command(Ramwr)?;
         let mut iter = colors.into_iter().flat_map(|c| {
             let red = c.r() << 2;
             let green = c.g() << 2;
@@ -161,7 +161,7 @@ where
     DI: WriteOnlyDataCommand,
 {
     let madctl = Madctl::from(options);
-    dcs.write_command(Instruction::SLPOUT.to_command())?; // turn off sleep
+    dcs.write_command(Slpout)?; // turn off sleep
     dcs.write_command(colmod)?; // 18bit 256k colors
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
                                 // dcs.write_command(Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
@@ -173,8 +173,8 @@ where
     // dcs.write_raw(Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
 
     dcs.write_raw(Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
-    dcs.write_command(Instruction::NORON.to_command())?; // turn to normal mode
-    dcs.write_command(Instruction::DISPON.to_command())?; // turn on display
+    dcs.write_command(Noron)?; // turn to normal mode
+    dcs.write_command(Dispon)?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
     delay.delay_us(120_000);
