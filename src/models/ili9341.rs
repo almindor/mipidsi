@@ -164,7 +164,7 @@ where
     write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
     write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
     write_command(di, Instruction::INVCO, &[0x0])?; //Inversion Control [00]
-    // write_command(di, options.invert_command(), &[])?; // set color inversion
+    write_command(di, options.invert_command(), &[])?; // set color inversion
 
     write_command(di, Instruction::NORON, &[])?; // turn to normal mode
     write_command(di, Instruction::DISPON, &[])?; // turn on display
