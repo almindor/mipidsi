@@ -24,6 +24,7 @@ Variants that require different screen sizes and window addressing offsets are n
 * ST7789
 * ST7735
 * ILI9486
+* ILI9341
 * ILI9342C
 
 ## Migration
