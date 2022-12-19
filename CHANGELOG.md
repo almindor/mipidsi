@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - `Model::init` changed to expect `options: &ModelOptions`
+- reworked how `DCS` instructions are handled using the new `dcs` module and `DcsCommand` trait and implementations
+- reworked model init functions to use new `dcs` module
 
 ### Removed
 
