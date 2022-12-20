@@ -94,13 +94,9 @@ impl ModelOptions {
     /// area setups.
     ///
     pub fn framebuffer_size_max(&self) -> u16 {
-        let fb_size = self.framebuffer_size();
+        let (w, h) = self.framebuffer_size();
 
-        if fb_size.0 > fb_size.1 {
-            fb_size.0
-        } else {
-            fb_size.1
-        }
+        w.max(h)
     }
 
     ///
