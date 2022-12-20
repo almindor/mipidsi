@@ -62,8 +62,8 @@ impl ModelOptions {
         }
     }
 
-    pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
-        self.invert_colors = invert_colors.into();
+    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
+        self.invert_colors = color_inversion;
         self
     }
 
@@ -201,15 +201,6 @@ pub enum ColorInversion {
 impl Default for ColorInversion {
     fn default() -> Self {
         Self::Normal
-    }
-}
-
-impl From<bool> for ColorInversion {
-    fn from(val: bool) -> Self {
-        match val {
-            true => Self::Inverted,
-            false => Self::Normal,
-        }
     }
 }
 

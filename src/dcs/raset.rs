@@ -5,14 +5,17 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Raset(u16, u16);
+pub struct Raset {
+    start_row: u16,
+    end_row: u16,
+}
 
 impl Raset {
     ///
     /// Construct a new Raset range
     ///
-    pub fn new(sy: u16, ey: u16) -> Self {
-        Self(sy, ey)
+    pub fn new(start_row: u16, end_row: u16) -> Self {
+        Self { start_row, end_row }
     }
 }
 
@@ -22,12 +25,8 @@ impl DcsCommand for Raset {
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
-        let sy_bytes = self.0.to_be_bytes();
-        let ey_bytes = self.1.to_be_bytes();
-        buffer[0] = sy_bytes[0];
-        buffer[1] = sy_bytes[1];
-        buffer[2] = ey_bytes[0];
-        buffer[3] = ey_bytes[1];
+        buffer[0..2].copy_from_slice(&self.start_row.to_be_bytes());
+        buffer[2..4].copy_from_slice(&self.end_row.to_be_bytes());
 
         Ok(4)
     }

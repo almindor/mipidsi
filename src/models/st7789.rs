@@ -5,7 +5,7 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 use crate::{
     dcs::{Colmod, Dcs, Dispon, Madctl, Noron, Ramwr, Slpout, Swreset, Vscrdef},
     error::InitError,
-    Error, ModelOptions,
+    ColorInversion, Error, ModelOptions,
 };
 
 use super::Model;
@@ -75,6 +75,7 @@ impl Model for ST7789 {
     }
 
     fn default_options() -> crate::ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320)).with_invert_colors(true)
+        ModelOptions::with_sizes((240, 320), (240, 320))
+            .with_invert_colors(ColorInversion::Inverted)
     }
 }

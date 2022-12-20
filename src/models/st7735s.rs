@@ -6,7 +6,7 @@ use crate::{
     dcs::{Colmod, Dispon, Madctl, Ramwr, Slpout, Swreset},
     error::InitError,
     instruction::Instruction,
-    Builder, Error, ModelOptions,
+    Builder, ColorInversion, Error, ModelOptions,
 };
 
 use super::{Dcs, Model};
@@ -87,7 +87,7 @@ impl Model for ST7735s {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((80, 160), (132, 162)).with_invert_colors(true)
+        ModelOptions::with_sizes((80, 160), (132, 162)).with_invert_colors(ColorInversion::Inverted)
     }
 }
 

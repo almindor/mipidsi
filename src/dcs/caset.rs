@@ -5,14 +5,20 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Caset(u16, u16);
+pub struct Caset {
+    start_column: u16,
+    end_column: u16,
+}
 
 impl Caset {
     ///
     /// Construct a new Caset range
     ///
-    pub fn new(sx: u16, ex: u16) -> Self {
-        Self(sx, ex)
+    pub fn new(start_column: u16, end_column: u16) -> Self {
+        Self {
+            start_column,
+            end_column,
+        }
     }
 }
 
@@ -22,12 +28,8 @@ impl DcsCommand for Caset {
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
-        let sx_bytes = self.0.to_be_bytes();
-        let ex_bytes = self.1.to_be_bytes();
-        buffer[0] = sx_bytes[0];
-        buffer[1] = sx_bytes[1];
-        buffer[2] = ex_bytes[0];
-        buffer[3] = ex_bytes[1];
+        buffer[0..2].copy_from_slice(&self.start_column.to_be_bytes());
+        buffer[2..4].copy_from_slice(&self.end_column.to_be_bytes());
 
         Ok(4)
     }
