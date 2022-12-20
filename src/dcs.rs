@@ -19,7 +19,7 @@ mod vscad;
 pub use vscad::*;
 
 ///
-/// Provides a constructor for complex commands
+/// Provides a constructor for DCS commands
 /// e.g. `Madctl::new().with_bgr(true).bytes()`
 ///
 pub trait DcsCommand {
