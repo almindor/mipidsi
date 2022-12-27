@@ -186,6 +186,7 @@ where
     /// Configures the tearing effect output.
     ///
     pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
-        self.dcs.tearing_effect(tearing_effect)
+        self.dcs
+            .write_command(dcs::SetTearingEffect::from(tearing_effect))
     }
 }

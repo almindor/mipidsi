@@ -1,6 +1,6 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
-use crate::{instruction::Instruction, Error, TearingEffect};
+use crate::{instruction::Instruction, Error};
 
 #[macro_use]
 mod macros;
@@ -17,6 +17,8 @@ mod vscrdef;
 pub use vscrdef::*;
 mod vscad;
 pub use vscad::*;
+mod set_tearing_effect;
+pub use set_tearing_effect::*;
 
 ///
 /// Provides a constructor for DCS commands
@@ -57,14 +59,6 @@ where
     ///
     pub fn release(self) -> DI {
         self.di
-    }
-
-    pub fn tearing_effect(&mut self, te: TearingEffect) -> Result<(), Error> {
-        match te {
-            TearingEffect::Off => self.write_raw(Instruction::TEOFF, &[]),
-            TearingEffect::Vertical => self.write_raw(Instruction::TEON, &[0x0]),
-            TearingEffect::HorizontalAndVertical => self.write_raw(Instruction::TEON, &[0x1]),
-        }
     }
 
     ///
