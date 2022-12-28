@@ -3,7 +3,7 @@ use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{Dcs, Madctl, Swreset},
+    dcs::{Dcs, SetAddressMode, SoftReset},
     error::InitError,
     models::{ili934x, Model},
     Builder, Error, ModelOptions,
@@ -28,7 +28,7 @@ impl Model for ILI9342CRgb565 {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<Madctl, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -36,7 +36,7 @@ impl Model for ILI9342CRgb565 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Swreset)?,
+            None => dcs.write_command(SoftReset)?,
         }
 
         ili934x::init_common::<_, _, Self::ColorFormat>(dcs, delay, options).map_err(Into::into)
@@ -64,7 +64,7 @@ impl Model for ILI9342CRgb666 {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<Madctl, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -72,7 +72,7 @@ impl Model for ILI9342CRgb666 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Swreset)?,
+            None => dcs.write_command(SoftReset)?,
         }
 
         ili934x::init_common::<_, _, Self::ColorFormat>(dcs, delay, options).map_err(Into::into)

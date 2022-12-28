@@ -69,7 +69,7 @@ where
     // Model Options, includes current orientation
     options: ModelOptions,
     // Current MADCTL value
-    madctl: dcs::Madctl,
+    madctl: dcs::SetAddressMode,
 }
 
 impl<DI, M, RST> Display<DI, M, RST>
@@ -149,7 +149,7 @@ where
     /// * `bfa` - Bottom fixed area
     ///
     pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
-        let vscrdef = dcs::Vscrdef::new(tfa, vsa, bfa);
+        let vscrdef = dcs::SetScrollArea::new(tfa, vsa, bfa);
         self.dcs.write_command(vscrdef)
     }
 
@@ -160,7 +160,7 @@ where
     /// * `offset` - scroll offset in pixels
     ///
     pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
-        let vscad = dcs::Vscad::new(offset);
+        let vscad = dcs::SetScrollStart::new(offset);
         self.dcs.write_command(vscad)
     }
 
@@ -178,8 +178,8 @@ where
         let offset = self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.dcs.write_command(dcs::Caset::new(sx, ex))?;
-        self.dcs.write_command(dcs::Raset::new(sy, ey))
+        self.dcs.write_command(dcs::SetColumnAddress::new(sx, ex))?;
+        self.dcs.write_command(dcs::SetPageAddress::new(sy, ey))
     }
 
     ///

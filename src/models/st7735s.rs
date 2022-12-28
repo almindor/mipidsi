@@ -3,7 +3,7 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{Colmod, Dispon, Madctl, Ramwr, Slpout, Swreset},
+    dcs::{SetPixelFormat, ExitSleepMode, SetAddressMode, SetDisplayOn, SoftReset, WriteMemoryStart},
     error::InitError,
     instruction::Instruction,
     Builder, ColorInversion, Error, ModelOptions,
@@ -24,21 +24,21 @@ impl Model for ST7735s {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<Madctl, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = Madctl::from(options);
+        let madctl = SetAddressMode::from(options);
 
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(Swreset)?,
+            None => dcs.write_command(SoftReset)?,
         }
         delay.delay_us(200_000);
 
-        dcs.write_command(Slpout)?; // turn off sleep
+        dcs.write_command(ExitSleepMode)?; // turn off sleep
         delay.delay_us(120_000);
 
         dcs.write_command(options.invert_colors)?; // set color inversion
@@ -66,9 +66,9 @@ impl Model for ST7735s {
                 0x0E, 0x10,
             ],
         )?; // set GAMMA -Polarity characteristics
-        dcs.write_command(Colmod::new::<Self::ColorFormat>())?; // set interface pixel format, 16bit pixel into frame memory
+        dcs.write_command(SetPixelFormat::new::<Self::ColorFormat>())?; // set interface pixel format, 16bit pixel into frame memory
         dcs.write_command(madctl)?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
-        dcs.write_command(Dispon)?; // turn on display
+        dcs.write_command(SetDisplayOn)?; // turn on display
 
         Ok(madctl)
     }
@@ -78,7 +78,7 @@ impl Model for ST7735s {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        dcs.write_command(Ramwr)?;
+        dcs.write_command(WriteMemoryStart)?;
         let mut iter = colors.into_iter().map(|c| c.into_storage());
 
         let buf = DataFormat::U16BEIter(&mut iter);

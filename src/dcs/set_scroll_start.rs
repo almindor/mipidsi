@@ -5,9 +5,9 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Vscad(u16);
+pub struct SetScrollStart(u16);
 
-impl Vscad {
+impl SetScrollStart {
     ///
     /// Construct a new Vscad given offset
     ///
@@ -16,7 +16,7 @@ impl Vscad {
     }
 }
 
-impl DcsCommand for Vscad {
+impl DcsCommand for SetScrollStart {
     fn instruction(&self) -> Instruction {
         Instruction::VSCAD
     }
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn vscad_fills_offset_properly() -> Result<(), Error> {
-        let vscad = Vscad::new(320);
+        let vscad = SetScrollStart::new(320);
 
         let mut buffer = [0u8; 2];
         assert_eq!(vscad.fill_params_buf(&mut buffer)?, 2);

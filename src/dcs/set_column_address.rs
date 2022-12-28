@@ -5,12 +5,12 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Caset {
+pub struct SetColumnAddress {
     start_column: u16,
     end_column: u16,
 }
 
-impl Caset {
+impl SetColumnAddress {
     ///
     /// Construct a new Caset range
     ///
@@ -22,7 +22,7 @@ impl Caset {
     }
 }
 
-impl DcsCommand for Caset {
+impl DcsCommand for SetColumnAddress {
     fn instruction(&self) -> Instruction {
         Instruction::CASET
     }
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn caset_fills_data_properly() -> Result<(), Error> {
-        let caset = Caset::new(0, 320);
+        let caset = SetColumnAddress::new(0, 320);
 
         let mut buffer = [0u8; 4];
         assert_eq!(caset.fill_params_buf(&mut buffer)?, 4);

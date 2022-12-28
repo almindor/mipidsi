@@ -7,9 +7,9 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Colmod(u8);
+pub struct SetPixelFormat(u8);
 
-impl Colmod {
+impl SetPixelFormat {
     ///
     /// Set the color format that the MCU will be sending to this
     /// display. Uses RawData::BITS_PER_PIXEL to decide.
@@ -27,7 +27,7 @@ impl Colmod {
     }
 }
 
-impl DcsCommand for Colmod {
+impl DcsCommand for SetPixelFormat {
     fn instruction(&self) -> Instruction {
         Instruction::COLMOD
     }
@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn colmod_rgb565_is_16bit() -> Result<(), Error> {
-        let colmod = Colmod::new::<Rgb565>();
+        let colmod = SetPixelFormat::new::<Rgb565>();
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn colmod_rgb666_is_18bit() -> Result<(), Error> {
-        let colmod = Colmod::new::<Rgb666>();
+        let colmod = SetPixelFormat::new::<Rgb666>();
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn colmod_rgb888_is_24bit() -> Result<(), Error> {
-        let colmod = Colmod::new::<Rgb888>();
+        let colmod = SetPixelFormat::new::<Rgb888>();
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);

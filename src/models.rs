@@ -1,5 +1,5 @@
 use crate::{
-    dcs::{Dcs, Madctl},
+    dcs::{Dcs, SetAddressMode},
     error::InitError,
     Error, ModelOptions,
 };
@@ -32,7 +32,7 @@ pub trait Model {
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<Madctl, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,

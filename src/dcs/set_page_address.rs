@@ -5,12 +5,12 @@ use crate::{instruction::Instruction, Error};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Raset {
+pub struct SetPageAddress {
     start_row: u16,
     end_row: u16,
 }
 
-impl Raset {
+impl SetPageAddress {
     ///
     /// Construct a new Raset range
     ///
@@ -19,7 +19,7 @@ impl Raset {
     }
 }
 
-impl DcsCommand for Raset {
+impl DcsCommand for SetPageAddress {
     fn instruction(&self) -> Instruction {
         Instruction::RASET
     }
@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn raset_fills_data_properly() -> Result<(), Error> {
-        let raset = Raset::new(0, 320);
+        let raset = SetPageAddress::new(0, 320);
 
         let mut buffer = [0u8; 4];
         assert_eq!(raset.fill_params_buf(&mut buffer)?, 4);

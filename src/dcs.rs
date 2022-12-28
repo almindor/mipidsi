@@ -5,18 +5,18 @@ use crate::{instruction::Instruction, Error};
 #[macro_use]
 mod macros;
 
-mod madctl;
-pub use madctl::*;
-mod colmod;
-pub use colmod::*;
-mod caset;
-pub use caset::*;
-mod raset;
-pub use raset::*;
-mod vscrdef;
-pub use vscrdef::*;
-mod vscad;
-pub use vscad::*;
+mod set_address_mode;
+pub use set_address_mode::*;
+mod set_pixel_format;
+pub use set_pixel_format::*;
+mod set_column_address;
+pub use set_column_address::*;
+mod set_page_address;
+pub use set_page_address::*;
+mod set_scroll_area;
+pub use set_scroll_area::*;
+mod set_scroll_start;
+pub use set_scroll_start::*;
 mod set_tearing_effect;
 pub use set_tearing_effect::*;
 
@@ -86,15 +86,15 @@ where
 }
 
 // DCS commands that don't use any parameters
-dcs_basic_command!(Swreset, Instruction::SWRESET);
-dcs_basic_command!(Slpin, Instruction::SLPIN);
-dcs_basic_command!(Slpout, Instruction::SLPOUT);
-dcs_basic_command!(Plton, Instruction::PTLON);
-dcs_basic_command!(Noron, Instruction::NORON);
-dcs_basic_command!(Dispoff, Instruction::DISPOFF);
-dcs_basic_command!(Dispon, Instruction::DISPON);
-dcs_basic_command!(Idloff, Instruction::IDLOFF);
-dcs_basic_command!(Idlon, Instruction::IDLON);
-dcs_basic_command!(Invoff, Instruction::INVOFF);
-dcs_basic_command!(Invon, Instruction::INVON);
-dcs_basic_command!(Ramwr, Instruction::RAMWR);
+dcs_basic_command!(SoftReset, Instruction::SWRESET);
+dcs_basic_command!(EnterSleepMode, Instruction::SLPIN);
+dcs_basic_command!(ExitSleepMode, Instruction::SLPOUT);
+dcs_basic_command!(EnterPartialMode, Instruction::PTLON);
+dcs_basic_command!(EnterNormalMode, Instruction::NORON);
+dcs_basic_command!(SetDisplayOff, Instruction::DISPOFF);
+dcs_basic_command!(SetDisplayOn, Instruction::DISPON);
+dcs_basic_command!(ExitIdleMode, Instruction::IDLOFF);
+dcs_basic_command!(EnterIdleMode, Instruction::IDLON);
+dcs_basic_command!(ExitInvertMode, Instruction::INVOFF);
+dcs_basic_command!(EnterInvertMode, Instruction::INVON);
+dcs_basic_command!(WriteMemoryStart, Instruction::RAMWR);

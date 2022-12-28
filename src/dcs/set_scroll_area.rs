@@ -5,13 +5,13 @@ use crate::{instruction::Instruction, Error, ModelOptions};
 use super::DcsCommand;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Vscrdef {
+pub struct SetScrollArea {
     tfa: u16,
     vsa: u16,
     bfa: u16,
 }
 
-impl Vscrdef {
+impl SetScrollArea {
     ///
     /// Construct a new Vscrdef with TFA, VSA and BFA sizes.
     /// VSA should default to the display's height (or width) framebuffer size.
@@ -21,7 +21,7 @@ impl Vscrdef {
     }
 }
 
-impl DcsCommand for Vscrdef {
+impl DcsCommand for SetScrollArea {
     fn instruction(&self) -> Instruction {
         Instruction::VSCRDEF
     }
@@ -42,7 +42,7 @@ impl DcsCommand for Vscrdef {
     }
 }
 
-impl From<&ModelOptions> for Vscrdef {
+impl From<&ModelOptions> for SetScrollArea {
     fn from(options: &ModelOptions) -> Self {
         Self {
             tfa: 0,
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn vscrdef_fills_buffer_properly() -> Result<(), Error> {
-        let vscrdef = Vscrdef::new(0, 320, 0);
+        let vscrdef = SetScrollArea::new(0, 320, 0);
 
         let mut buffer = [0u8; 6];
         assert_eq!(vscrdef.fill_params_buf(&mut buffer)?, 6);

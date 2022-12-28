@@ -5,9 +5,9 @@ use crate::{instruction::Instruction, ColorOrder, Error, ModelOptions, Orientati
 use super::DcsCommand;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct Madctl(u8);
+pub struct SetAddressMode(u8);
 
-impl Madctl {
+impl SetAddressMode {
     pub fn color_order(mut self, color_order: ColorOrder) -> Self {
         match color_order {
             ColorOrder::Rgb => self.0 &= 0b1111_0111,
@@ -47,7 +47,7 @@ impl Madctl {
     }
 }
 
-impl DcsCommand for Madctl {
+impl DcsCommand for SetAddressMode {
     fn instruction(&self) -> Instruction {
         Instruction::MADCTL
     }
@@ -58,7 +58,7 @@ impl DcsCommand for Madctl {
     }
 }
 
-impl From<&ModelOptions> for Madctl {
+impl From<&ModelOptions> for SetAddressMode {
     fn from(options: &ModelOptions) -> Self {
         Self::default()
             .color_order(options.color_order)
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn madctl_bit_operations() -> Result<(), Error> {
-        let madctl = Madctl::default()
+        let madctl = SetAddressMode::default()
             .color_order(ColorOrder::Bgr)
             .refresh_order(RefreshOrder::Inverted)
             .orientation(Orientation::LandscapeInverted(true));

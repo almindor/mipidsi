@@ -6,7 +6,7 @@ use embedded_graphics_core::{
 use embedded_hal::blocking::delay::DelayUs;
 
 use crate::{
-    dcs::{Colmod, Dcs, Dispon, Madctl, Noron, Ramwr, Slpout},
+    dcs::{SetPixelFormat, Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, WriteMemoryStart},
     instruction::Instruction,
     Error, ModelOptions,
 };
@@ -16,22 +16,22 @@ pub fn init_common<DELAY, DI, CF>(
     dcs: &mut Dcs<DI>,
     delay: &mut DELAY,
     options: &ModelOptions,
-) -> Result<Madctl, Error>
+) -> Result<SetAddressMode, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
     CF: PixelColor,
 {
-    let madctl = Madctl::from(options);
+    let madctl = SetAddressMode::from(options);
 
-    dcs.write_command(Slpout)?; // turn off sleep
+    dcs.write_command(ExitSleepMode)?; // turn off sleep
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
     dcs.write_raw(Instruction::INVCO, &[0x0])?; //Inversion Control [00]
     dcs.write_command(options.invert_colors)?; // set color inversion
-    dcs.write_command(Colmod::new::<CF>())?; // 16bit 65k colors
+    dcs.write_command(SetPixelFormat::new::<CF>())?; // 16bit 65k colors
 
-    dcs.write_command(Noron)?; // turn to normal mode
-    dcs.write_command(Dispon)?; // turn on display
+    dcs.write_command(EnterNormalMode)?; // turn to normal mode
+    dcs.write_command(SetDisplayOn)?; // turn on display
 
     // DISPON requires some time otherwise we risk SPI data issues
     delay.delay_us(120_000);
@@ -44,7 +44,7 @@ where
     DI: WriteOnlyDataCommand,
     I: IntoIterator<Item = Rgb565>,
 {
-    dcs.write_command(Ramwr)?;
+    dcs.write_command(WriteMemoryStart)?;
     let mut iter = colors.into_iter().map(|c| c.into_storage());
 
     let buf = DataFormat::U16BEIter(&mut iter);
@@ -56,7 +56,7 @@ where
     DI: WriteOnlyDataCommand,
     I: IntoIterator<Item = Rgb666>,
 {
-    dcs.write_command(Ramwr)?;
+    dcs.write_command(WriteMemoryStart)?;
     let mut iter = colors.into_iter().flat_map(|c| {
         let red = c.r() << 2;
         let green = c.g() << 2;
