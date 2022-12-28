@@ -1,8 +1,10 @@
 macro_rules! dcs_basic_command {
-    ($instr_name:ident,$instr:expr) => {
-        ///
-        /// Basic command implementation for any instruction with no parameters
-        ///
+    (
+        #[doc = $tt:tt]
+        $instr_name:ident,
+        $instr:expr
+    ) => {
+        #[doc = $tt]
         pub struct $instr_name;
 
         impl DcsCommand for $instr_name {
