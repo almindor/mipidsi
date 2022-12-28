@@ -4,8 +4,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        SetPixelFormat, Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SoftReset, SetScrollArea,
-        WriteMemoryStart,
+        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat,
+        SetScrollArea, SoftReset, WriteMemoryStart,
     },
     error::InitError,
     ColorInversion, Error, ModelOptions,

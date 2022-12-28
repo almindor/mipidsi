@@ -6,7 +6,10 @@ use embedded_graphics_core::{
 use embedded_hal::blocking::delay::DelayUs;
 
 use crate::{
-    dcs::{SetPixelFormat, Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, WriteMemoryStart},
+    dcs::{
+        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat,
+        WriteMemoryStart,
+    },
     instruction::Instruction,
     Error, ModelOptions,
 };

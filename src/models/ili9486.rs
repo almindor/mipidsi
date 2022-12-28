@@ -7,8 +7,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        SetPixelFormat, Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SoftReset,
-        WriteMemoryStart,
+        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat,
+        SoftReset, WriteMemoryStart,
     },
     error::InitError,
     instruction::Instruction,

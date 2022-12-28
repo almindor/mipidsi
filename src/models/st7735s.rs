@@ -3,7 +3,9 @@ use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{SetPixelFormat, ExitSleepMode, SetAddressMode, SetDisplayOn, SoftReset, WriteMemoryStart},
+    dcs::{
+        ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat, SoftReset, WriteMemoryStart,
+    },
     error::InitError,
     instruction::Instruction,
     Builder, ColorInversion, Error, ModelOptions,
