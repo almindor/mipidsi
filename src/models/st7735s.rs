@@ -4,7 +4,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat, SoftReset, WriteMemoryStart,
+        ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset,
+        WriteMemoryStart,
     },
     error::InitError,
     instruction::Instruction,
@@ -43,7 +44,7 @@ impl Model for ST7735s {
         dcs.write_command(ExitSleepMode)?; // turn off sleep
         delay.delay_us(120_000);
 
-        dcs.write_command(options.invert_colors)?; // set color inversion
+        dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
         dcs.write_raw(Instruction::FRMCTR1, &[0x05, 0x3A, 0x3A])?; // set frame rate
         dcs.write_raw(Instruction::FRMCTR2, &[0x05, 0x3A, 0x3A])?; // set frame rate
         dcs.write_raw(Instruction::FRMCTR3, &[0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A])?; // set frame rate

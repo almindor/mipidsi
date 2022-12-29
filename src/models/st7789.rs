@@ -4,8 +4,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetPixelFormat,
-        SetScrollArea, SoftReset, WriteMemoryStart,
+        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode,
+        SetPixelFormat, SetScrollArea, SoftReset, WriteMemoryStart,
     },
     error::InitError,
     ColorInversion, Error, ModelOptions,
@@ -50,7 +50,7 @@ impl Model for ST7789 {
         dcs.write_command(SetScrollArea::from(options))?;
         dcs.write_command(madctl)?;
 
-        dcs.write_command(options.invert_colors)?;
+        dcs.write_command(SetInvertMode(options.invert_colors))?;
         dcs.write_command(SetPixelFormat::new::<Self::ColorFormat>())?;
         delay.delay_us(10_000);
         dcs.write_command(EnterNormalMode)?;

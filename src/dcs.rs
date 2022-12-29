@@ -19,6 +19,8 @@ mod set_scroll_start;
 pub use set_scroll_start::*;
 mod set_tearing_effect;
 pub use set_tearing_effect::*;
+mod set_invert_mode;
+pub use set_invert_mode::*;
 
 ///
 /// Provides a constructor for DCS commands
@@ -134,16 +136,16 @@ dcs_basic_command!(
     EnterIdleMode,
     Instruction::IDLON
 );
-dcs_basic_command!(
-    /// Turn off Color Invert Mode
-    ExitInvertMode,
-    Instruction::INVOFF
-);
-dcs_basic_command!(
-    /// Turn on Color Invert Mode
-    EnterInvertMode,
-    Instruction::INVON
-);
+// dcs_basic_command!(
+//     /// Turn off Color Invert Mode
+//     ExitInvertMode,
+//     Instruction::INVOFF
+// );
+// dcs_basic_command!(
+//     /// Turn on Color Invert Mode
+//     EnterInvertMode,
+//     Instruction::INVON
+// );
 dcs_basic_command!(
     /// Initiate Framebuffer Memory Write
     WriteMemoryStart,

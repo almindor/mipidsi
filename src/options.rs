@@ -1,7 +1,5 @@
 //! Module holding [ModelOptions] and other helper types for [super::Display]
 
-use crate::{dcs::DcsCommand, instruction::Instruction, Error};
-
 ///
 /// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
@@ -197,19 +195,6 @@ pub enum ColorInversion {
 impl Default for ColorInversion {
     fn default() -> Self {
         Self::Normal
-    }
-}
-
-impl DcsCommand for ColorInversion {
-    fn instruction(&self) -> Instruction {
-        match self {
-            Self::Normal => Instruction::INVOFF,
-            Self::Inverted => Instruction::INVON,
-        }
-    }
-
-    fn fill_params_buf(&self, _buffer: &mut [u8]) -> Result<usize, Error> {
-        Ok(0)
     }
 }
 
