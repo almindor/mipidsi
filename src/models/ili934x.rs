@@ -44,7 +44,7 @@ where
 
     write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
 
-    Ok(init_common(di, delay, options)?)
+    init_common(di, delay, options)
 }
 
 /// Common init for all ILI934x controllers with RGB666 color format.
@@ -61,7 +61,7 @@ where
 
     write_command(di, Instruction::COLMOD, &[0b0110_0110])?; // 18bit 262k colors
 
-    Ok(init_common(di, delay, options)?)
+    init_common(di, delay, options)
 }
 
 pub fn write_pixels_rgb565<DI, I>(di: &mut DI, colors: I) -> Result<(), Error>
