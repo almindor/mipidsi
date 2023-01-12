@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.6.0] - 2023-01-12
+
 ### Added
 
 - added `Builder::with_window_offset_handler` method
