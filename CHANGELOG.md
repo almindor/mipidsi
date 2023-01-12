@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- added `Builder::with_window_offset_handler` method
 - added `ModelOptions::invert_colors` flag
 - added `Builder::with_invert_colors(bool)` method
 - added `ILI9341` model support
