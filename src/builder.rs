@@ -101,6 +101,17 @@ where
     }
 
     ///
+    /// Sets the window offset handler
+    ///
+    pub fn with_window_offset_handler(
+        mut self,
+        window_offset_handler: fn(_: &ModelOptions) -> (u16, u16),
+    ) -> Self {
+        self.options.window_offset_handler = window_offset_handler;
+        self
+    }
+
+    ///
     /// Consumes the builder to create a new [Display] with an optional reset [OutputPin].
     /// Blocks using the provided [DelayUs] `delay_source` to perform the display initialization.
     /// ### WARNING
