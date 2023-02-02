@@ -211,7 +211,7 @@ impl Default for VerticalRefreshOrder {
 }
 
 impl VerticalRefreshOrder {
-    pub fn flip(self) -> Self {
+    pub const fn flip(self) -> Self {
         match self {
             Self::TopToBottom => Self::BottomToTop,
             Self::BottomToTop => Self::TopToBottom,
@@ -232,7 +232,7 @@ impl Default for HorizontalRefreshOrder {
 }
 
 impl HorizontalRefreshOrder {
-    pub fn flip(self) -> Self {
+    pub const fn flip(self) -> Self {
         match self {
             Self::LeftToRight => Self::RightToLeft,
             Self::RightToLeft => Self::LeftToRight,
@@ -250,25 +250,32 @@ pub struct RefreshOrder {
 }
 
 impl RefreshOrder {
-    pub fn flip_vertical(self) -> Self {
-        let Self {
-            horizontal,
-            vertical,
-        } = self;
+    pub const fn new(vertical: VerticalRefreshOrder, horizontal: HorizontalRefreshOrder) -> Self {
         Self {
+            vertical,
             horizontal,
-            vertical: vertical.flip(),
         }
     }
 
-    pub fn flip_horizontal(self) -> Self {
+    pub const fn flip_vertical(self) -> Self {
         let Self {
-            horizontal,
             vertical,
+            horizontal,
         } = self;
         Self {
-            horizontal: horizontal.flip(),
+            vertical: vertical.flip(),
+            horizontal,
+        }
+    }
+
+    pub const fn flip_horizontal(self) -> Self {
+        let Self {
             vertical,
+            horizontal,
+        } = self;
+        Self {
+            vertical,
+            horizontal: horizontal.flip(),
         }
     }
 }
