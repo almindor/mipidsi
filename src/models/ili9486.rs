@@ -11,7 +11,6 @@ use crate::{
         SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::InitError,
-    instruction::Instruction,
     Builder, Error, ModelOptions,
 };
 
@@ -175,7 +174,7 @@ where
     // dcs.write_raw(Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control
     // dcs.write_raw(Instruction::NGC, &[0x0F, 0x37, 0x37, 0x0C, 0x0F, 0x05, 0x50, 0x32, 0x36, 0x04, 0x0B, 0x00, 0x19, 0x14, 0x0F])?; // Negative Gamma Control
 
-    dcs.write_raw(Instruction::DFC, &[0b0000_0010, 0x02, 0x3B])?;
+    dcs.write_raw(0xB6, &[0b0000_0010, 0x02, 0x3B])?; // DFC
     dcs.write_command(EnterNormalMode)?; // turn to normal mode
     dcs.write_command(SetDisplayOn)?; // turn on display
 

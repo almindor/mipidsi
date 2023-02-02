@@ -10,7 +10,6 @@ use crate::{
         Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode,
         SetPixelFormat, WriteMemoryStart,
     },
-    instruction::Instruction,
     Error, ModelOptions,
 };
 
@@ -29,7 +28,7 @@ where
 
     dcs.write_command(ExitSleepMode)?; // turn off sleep
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
-    dcs.write_raw(Instruction::INVCO, &[0x0])?; //Inversion Control [00]
+    dcs.write_raw(0xB4, &[0x0])?; //Inversion Control [00]
     dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
     dcs.write_command(SetPixelFormat::new::<CF>())?; // 16bit 65k colors
 

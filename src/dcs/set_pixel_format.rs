@@ -2,7 +2,7 @@
 
 use embedded_graphics_core::prelude::{PixelColor, RawData};
 
-use crate::{instruction::Instruction, Error};
+use crate::Error;
 
 use super::DcsCommand;
 
@@ -28,8 +28,8 @@ impl SetPixelFormat {
 }
 
 impl DcsCommand for SetPixelFormat {
-    fn instruction(&self) -> Instruction {
-        Instruction::COLMOD
+    fn instruction(&self) -> u8 {
+        0x3A
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

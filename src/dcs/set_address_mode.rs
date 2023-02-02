@@ -1,8 +1,8 @@
 //! Module for the MADCTL instruction constructors
 
 use crate::{
-    instruction::Instruction, ColorOrder, Error, HorizontalRefreshOrder, ModelOptions, Orientation,
-    RefreshOrder, VerticalRefreshOrder,
+    ColorOrder, Error, HorizontalRefreshOrder, ModelOptions, Orientation, RefreshOrder,
+    VerticalRefreshOrder,
 };
 
 use super::DcsCommand;
@@ -51,8 +51,8 @@ impl SetAddressMode {
 }
 
 impl DcsCommand for SetAddressMode {
-    fn instruction(&self) -> Instruction {
-        Instruction::MADCTL
+    fn instruction(&self) -> u8 {
+        0x36
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

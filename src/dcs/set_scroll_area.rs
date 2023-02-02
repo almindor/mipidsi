@@ -1,6 +1,6 @@
 //! Module for the VSCRDEF visual scroll definition instruction constructors
 
-use crate::{instruction::Instruction, Error, ModelOptions};
+use crate::{Error, ModelOptions};
 
 use super::DcsCommand;
 
@@ -22,8 +22,8 @@ impl SetScrollArea {
 }
 
 impl DcsCommand for SetScrollArea {
-    fn instruction(&self) -> Instruction {
-        Instruction::VSCRDEF
+    fn instruction(&self) -> u8 {
+        0x33
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

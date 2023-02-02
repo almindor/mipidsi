@@ -8,7 +8,7 @@ macro_rules! dcs_basic_command {
         pub struct $instr_name;
 
         impl DcsCommand for $instr_name {
-            fn instruction(&self) -> Instruction {
+            fn instruction(&self) -> u8 {
                 $instr
             }
 

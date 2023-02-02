@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, Error, TearingEffect};
+use crate::{Error, TearingEffect};
 
 use super::DcsCommand;
 
@@ -6,11 +6,11 @@ use super::DcsCommand;
 pub struct SetTearingEffect(pub TearingEffect);
 
 impl DcsCommand for SetTearingEffect {
-    fn instruction(&self) -> Instruction {
+    fn instruction(&self) -> u8 {
         match self.0 {
-            TearingEffect::Off => Instruction::TEOFF,
-            TearingEffect::Vertical => Instruction::TEON,
-            TearingEffect::HorizontalAndVertical => Instruction::TEON,
+            TearingEffect::Off => 0x34,
+            TearingEffect::Vertical => 0x35,
+            TearingEffect::HorizontalAndVertical => 0x35,
         }
     }
 

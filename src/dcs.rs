@@ -1,6 +1,6 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
-use crate::{instruction::Instruction, Error};
+use crate::Error;
 
 #[macro_use]
 mod macros;
@@ -27,7 +27,7 @@ pub use set_invert_mode::*;
 /// e.g. `Madctl::new().with_bgr(true).bytes()`
 ///
 pub trait DcsCommand {
-    fn instruction(&self) -> Instruction;
+    fn instruction(&self) -> u8;
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error>;
 }
 
@@ -76,9 +76,8 @@ where
     /// Writes the specified DCS instruction and &[u8] parameters "write only"
     /// using the provided display interface. Use of `write_command` is preferred.
     ///
-    pub fn write_raw(&mut self, instruction: Instruction, param_bytes: &[u8]) -> Result<(), Error> {
-        self.di
-            .send_commands(DataFormat::U8(&[instruction as u8]))?;
+    pub fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Error> {
+        self.di.send_commands(DataFormat::U8(&[instruction]))?;
 
         if !param_bytes.is_empty() {
             self.di.send_data(DataFormat::U8(param_bytes))?; // TODO: empty guard?
@@ -92,62 +91,62 @@ where
 dcs_basic_command!(
     /// Software Reset
     SoftReset,
-    Instruction::SWRESET
+    0x01
 );
 
 dcs_basic_command!(
     /// Enter Sleep Mode
     EnterSleepMode,
-    Instruction::SLPIN
+    0x10
 );
 dcs_basic_command!(
     /// Exit Sleep Mode
     ExitSleepMode,
-    Instruction::SLPOUT
+    0x11
 );
 dcs_basic_command!(
     /// Enter Partial Mode
     EnterPartialMode,
-    Instruction::PTLON
+    0x12
 );
 dcs_basic_command!(
     /// Enter Normal Mode
     EnterNormalMode,
-    Instruction::NORON
+    0x13
 );
 dcs_basic_command!(
     /// Turn Display Off
     SetDisplayOff,
-    Instruction::DISPOFF
+    0x28
 );
 
 dcs_basic_command!(
     /// Turn Display On
     SetDisplayOn,
-    Instruction::DISPON
+    0x29
 );
 dcs_basic_command!(
     /// Exit Idle Mode
     ExitIdleMode,
-    Instruction::IDLOFF
+    0x38
 );
 dcs_basic_command!(
     /// Enter Idle Mode
     EnterIdleMode,
-    Instruction::IDLON
+    0x39
 );
 // dcs_basic_command!(
 //     /// Turn off Color Invert Mode
 //     ExitInvertMode,
-//     Instruction::INVOFF
+//     0x21
 // );
 // dcs_basic_command!(
 //     /// Turn on Color Invert Mode
 //     EnterInvertMode,
-//     Instruction::INVON
+//     0x20
 // );
 dcs_basic_command!(
     /// Initiate Framebuffer Memory Write
     WriteMemoryStart,
-    Instruction::RAMWR
+    0x2C
 );

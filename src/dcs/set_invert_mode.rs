@@ -1,4 +1,4 @@
-use crate::{instruction::Instruction, ColorInversion, Error};
+use crate::{ColorInversion, Error};
 
 use super::DcsCommand;
 
@@ -6,10 +6,10 @@ use super::DcsCommand;
 pub struct SetInvertMode(pub ColorInversion);
 
 impl DcsCommand for SetInvertMode {
-    fn instruction(&self) -> Instruction {
+    fn instruction(&self) -> u8 {
         match self.0 {
-            ColorInversion::Normal => Instruction::INVOFF,
-            ColorInversion::Inverted => Instruction::INVON,
+            ColorInversion::Normal => 0x20,
+            ColorInversion::Inverted => 0x21,
         }
     }
 

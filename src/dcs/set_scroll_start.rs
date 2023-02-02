@@ -1,6 +1,6 @@
 //! Module for the VSCAD visual scroll offset instruction constructors
 
-use crate::{instruction::Instruction, Error};
+use crate::Error;
 
 use super::DcsCommand;
 
@@ -17,8 +17,8 @@ impl SetScrollStart {
 }
 
 impl DcsCommand for SetScrollStart {
-    fn instruction(&self) -> Instruction {
-        Instruction::VSCAD
+    fn instruction(&self) -> u8 {
+        0x37
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

@@ -26,8 +26,6 @@
 //! // clear the display to black
 //! display.clear(Rgb666::BLACK)?;
 
-pub mod instruction;
-
 use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 

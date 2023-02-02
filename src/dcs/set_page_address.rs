@@ -1,6 +1,6 @@
 //! Module for the RASET address window instruction constructors
 
-use crate::{instruction::Instruction, Error};
+use crate::Error;
 
 use super::DcsCommand;
 
@@ -20,8 +20,8 @@ impl SetPageAddress {
 }
 
 impl DcsCommand for SetPageAddress {
-    fn instruction(&self) -> Instruction {
-        Instruction::RASET
+    fn instruction(&self) -> u8 {
+        0x2B
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {

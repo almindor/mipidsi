@@ -1,6 +1,6 @@
 //! Module for the CASET address window instruction constructors
 
-use crate::{instruction::Instruction, Error};
+use crate::Error;
 
 use super::DcsCommand;
 
@@ -23,8 +23,8 @@ impl SetColumnAddress {
 }
 
 impl DcsCommand for SetColumnAddress {
-    fn instruction(&self) -> Instruction {
-        Instruction::CASET
+    fn instruction(&self) -> u8 {
+        0x2A
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
