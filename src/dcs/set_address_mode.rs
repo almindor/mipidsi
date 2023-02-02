@@ -1,6 +1,9 @@
 //! Module for the MADCTL instruction constructors
 
-use crate::{instruction::Instruction, ColorOrder, Error, ModelOptions, Orientation, RefreshOrder};
+use crate::{
+    instruction::Instruction, ColorOrder, Error, HorizontalRefreshOrder, ModelOptions, Orientation,
+    RefreshOrder, VerticalRefreshOrder,
+};
 
 use super::DcsCommand;
 
@@ -34,11 +37,11 @@ impl SetAddressMode {
     }
 
     pub fn refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
-        let value = match refresh_order {
-            RefreshOrder::Normal => 0b0000_0000,
-            RefreshOrder::RightToLeft => 0b0000_0100,
-            RefreshOrder::BottomToTop => 0b0001_0000,
-            RefreshOrder::Inverted => 0b0001_0100,
+        let value = match (refresh_order.vertical, refresh_order.horizontal) {
+            (VerticalRefreshOrder::TopToBottom, HorizontalRefreshOrder::LeftToRight) => 0b0000_0000,
+            (VerticalRefreshOrder::TopToBottom, HorizontalRefreshOrder::RightToLeft) => 0b0000_0100,
+            (VerticalRefreshOrder::BottomToTop, HorizontalRefreshOrder::LeftToRight) => 0b0001_0000,
+            (VerticalRefreshOrder::BottomToTop, HorizontalRefreshOrder::RightToLeft) => 0b0001_0100,
         };
 
         self.0 = (self.0 & 0b1110_1011) | value;

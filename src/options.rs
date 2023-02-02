@@ -198,24 +198,78 @@ impl Default for ColorInversion {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum VerticalRefreshOrder {
+    TopToBottom,
+    BottomToTop,
+}
+
+impl Default for VerticalRefreshOrder {
+    fn default() -> Self {
+        Self::TopToBottom
+    }
+}
+
+impl VerticalRefreshOrder {
+    pub fn flip(self) -> Self {
+        match self {
+            Self::TopToBottom => Self::BottomToTop,
+            Self::BottomToTop => Self::TopToBottom,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum HorizontalRefreshOrder {
+    LeftToRight,
+    RightToLeft,
+}
+
+impl Default for HorizontalRefreshOrder {
+    fn default() -> Self {
+        Self::LeftToRight
+    }
+}
+
+impl HorizontalRefreshOrder {
+    pub fn flip(self) -> Self {
+        match self {
+            Self::LeftToRight => Self::RightToLeft,
+            Self::RightToLeft => Self::LeftToRight,
+        }
+    }
+}
+
 ///
 /// Display refresh order, defaults to left to right, top to bottom
 ///
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum RefreshOrder {
-    /// Left to Right and Top to Bottom
-    Normal,
-    /// Right to Left and Top to Bottom
-    RightToLeft,
-    /// Left to Right and Bottom to Top
-    BottomToTop,
-    /// Right to Left and Bottom to Top
-    Inverted,
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct RefreshOrder {
+    pub vertical: VerticalRefreshOrder,
+    pub horizontal: HorizontalRefreshOrder,
 }
 
-impl Default for RefreshOrder {
-    fn default() -> Self {
-        Self::Normal
+impl RefreshOrder {
+    pub fn flip_vertical(self) -> Self {
+        let Self {
+            horizontal,
+            vertical,
+        } = self;
+        Self {
+            horizontal,
+            vertical: vertical.flip(),
+        }
+    }
+
+    pub fn flip_horizontal(self) -> Self {
+        let Self {
+            horizontal,
+            vertical,
+        } = self;
+        Self {
+            horizontal: horizontal.flip(),
+            vertical,
+        }
     }
 }
 
