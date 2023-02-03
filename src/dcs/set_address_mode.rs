@@ -94,7 +94,10 @@ mod tests {
     fn madctl_bit_operations() -> Result<(), Error> {
         let madctl = SetAddressMode::default()
             .with_color_order(ColorOrder::Bgr)
-            .with_refresh_order(RefreshOrder::new(VerticalRefreshOrder::BottomToTop, HorizontalRefreshOrder::RightToLeft))
+            .with_refresh_order(RefreshOrder::new(
+                VerticalRefreshOrder::BottomToTop,
+                HorizontalRefreshOrder::RightToLeft,
+            ))
             .with_orientation(Orientation::LandscapeInverted(true));
 
         let mut bytes = [0u8];
