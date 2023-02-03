@@ -21,7 +21,9 @@ impl SetAddressMode {
             .with_orientation(orientation)
             .with_refresh_order(refresh_order)
     }
+
     /// Returns this Madctl with [ColorOrder] set to new value
+    #[must_use]
     pub fn with_color_order(self, color_order: ColorOrder) -> Self {
         let mut result = self;
         match color_order {
@@ -33,6 +35,7 @@ impl SetAddressMode {
     }
 
     /// Returns this Madctl with [Orientation] set to new value
+    #[must_use]
     pub fn with_orientation(self, orientation: Orientation) -> Self {
         let mut result = self;
         let value = match orientation {
@@ -51,6 +54,7 @@ impl SetAddressMode {
     }
 
     /// Returns this Madctl with [RefreshOrder] set to new value
+    #[must_use]
     pub fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
         let mut result = self;
         let value = match (refresh_order.vertical, refresh_order.horizontal) {
