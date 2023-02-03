@@ -66,7 +66,7 @@ where
     rst: Option<RST>,
     // Model Options, includes current orientation
     options: ModelOptions,
-    // Current MADCTL value
+    // Current MADCTL value copy for runtime updates
     madctl: dcs::SetAddressMode,
 }
 
@@ -87,8 +87,8 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        self.dcs
-            .write_command(self.madctl.orientation(orientation))?;
+        self.madctl = self.madctl.with_orientation(orientation); // set orientation
+        self.dcs.write_command(self.madctl)?;
 
         Ok(())
     }
