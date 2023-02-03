@@ -17,14 +17,14 @@
 //! * ILI9342C
 //!
 //! ## Example
-//! ```rust
+//! ```rust ignore
 //! // create a DisplayInterface from SPI and DC pin, with no manual CS control
 //! let di = SPIInterfaceNoCS::new(spi, dc);
 //! // create the ILI9486 display driver from the display interface and optional RST pin
 //! let mut display = Builder::ili9486(di)
 //!     .init(&mut delay, Some(rst));
 //! // clear the display to black
-//! display.clear(Rgb666::BLACK)?;
+//! display.clear(Rgb666::BLACK).unwrap();
 
 use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
