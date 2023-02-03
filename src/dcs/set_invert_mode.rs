@@ -27,7 +27,7 @@ mod tests {
         let ste = SetInvertMode(ColorInversion::Inverted);
 
         let mut buffer = [0u8; 0];
-        assert_eq!(ste.instruction(), Instruction::INVON);
+        assert_eq!(ste.instruction(), 0x21);
         assert_eq!(ste.fill_params_buf(&mut buffer)?, 0);
 
         Ok(())

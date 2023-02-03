@@ -38,7 +38,7 @@ mod tests {
         let ste = SetTearingEffect(TearingEffect::HorizontalAndVertical);
 
         let mut buffer = [0u8; 1];
-        assert_eq!(ste.instruction(), Instruction::TEON);
+        assert_eq!(ste.instruction(), 0x35);
         assert_eq!(ste.fill_params_buf(&mut buffer)?, 1);
         assert_eq!(buffer, [0x1]);
 
@@ -50,7 +50,7 @@ mod tests {
         let ste = SetTearingEffect(TearingEffect::Off);
 
         let mut buffer = [0u8; 0];
-        assert_eq!(ste.instruction(), Instruction::TEOFF);
+        assert_eq!(ste.instruction(), 0x34);
         assert_eq!(ste.fill_params_buf(&mut buffer)?, 0);
 
         Ok(())

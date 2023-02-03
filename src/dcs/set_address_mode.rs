@@ -21,18 +21,20 @@ impl SetAddressMode {
             .with_orientation(orientation)
             .with_refresh_order(refresh_order)
     }
-    /// Applies given [ColorOrder] to this Madctl value and returns it back
-    pub fn with_color_order(mut self, color_order: ColorOrder) -> Self {
+    /// Returns this Madctl with [ColorOrder] set to new value
+    pub fn with_color_order(self, color_order: ColorOrder) -> Self {
+        let mut result = self;
         match color_order {
-            ColorOrder::Rgb => self.0 &= 0b1111_0111,
-            ColorOrder::Bgr => self.0 |= 0b0000_1000,
+            ColorOrder::Rgb => result.0 &= 0b1111_0111,
+            ColorOrder::Bgr => result.0 |= 0b0000_1000,
         }
 
-        self
+        result
     }
 
-    /// Applies given [Orientation] to this Madctl value and returns it back
-    pub fn with_orientation(mut self, orientation: Orientation) -> Self {
+    /// Returns this Madctl with [Orientation] set to new value
+    pub fn with_orientation(self, orientation: Orientation) -> Self {
+        let mut result = self;
         let value = match orientation {
             Orientation::Portrait(false) => 0b0000_0000,
             Orientation::Portrait(true) => 0b0100_0000,
@@ -43,13 +45,14 @@ impl SetAddressMode {
             Orientation::LandscapeInverted(false) => 0b1110_0000,
             Orientation::LandscapeInverted(true) => 0b1010_0000,
         };
-        self.0 = (self.0 & 0b0001_1111) | value;
+        result.0 = (result.0 & 0b0001_1111) | value;
 
-        self
+        result
     }
 
-    /// Applies given [RefreshOrder] to this Madctl value and returns it back
-    pub fn with_refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
+    /// Returns this Madctl with [RefreshOrder] set to new value
+    pub fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
+        let mut result = self;
         let value = match (refresh_order.vertical, refresh_order.horizontal) {
             (VerticalRefreshOrder::TopToBottom, HorizontalRefreshOrder::LeftToRight) => 0b0000_0000,
             (VerticalRefreshOrder::TopToBottom, HorizontalRefreshOrder::RightToLeft) => 0b0000_0100,
@@ -57,9 +60,9 @@ impl SetAddressMode {
             (VerticalRefreshOrder::BottomToTop, HorizontalRefreshOrder::RightToLeft) => 0b0001_0100,
         };
 
-        self.0 = (self.0 & 0b1110_1011) | value;
+        result.0 = (result.0 & 0b1110_1011) | value;
 
-        self
+        result
     }
 }
 
@@ -91,7 +94,7 @@ mod tests {
     fn madctl_bit_operations() -> Result<(), Error> {
         let madctl = SetAddressMode::default()
             .with_color_order(ColorOrder::Bgr)
-            .with_refresh_order(RefreshOrder::Inverted)
+            .with_refresh_order(RefreshOrder::new(VerticalRefreshOrder::BottomToTop, HorizontalRefreshOrder::RightToLeft))
             .with_orientation(Orientation::LandscapeInverted(true));
 
         let mut bytes = [0u8];
@@ -106,7 +109,7 @@ mod tests {
         assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
         assert_eq!(bytes, [0b0001_0100u8]);
 
-        let madctl = madctl.with_refresh_order(RefreshOrder::Normal);
+        let madctl = madctl.with_refresh_order(RefreshOrder::default());
         assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
         assert_eq!(bytes, [0b0000_0000u8]);
 
