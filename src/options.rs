@@ -296,7 +296,7 @@ pub enum TearingEffect {
 ///
 /// Defines expected color component ordering, RGB or BGR
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorOrder {
     Rgb,
     Bgr,
@@ -305,5 +305,49 @@ pub enum ColorOrder {
 impl Default for ColorOrder {
     fn default() -> Self {
         Self::Rgb
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum BitsPerPixel {
+    Three = 0b001,
+    Eight = 0b010,
+    Twelve = 0b011,
+    Sixteen = 0b101,
+    Eighteen = 0b110,
+    TwentyFour = 0b111,
+}
+
+///
+/// Defines pixel format as combination of DPI and DBI
+///
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PixelFormat {
+    dpi: BitsPerPixel,
+    dbi: BitsPerPixel,
+}
+
+impl PixelFormat {
+    pub fn new(dpi: BitsPerPixel, dbi: BitsPerPixel) -> Self {
+        Self { dbi, dpi }
+    }
+
+    ///
+    /// Returns the corresponding u8 containing both DBI and DPI bits
+    ///
+    pub fn as_u8(&self) -> u8 {
+        (self.dpi as u8) << 4 | (self.dbi as u8)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{BitsPerPixel, PixelFormat};
+
+    #[test]
+    fn test_pixel_format_as_u8() {
+        let pf = PixelFormat::new(BitsPerPixel::Sixteen, BitsPerPixel::TwentyFour);
+        assert_eq!(pf.as_u8(), 0b0101_0111);
     }
 }
