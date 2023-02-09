@@ -4,8 +4,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset,
-        WriteMemoryStart,
+        BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
+        SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::InitError,
     Builder, ColorInversion, Error, ModelOptions,
@@ -68,7 +68,9 @@ impl Model for ST7735s {
                 0x0E, 0x10,
             ],
         )?; // set GAMMA -Polarity characteristics
-        dcs.write_command(SetPixelFormat::new::<Self::ColorFormat>())?; // set interface pixel format, 16bit pixel into frame memory
+        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+
+        dcs.write_command(SetPixelFormat::new(pf))?; // set interface pixel format, 16bit pixel into frame memory
         dcs.write_command(madctl)?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
         dcs.write_command(SetDisplayOn)?; // turn on display
 

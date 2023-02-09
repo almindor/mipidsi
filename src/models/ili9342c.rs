@@ -3,7 +3,7 @@ use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::{Dcs, SetAddressMode, SoftReset},
+    dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
     error::InitError,
     models::{ili934x, Model},
     Builder, Error, ModelOptions,
@@ -39,7 +39,8 @@ impl Model for ILI9342CRgb565 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        ili934x::init_common::<_, _, Self::ColorFormat>(dcs, delay, options).map_err(Into::into)
+        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
@@ -75,7 +76,8 @@ impl Model for ILI9342CRgb666 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        ili934x::init_common::<_, _, Self::ColorFormat>(dcs, delay, options).map_err(Into::into)
+        let pf = PixelFormat::with_all(BitsPerPixel::Eighteen);
+        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>

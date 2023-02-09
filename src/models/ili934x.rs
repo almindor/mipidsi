@@ -1,28 +1,25 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
-use embedded_graphics_core::{
-    pixelcolor::{IntoStorage, Rgb565, Rgb666, RgbColor},
-    prelude::PixelColor,
-};
+use embedded_graphics_core::pixelcolor::{IntoStorage, Rgb565, Rgb666, RgbColor};
 use embedded_hal::blocking::delay::DelayUs;
 
 use crate::{
     dcs::{
-        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat, WriteMemoryStart,
+        Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn,
+        SetInvertMode, SetPixelFormat, WriteMemoryStart,
     },
     Error, ModelOptions,
 };
 
 /// Common init for all ILI934x controllers and color formats.
-pub fn init_common<DELAY, DI, CF>(
+pub fn init_common<DELAY, DI>(
     dcs: &mut Dcs<DI>,
     delay: &mut DELAY,
     options: &ModelOptions,
+    pixel_format: PixelFormat,
 ) -> Result<SetAddressMode, Error>
 where
     DELAY: DelayUs<u32>,
     DI: WriteOnlyDataCommand,
-    CF: PixelColor,
 {
     let madctl = SetAddressMode::from(options);
 
@@ -30,7 +27,7 @@ where
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
     dcs.write_raw(0xB4, &[0x0])?; //Inversion Control [00]
     dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
-    dcs.write_command(SetPixelFormat::new::<CF>())?; // 16bit 65k colors
+    dcs.write_command(SetPixelFormat::new(pixel_format))?; // pixel format
 
     dcs.write_command(EnterNormalMode)?; // turn to normal mode
     dcs.write_command(SetDisplayOn)?; // turn on display

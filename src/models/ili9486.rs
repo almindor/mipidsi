@@ -7,8 +7,8 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{
-        Dcs, EnterNormalMode, ExitSleepMode, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat, SoftReset, WriteMemoryStart,
+        BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::InitError,
     Builder, Error, ModelOptions,
@@ -45,8 +45,8 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        let colmod = SetPixelFormat::new::<Self::ColorFormat>();
-        Ok(init_common(dcs, delay, options, colmod)?)
+        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+        Ok(init_common(dcs, delay, options, pf)?)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
@@ -88,8 +88,8 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        let colmod = SetPixelFormat::new::<Self::ColorFormat>();
-        Ok(init_common(dcs, delay, options, colmod)?)
+        let pf = PixelFormat::with_all(BitsPerPixel::Eighteen);
+        Ok(init_common(dcs, delay, options, pf)?)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
@@ -156,7 +156,7 @@ fn init_common<DELAY, DI>(
     dcs: &mut Dcs<DI>,
     delay: &mut DELAY,
     options: &ModelOptions,
-    colmod: SetPixelFormat,
+    pixel_format: PixelFormat,
 ) -> Result<SetAddressMode, Error>
 where
     DELAY: DelayUs<u32>,
@@ -164,7 +164,7 @@ where
 {
     let madctl = SetAddressMode::from(options);
     dcs.write_command(ExitSleepMode)?; // turn off sleep
-    dcs.write_command(colmod)?; // 18bit 256k colors
+    dcs.write_command(SetPixelFormat::new(pixel_format))?; // pixel format
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
                                 // dcs.write_command(Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
                                 // dcs.write_command(Instruction::INVCO, &[0x0])?; //Inversion Control [00]

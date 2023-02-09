@@ -1,29 +1,19 @@
 //! Module for the COLMOD instruction constructors
 
-use embedded_graphics_core::prelude::{PixelColor, RawData};
-
 use crate::Error;
 
 use super::DcsCommand;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SetPixelFormat(u8);
+pub struct SetPixelFormat(PixelFormat);
 
 impl SetPixelFormat {
     ///
-    /// Set the color format that the MCU will be sending to this
-    /// display. Uses RawData::BITS_PER_PIXEL to decide.
+    /// Set the pixel format that the MCU will be sending to this
+    /// display.
     ///
-    pub const fn new<PF>() -> Self
-    where
-        PF: PixelColor,
-    {
-        match PF::Raw::BITS_PER_PIXEL {
-            16 => Self(0b0101_0101),
-            18 => Self(0b0110_0110),
-            24 => Self(0b0110_0111), // not sure if this is right
-            _ => panic!("Incompatible PixelFormat size"),
-        }
+    pub fn new(pixel_format: PixelFormat) -> Self {
+        Self(pixel_format)
     }
 }
 
@@ -33,8 +23,56 @@ impl DcsCommand for SetPixelFormat {
     }
 
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
-        buffer[0] = self.0;
+        buffer[0] = self.0.as_u8();
         Ok(1)
+    }
+}
+
+///
+/// Bits per pixel for DBI and DPI fields of [PixelFormat]
+///
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum BitsPerPixel {
+    Three = 0b001,
+    Eight = 0b010,
+    Twelve = 0b011,
+    Sixteen = 0b101,
+    Eighteen = 0b110,
+    TwentyFour = 0b111,
+}
+
+///
+/// Defines pixel format as combination of DPI and DBI
+///
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PixelFormat {
+    dpi: BitsPerPixel,
+    dbi: BitsPerPixel,
+}
+
+impl PixelFormat {
+    ///
+    /// Construct a new [PixelFormat] with given [BitsPerPixel] values
+    /// for DPI and DBI fields
+    ///
+    pub const fn new(dpi: BitsPerPixel, dbi: BitsPerPixel) -> Self {
+        Self { dpi, dbi }
+    }
+
+    ///
+    /// Construct a new [PixelFormat] with same [BitsPerPixel] value
+    /// for both DPI and DBI fields
+    ///
+    pub const fn with_all(bpp: BitsPerPixel) -> Self {
+        Self { dpi: bpp, dbi: bpp }
+    }
+
+    ///
+    /// Returns the corresponding u8 containing both DPI and DBI bits
+    ///
+    pub fn as_u8(&self) -> u8 {
+        (self.dpi as u8) << 4 | (self.dbi as u8)
     }
 }
 
@@ -46,7 +84,10 @@ mod tests {
 
     #[test]
     fn colmod_rgb565_is_16bit() -> Result<(), Error> {
-        let colmod = SetPixelFormat::new::<Rgb565>();
+        let colmod = SetPixelFormat::new(PixelFormat::new(
+            BitsPerPixel::Sixteen,
+            BitsPerPixel::Sixteen,
+        ));
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
@@ -57,7 +98,10 @@ mod tests {
 
     #[test]
     fn colmod_rgb666_is_18bit() -> Result<(), Error> {
-        let colmod = SetPixelFormat::new::<Rgb666>();
+        let colmod = SetPixelFormat::new(PixelFormat::new(
+            BitsPerPixel::Eighteen,
+            BitsPerPixel::Eighteen,
+        ));
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
@@ -68,12 +112,21 @@ mod tests {
 
     #[test]
     fn colmod_rgb888_is_24bit() -> Result<(), Error> {
-        let colmod = SetPixelFormat::new::<Rgb888>();
+        let colmod = SetPixelFormat::new(PixelFormat::new(
+            BitsPerPixel::TwentyFour,
+            BitsPerPixel::TwentyFour,
+        ));
 
         let mut bytes = [0u8];
         assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
         assert_eq!(bytes, [0b0110_0111u8]);
 
         Ok(())
+    }
+
+    #[test]
+    fn test_pixel_format_as_u8() {
+        let pf = PixelFormat::new(BitsPerPixel::Sixteen, BitsPerPixel::TwentyFour);
+        assert_eq!(pf.as_u8(), 0b0101_0111);
     }
 }
