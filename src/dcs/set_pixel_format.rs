@@ -78,8 +78,6 @@ impl PixelFormat {
 
 #[cfg(test)]
 mod tests {
-    use embedded_graphics_core::pixelcolor::*;
-
     use super::*;
 
     #[test]
@@ -113,7 +111,7 @@ mod tests {
     #[test]
     fn colmod_rgb888_is_24bit() -> Result<(), Error> {
         let colmod = SetPixelFormat::new(PixelFormat::new(
-            BitsPerPixel::TwentyFour,
+            BitsPerPixel::Eighteen,
             BitsPerPixel::TwentyFour,
         ));
 
