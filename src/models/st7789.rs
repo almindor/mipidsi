@@ -52,7 +52,7 @@ impl Model for ST7789 {
 
         dcs.write_command(SetInvertMode(options.invert_colors))?;
 
-        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         dcs.write_command(SetPixelFormat::new(pf))?;
         delay.delay_us(10_000);
         dcs.write_command(EnterNormalMode)?;

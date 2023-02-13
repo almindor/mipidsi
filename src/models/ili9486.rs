@@ -45,7 +45,7 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         Ok(init_common(dcs, delay, options, pf)?)
     }
 
@@ -88,7 +88,7 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        let pf = PixelFormat::with_all(BitsPerPixel::Eighteen);
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         Ok(init_common(dcs, delay, options, pf)?)
     }
 

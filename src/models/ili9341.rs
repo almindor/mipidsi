@@ -39,7 +39,7 @@ impl Model for ILI9341Rgb565 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
@@ -76,7 +76,7 @@ impl Model for ILI9341Rgb666 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        let pf = PixelFormat::with_all(BitsPerPixel::Eighteen);
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 

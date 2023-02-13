@@ -68,9 +68,10 @@ impl Model for ST7735s {
                 0x0E, 0x10,
             ],
         )?; // set GAMMA -Polarity characteristics
-        let pf = PixelFormat::with_all(BitsPerPixel::Sixteen);
 
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
         dcs.write_command(SetPixelFormat::new(pf))?; // set interface pixel format, 16bit pixel into frame memory
+
         dcs.write_command(madctl)?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
         dcs.write_command(SetDisplayOn)?; // turn on display
 
