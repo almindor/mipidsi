@@ -2,9 +2,16 @@ use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
+use crate::{
+    dcs::{
+        BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, SetScrollArea, SoftReset, WriteMemoryStart,
+    },
+    error::InitError,
+    ColorInversion, Error, ModelOptions,
+};
 
-use super::{write_command, Model};
+use super::Model;
 
 /// Module containing all ST7789 variants and helper constructors for [Display]
 mod variants;
@@ -18,34 +25,39 @@ impl Model for ST7789 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
         DI: WriteOnlyDataCommand,
     {
-        let madctl = options.madctl();
+        let madctl = SetAddressMode::from(options);
+
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => dcs.write_command(SoftReset)?,
         }
         delay.delay_us(150_000);
 
-        write_command(di, Instruction::SLPOUT, &[])?; // turn off sleep
+        dcs.write_command(ExitSleepMode)?;
         delay.delay_us(10_000);
 
-        write_command(di, Instruction::VSCRDER, &[0u8, 0u8, 0x14u8, 0u8, 0u8, 0u8])?;
-        write_command(di, Instruction::MADCTL, &[madctl])?; // left -> right, bottom -> top RGB
-        write_command(di, options.invert_command(), &[])?; // set color inversion
-        write_command(di, Instruction::COLMOD, &[0b0101_0101])?; // 16bit 65k colors
+        // set hw scroll area based on framebuffer size
+        dcs.write_command(SetScrollArea::from(options))?;
+        dcs.write_command(madctl)?;
+
+        dcs.write_command(SetInvertMode(options.invert_colors))?;
+
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        dcs.write_command(SetPixelFormat::new(pf))?;
         delay.delay_us(10_000);
-        write_command(di, Instruction::NORON, &[])?; // turn to normal mode
+        dcs.write_command(EnterNormalMode)?;
         delay.delay_us(10_000);
-        write_command(di, Instruction::DISPON, &[])?; // turn on display
+        dcs.write_command(SetDisplayOn)?;
 
         // DISPON requires some time otherwise we risk SPI data issues
         delay.delay_us(120_000);
@@ -53,20 +65,22 @@ impl Model for ST7789 {
         Ok(madctl)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        write_command(di, Instruction::RAMWR, &[])?;
-        let mut iter = colors.into_iter().map(|c| c.into_storage());
+        dcs.write_command(WriteMemoryStart)?;
+
+        let mut iter = colors.into_iter().map(Rgb565::into_storage);
 
         let buf = DataFormat::U16BEIter(&mut iter);
-        di.send_data(buf)?;
+        dcs.di.send_data(buf)?;
         Ok(())
     }
 
     fn default_options() -> crate::ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320)).with_invert_colors(true)
+        ModelOptions::with_sizes((240, 320), (240, 320))
+            .with_invert_colors(ColorInversion::Inverted)
     }
 }

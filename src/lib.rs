@@ -17,33 +17,29 @@
 //! * ILI9342C
 //!
 //! ## Example
-//! ```rust
+//! ```rust ignore
 //! // create a DisplayInterface from SPI and DC pin, with no manual CS control
 //! let di = SPIInterfaceNoCS::new(spi, dc);
 //! // create the ILI9486 display driver from the display interface and optional RST pin
 //! let mut display = Builder::ili9486(di)
 //!     .init(&mut delay, Some(rst));
 //! // clear the display to black
-//! display.clear(Rgb666::BLACK)?;
+//! display.clear(Rgb666::BLACK).unwrap();
 
-pub mod instruction;
-
-use crate::instruction::Instruction;
-
-use display_interface::DataFormat;
+use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
-use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
 pub use error::Error;
 
 pub mod options;
-use error::InitError;
 pub use options::*;
 
 pub mod builder;
 pub use builder::Builder;
+
+pub mod dcs;
 
 pub mod models;
 use models::Model;
@@ -62,16 +58,16 @@ where
     MODEL: Model,
     RST: OutputPin,
 {
-    // Display interface
-    di: DI,
+    // DCS provider
+    dcs: Dcs<DI>,
     // Model
     model: MODEL,
     // Reset pin
     rst: Option<RST>,
     // Model Options, includes current orientation
     options: ModelOptions,
-    // Current MADCTL value
-    madctl: u8,
+    // Current MADCTL value copy for runtime updates
+    madctl: dcs::SetAddressMode,
 }
 
 impl<DI, M, RST> Display<DI, M, RST>
@@ -80,13 +76,6 @@ where
     M: Model,
     RST: OutputPin,
 {
-    pub(crate) fn init(
-        &mut self,
-        delay_source: &mut impl DelayUs<u32>,
-    ) -> Result<u8, InitError<RST::Error>> {
-        self.model
-            .init(&mut self.di, delay_source, &self.options, &mut self.rst)
-    }
     ///
     /// Returns currently set [Orientation]
     ///
@@ -98,11 +87,9 @@ where
     /// Sets display [Orientation]
     ///
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        let value = (self.madctl & 0b0001_1111) | orientation.value_u8();
-        self.write_command(Instruction::MADCTL)?;
-        self.write_data(&[value])?;
-        self.options.set_orientation(orientation);
-        self.madctl = value;
+        self.madctl = self.madctl.with_orientation(orientation); // set orientation
+        self.dcs.write_command(self.madctl)?;
+
         Ok(())
     }
 
@@ -118,7 +105,7 @@ where
     pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
         self.set_address_window(x, y, x, y)?;
         self.model
-            .write_pixels(&mut self.di, core::iter::once(color))?;
+            .write_pixels(&mut self.dcs, core::iter::once(color))?;
 
         Ok(())
     }
@@ -146,7 +133,7 @@ where
         T: IntoIterator<Item = M::ColorFormat>,
     {
         self.set_address_window(sx, sy, ex, ey)?;
-        self.model.write_pixels(&mut self.di, colors)?;
+        self.model.write_pixels(&mut self.dcs, colors)?;
 
         Ok(())
     }
@@ -160,12 +147,8 @@ where
     /// * `bfa` - Bottom fixed area
     ///
     pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
-        self.write_command(Instruction::VSCRDER)?;
-        self.write_data(&tfa.to_be_bytes())?;
-        self.write_data(&vsa.to_be_bytes())?;
-        self.write_data(&bfa.to_be_bytes())?;
-
-        Ok(())
+        let vscrdef = dcs::SetScrollArea::new(tfa, vsa, bfa);
+        self.dcs.write_command(vscrdef)
     }
 
     ///
@@ -175,8 +158,8 @@ where
     /// * `offset` - scroll offset in pixels
     ///
     pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
-        self.write_command(Instruction::VSCAD)?;
-        self.write_data(&offset.to_be_bytes())
+        let vscad = dcs::SetScrollStart::new(offset);
+        self.dcs.write_command(vscad)
     }
 
     ///
@@ -184,15 +167,7 @@ where
     /// This returns the display interface, reset pin and and the model deconstructing the driver.
     ///
     pub fn release(self) -> (DI, M, Option<RST>) {
-        (self.di, self.model, self.rst)
-    }
-
-    fn write_command(&mut self, command: Instruction) -> Result<(), Error> {
-        self.di.send_commands(DataFormat::U8(&[command as u8]))
-    }
-
-    fn write_data(&mut self, data: &[u8]) -> Result<(), Error> {
-        self.di.send_data(DataFormat::U8(data))
+        (self.dcs.release(), self.model, self.rst)
     }
 
     // Sets the address window for the display.
@@ -201,28 +176,15 @@ where
         let offset = self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.write_command(Instruction::CASET)?;
-        self.write_data(&sx.to_be_bytes())?;
-        self.write_data(&ex.to_be_bytes())?;
-        self.write_command(Instruction::RASET)?;
-        self.write_data(&sy.to_be_bytes())?;
-        self.write_data(&ey.to_be_bytes())
+        self.dcs.write_command(dcs::SetColumnAddress::new(sx, ex))?;
+        self.dcs.write_command(dcs::SetPageAddress::new(sy, ey))
     }
 
     ///
     /// Configures the tearing effect output.
     ///
     pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
-        match tearing_effect {
-            TearingEffect::Off => self.write_command(Instruction::TEOFF),
-            TearingEffect::Vertical => {
-                self.write_command(Instruction::TEON)?;
-                self.write_data(&[0])
-            }
-            TearingEffect::HorizontalAndVertical => {
-                self.write_command(Instruction::TEON)?;
-                self.write_data(&[1])
-            }
-        }
+        self.dcs
+            .write_command(dcs::SetTearingEffect(tearing_effect))
     }
 }

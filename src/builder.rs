@@ -3,7 +3,10 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{error::InitError, models::Model, ColorOrder, Display, ModelOptions, Orientation};
+use crate::{
+    dcs::Dcs, error::InitError, models::Model, ColorInversion, ColorOrder, Display, ModelOptions,
+    Orientation, RefreshOrder,
+};
 
 ///
 /// Constructor helper for creating [Display] instances
@@ -47,8 +50,8 @@ where
     ///
     /// Sets the invert color flag
     ///
-    pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
-        self.options.invert_colors = invert_colors;
+    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
+        self.options.invert_colors = color_inversion;
         self
     }
 
@@ -69,18 +72,10 @@ where
     }
 
     ///
-    /// Inverts vertical refresh
+    /// Sets refresh order
     ///
-    pub fn with_invert_vertical_refresh(mut self, invert: bool) -> Self {
-        self.options.invert_vertical_refresh = invert;
-        self
-    }
-
-    ///
-    /// Inverts horizontal refresh
-    ///
-    pub fn with_invert_horizontal_refresh(mut self, invert: bool) -> Self {
-        self.options.invert_horizontal_refresh = invert;
+    pub fn with_refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
+        self.options.refresh_order = refresh_order;
         self
     }
 
@@ -119,25 +114,24 @@ where
     /// If it wasn't provided the user needs to ensure this is the case.
     ///
     pub fn init<RST>(
-        self,
+        mut self,
         delay_source: &mut impl DelayUs<u32>,
-        rst: Option<RST>,
+        mut rst: Option<RST>,
     ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>>
     where
         RST: OutputPin,
     {
-        let options = self.options;
-        let madctl = options.madctl();
-
-        let mut display = Display {
-            di: self.di,
+        let mut dcs = Dcs::write_only(self.di);
+        let madctl = self
+            .model
+            .init(&mut dcs, delay_source, &self.options, &mut rst)?;
+        let display = Display {
+            dcs,
             model: self.model,
             rst,
-            options,
+            options: self.options,
             madctl,
         };
-
-        display.init(delay_source)?;
 
         Ok(display)
     }

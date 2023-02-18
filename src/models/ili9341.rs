@@ -3,9 +3,9 @@ use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
+    dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
     error::InitError,
-    instruction::Instruction,
-    models::{ili934x, write_command, Model},
+    models::{ili934x, Model},
     Builder, Error, ModelOptions,
 };
 
@@ -24,11 +24,11 @@ impl Model for ILI9341Rgb565 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -36,18 +36,19 @@ impl Model for ILI9341Rgb565 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => dcs.write_command(SoftReset)?,
         }
 
-        ili934x::init_rgb565(di, delay, options).map_err(Into::into)
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        ili934x::write_pixels_rgb565(di, colors)
+        ili934x::write_pixels_rgb565(dcs, colors)
     }
 
     fn default_options() -> ModelOptions {
@@ -60,11 +61,11 @@ impl Model for ILI9341Rgb666 {
 
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -72,18 +73,19 @@ impl Model for ILI9341Rgb666 {
     {
         match rst {
             Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => write_command(di, Instruction::SWRESET, &[])?,
+            None => dcs.write_command(SoftReset)?,
         }
 
-        ili934x::init_rgb666(di, delay, options).map_err(Into::into)
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>,
     {
-        ili934x::write_pixels_rgb666(di, colors)
+        ili934x::write_pixels_rgb666(dcs, colors)
     }
 
     fn default_options() -> ModelOptions {

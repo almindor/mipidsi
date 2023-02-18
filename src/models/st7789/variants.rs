@@ -1,6 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{Builder, ModelOptions, Orientation};
+use crate::{Builder, ColorInversion, ModelOptions, Orientation};
 
 use super::ST7789;
 
@@ -33,7 +33,8 @@ where
         Self::new(
             di,
             ST7789,
-            ModelOptions::with_all((135, 240), (135, 240), pico1_offset).with_invert_colors(true),
+            ModelOptions::with_all((135, 240), (135, 240), pico1_offset)
+                .with_invert_colors(ColorInversion::Inverted),
         )
     }
 }

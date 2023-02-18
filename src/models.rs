@@ -1,5 +1,9 @@
-use crate::{error::InitError, instruction::Instruction, Error, ModelOptions};
-use display_interface::{DataFormat, WriteOnlyDataCommand};
+use crate::{
+    dcs::{Dcs, SetAddressMode},
+    error::InitError,
+    Error, ModelOptions,
+};
+use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
@@ -24,11 +28,11 @@ pub trait Model {
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(
         &mut self,
-        di: &mut DI,
+        dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
         rst: &mut Option<RST>,
-    ) -> Result<u8, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
         DELAY: DelayUs<u32>,
@@ -52,7 +56,7 @@ pub trait Model {
 
     /// Writes pixels to the display IC via the given DisplayInterface
     /// Any pixel color format conversion is done here
-    fn write_pixels<DI, I>(&mut self, di: &mut DI, colors: I) -> Result<(), Error>
+    fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
@@ -63,19 +67,4 @@ pub trait Model {
     /// helper constructors.
     ///
     fn default_options() -> ModelOptions;
-}
-
-// helper for models
-pub fn write_command<DI>(di: &mut DI, command: Instruction, params: &[u8]) -> Result<(), Error>
-where
-    DI: WriteOnlyDataCommand,
-{
-    di.send_commands(DataFormat::U8(&[command as u8]))?;
-
-    if !params.is_empty() {
-        di.send_data(DataFormat::U8(params))?;
-        Ok(())
-    } else {
-        Ok(())
-    }
 }

@@ -1,7 +1,5 @@
 //! Module holding [ModelOptions] and other helper types for [super::Display]
 
-use crate::instruction::Instruction;
-
 ///
 /// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
@@ -13,11 +11,9 @@ pub struct ModelOptions {
     /// Initial display orientation (without inverts)
     pub(crate) orientation: Orientation,
     /// Whether to invert colors for this display/model (INVON)
-    pub(crate) invert_colors: bool,
-    /// Set to make display vertical refresh bottom to top
-    pub(crate) invert_vertical_refresh: bool,
-    /// Set to make display horizontal refresh right to left
-    pub(crate) invert_horizontal_refresh: bool,
+    pub(crate) invert_colors: ColorInversion,
+    /// Display refresh order
+    pub(crate) refresh_order: RefreshOrder,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
     pub(crate) window_offset_handler: fn(&ModelOptions) -> (u16, u16),
@@ -36,9 +32,8 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
-            invert_colors: false,
-            invert_horizontal_refresh: false,
-            invert_vertical_refresh: false,
+            invert_colors: ColorInversion::default(),
+            refresh_order: RefreshOrder::default(),
             window_offset_handler: no_offset,
             display_size,
             framebuffer_size,
@@ -57,44 +52,17 @@ impl ModelOptions {
         Self {
             color_order: ColorOrder::default(),
             orientation: Orientation::default(),
-            invert_colors: false,
-            invert_horizontal_refresh: false,
-            invert_vertical_refresh: false,
+            invert_colors: ColorInversion::default(),
+            refresh_order: RefreshOrder::default(),
             window_offset_handler,
             display_size,
             framebuffer_size,
         }
     }
 
-    pub fn with_invert_colors(mut self, invert_colors: bool) -> Self {
-        self.invert_colors = invert_colors;
+    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
+        self.invert_colors = color_inversion;
         self
-    }
-
-    ///
-    /// Returns MADCTL register value for given display options
-    ///
-    pub fn madctl(&self) -> u8 {
-        let mut value = self.orientation.value_u8();
-        if self.invert_vertical_refresh {
-            value |= 0b0001_0000;
-        }
-        match self.color_order {
-            ColorOrder::Rgb => {}
-            ColorOrder::Bgr => value |= 0b0000_1000,
-        }
-        if self.invert_horizontal_refresh {
-            value |= 0b0000_0100;
-        }
-
-        value
-    }
-
-    pub fn invert_command(&self) -> Instruction {
-        match self.invert_colors {
-            false => Instruction::INVOFF,
-            true => Instruction::INVON,
-        }
     }
 
     ///
@@ -117,6 +85,16 @@ impl ModelOptions {
         };
 
         Self::orient_size(size, self.orientation())
+    }
+
+    ///
+    /// Returns the larger of framebuffer width or height. Used for scroll
+    /// area setups.
+    ///
+    pub fn framebuffer_size_max(&self) -> u16 {
+        let (w, h) = self.framebuffer_size();
+
+        w.max(h)
     }
 
     ///
@@ -175,7 +153,7 @@ fn no_offset(options: &ModelOptions) -> (u16, u16) {
 ///
 /// Display orientation.
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Orientation {
     /// Portrait orientation, with mirror image parameter
     Portrait(bool),
@@ -208,10 +186,104 @@ impl Orientation {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ColorInversion {
+    Normal,
+    Inverted,
+}
+
+impl Default for ColorInversion {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum VerticalRefreshOrder {
+    TopToBottom,
+    BottomToTop,
+}
+
+impl Default for VerticalRefreshOrder {
+    fn default() -> Self {
+        Self::TopToBottom
+    }
+}
+
+impl VerticalRefreshOrder {
+    pub const fn flip(self) -> Self {
+        match self {
+            Self::TopToBottom => Self::BottomToTop,
+            Self::BottomToTop => Self::TopToBottom,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum HorizontalRefreshOrder {
+    LeftToRight,
+    RightToLeft,
+}
+
+impl Default for HorizontalRefreshOrder {
+    fn default() -> Self {
+        Self::LeftToRight
+    }
+}
+
+impl HorizontalRefreshOrder {
+    pub const fn flip(self) -> Self {
+        match self {
+            Self::LeftToRight => Self::RightToLeft,
+            Self::RightToLeft => Self::LeftToRight,
+        }
+    }
+}
+
+///
+/// Display refresh order, defaults to left to right, top to bottom
+///
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct RefreshOrder {
+    pub vertical: VerticalRefreshOrder,
+    pub horizontal: HorizontalRefreshOrder,
+}
+
+impl RefreshOrder {
+    pub const fn new(vertical: VerticalRefreshOrder, horizontal: HorizontalRefreshOrder) -> Self {
+        Self {
+            vertical,
+            horizontal,
+        }
+    }
+
+    pub const fn flip_vertical(self) -> Self {
+        let Self {
+            vertical,
+            horizontal,
+        } = self;
+        Self {
+            vertical: vertical.flip(),
+            horizontal,
+        }
+    }
+
+    pub const fn flip_horizontal(self) -> Self {
+        let Self {
+            vertical,
+            horizontal,
+        } = self;
+        Self {
+            vertical,
+            horizontal: horizontal.flip(),
+        }
+    }
+}
+
 ///
 /// Tearing effect output setting.
 ///
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum TearingEffect {
     /// Disable output.
     Off,
@@ -224,7 +296,7 @@ pub enum TearingEffect {
 ///
 /// Defines expected color component ordering, RGB or BGR
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorOrder {
     Rgb,
     Bgr,

@@ -1,8 +1,9 @@
-use embedded_graphics_core::prelude::{DrawTarget, Point, Size};
+use embedded_graphics_core::prelude::{DrawTarget, Point, RgbColor, Size};
 use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
 use embedded_hal::digital::v2::OutputPin;
 
+use crate::dcs::BitsPerPixel;
 use crate::models::Model;
 use crate::{Display, Error};
 use display_interface::WriteOnlyDataCommand;
@@ -111,5 +112,49 @@ where
         let ds = self.options.display_size();
         let (width, height) = (u32::from(ds.0), u32::from(ds.1));
         Size::new(width, height)
+    }
+}
+
+impl BitsPerPixel {
+    pub const fn from_rgbcolor<C: RgbColor>() -> Self {
+        let bpp = C::MAX_R.trailing_ones() + C::MAX_G.trailing_ones() + C::MAX_B.trailing_ones();
+
+        match bpp {
+            3 => Self::Three,
+            8 => Self::Eight,
+            12 => Self::Twelve,
+            16 => Self::Sixteen,
+            18 => Self::Eighteen,
+            24 => Self::TwentyFour,
+            _ => panic!("invalid RgbColor bits per pixel"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::dcs::BitsPerPixel;
+    use embedded_graphics_core::pixelcolor::*;
+
+    #[test]
+    fn bpp_from_rgbcolor_works() {
+        assert_eq!(
+            BitsPerPixel::from_rgbcolor::<Rgb565>(),
+            BitsPerPixel::Sixteen
+        );
+        assert_eq!(
+            BitsPerPixel::from_rgbcolor::<Rgb666>(),
+            BitsPerPixel::Eighteen
+        );
+        assert_eq!(
+            BitsPerPixel::from_rgbcolor::<Rgb888>(),
+            BitsPerPixel::TwentyFour
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn bpp_from_rgbcolor_invalid_panics() {
+        BitsPerPixel::from_rgbcolor::<Rgb555>();
     }
 }
