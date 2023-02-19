@@ -8,10 +8,9 @@ use crate::{
     Orientation, RefreshOrder,
 };
 
-///
-/// Constructor helper for creating [Display] instances
-/// Exposes all possible display options
-///
+/// Builder for [Display] instances.
+/// 
+/// Exposes all possible display options.
 pub struct Builder<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,

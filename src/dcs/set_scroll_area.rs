@@ -4,6 +4,7 @@ use crate::{Error, ModelOptions};
 
 use super::DcsCommand;
 
+/// Set Scroll Area
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetScrollArea {
     tfa: u16,
@@ -12,10 +13,9 @@ pub struct SetScrollArea {
 }
 
 impl SetScrollArea {
-    ///
-    /// Construct a new Vscrdef with TFA, VSA and BFA sizes.
+    /// Creates a new Set Scroll Area command.
+    /// 
     /// VSA should default to the display's height (or width) framebuffer size.
-    ///
     pub fn new(tfa: u16, vsa: u16, bfa: u16) -> Self {
         Self { tfa, vsa, bfa }
     }

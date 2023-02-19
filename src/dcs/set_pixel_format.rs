@@ -4,14 +4,12 @@ use crate::Error;
 
 use super::DcsCommand;
 
+/// Set Pixel Format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SetPixelFormat(PixelFormat);
 
 impl SetPixelFormat {
-    ///
-    /// Set the pixel format that the MCU will be sending to this
-    /// display.
-    ///
+    /// Creates a new Set Pixel Format command.
     pub fn new(pixel_format: PixelFormat) -> Self {
         Self(pixel_format)
     }
@@ -34,11 +32,17 @@ impl DcsCommand for SetPixelFormat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BitsPerPixel {
+    /// 3 bits per pixel.
     Three = 0b001,
+    /// 8 bits per pixel.
     Eight = 0b010,
+    /// 12 bits per pixel.
     Twelve = 0b011,
+    /// 16 bits per pixel.
     Sixteen = 0b101,
+    /// 18 bits per pixel.
     Eighteen = 0b110,
+    /// 24 bits per pixel.
     TwentyFour = 0b111,
 }
 

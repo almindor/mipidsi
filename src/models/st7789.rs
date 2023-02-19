@@ -13,10 +13,11 @@ use crate::{
 
 use super::Model;
 
-/// Module containing all ST7789 variants and helper constructors for [Display]
+/// Module containing all ST7789 variants.
 mod variants;
 
-/// ST7789 SPI display with Reset pin
+/// ST7789 display in Rgb565 color mode.
+/// 
 /// Only SPI with DC pin interface is supported
 pub struct ST7789;
 
@@ -52,7 +53,7 @@ impl Model for ST7789 {
 
         dcs.write_command(SetInvertMode(options.invert_colors))?;
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         dcs.write_command(SetPixelFormat::new(pf))?;
         delay.delay_us(10_000);
         dcs.write_command(EnterNormalMode)?;
@@ -80,7 +81,9 @@ impl Model for ST7789 {
     }
 
     fn default_options() -> crate::ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320))
-            .with_invert_colors(ColorInversion::Inverted)
+        let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
+        options.set_invert_colors(ColorInversion::Normal);
+
+        return options;
     }
 }

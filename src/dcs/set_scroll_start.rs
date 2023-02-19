@@ -4,13 +4,12 @@ use crate::Error;
 
 use super::DcsCommand;
 
+/// Set Scroll Start
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetScrollStart(u16);
 
 impl SetScrollStart {
-    ///
-    /// Construct a new Vscad given offset
-    ///
+    /// Creates a new Set Scroll Start command.
     pub fn new(offset: u16) -> Self {
         Self(offset)
     }

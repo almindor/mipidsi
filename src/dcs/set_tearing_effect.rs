@@ -2,6 +2,7 @@ use crate::{Error, TearingEffect};
 
 use super::DcsCommand;
 
+/// Set Tearing Effect
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SetTearingEffect(pub TearingEffect);
 

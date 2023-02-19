@@ -7,10 +7,12 @@ use crate::{
 
 use super::DcsCommand;
 
+/// Set Address Mode
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct SetAddressMode(u8);
 
 impl SetAddressMode {
+    /// Creates a new Set Address Mode command.
     pub fn new(
         color_order: ColorOrder,
         orientation: Orientation,

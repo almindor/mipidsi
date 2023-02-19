@@ -16,12 +16,10 @@ use crate::{
 
 use super::Model;
 
-/// ILI9486 display in Rgb565 color mode (does *NOT* work with SPI)
-/// Backlight pin is not controlled
+/// ILI9486 display in Rgb565 color mode.
 pub struct ILI9486Rgb565;
 
-/// ILI9486 display in Rgb666 color mode (works with SPI)
-/// Backlight pin is not controlled
+/// ILI9486 display in Rgb666 color mode.
 pub struct ILI9486Rgb666;
 
 impl Model for ILI9486Rgb565 {
@@ -45,7 +43,7 @@ impl Model for ILI9486Rgb565 {
         }
         delay.delay_us(120_000);
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         Ok(init_common(dcs, delay, options, pf)?)
     }
 
@@ -88,7 +86,7 @@ impl Model for ILI9486Rgb666 {
 
         delay.delay_us(120_000);
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         Ok(init_common(dcs, delay, options, pf)?)
     }
 
@@ -120,14 +118,17 @@ impl<DI> Builder<DI, ILI9486Rgb565>
 where
     DI: WriteOnlyDataCommand,
 {
-    ///
-    /// Creates a new [Display] instance with [ILI9486] as the [Model]
-    /// with the default framebuffer size and display size of 320x480
-    /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9486!
+    /// Creates a new display builder for an ILI9486 display in Rgb565 color mode.
+    /// 
+    /// The default framebuffer size and display size is 320x480 pixels.
+    /// 
+    /// # Limitations
+    /// 
+    /// The Rgb565 color mode is not supported for displays with SPI connection.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn ili9486_rgb565(di: DI) -> Self {
         Self::with_model(di, ILI9486Rgb565)
@@ -138,13 +139,13 @@ impl<DI> Builder<DI, ILI9486Rgb666>
 where
     DI: WriteOnlyDataCommand,
 {
-    ///
-    /// Creates a new [Display] instance with [ILI9486] as the [Model]
-    /// with the default framebuffer size and display size of 320x480
+    /// Creates a new display builder for ILI9486 displays in Rgb666 color mode.
+    /// 
+    /// The default framebuffer size and display size is 320x480 pixels.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn ili9486_rgb666(di: DI) -> Self {
         Self::with_model(di, ILI9486Rgb666)

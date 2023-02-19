@@ -9,14 +9,10 @@ use crate::{
     Builder, Error, ModelOptions,
 };
 
-/// ILI9341 display with Reset pin
-/// in Rgb565 color mode
-/// Backlight pin is not controlled
+/// ILI9341 display in Rgb565 color mode.
 pub struct ILI9341Rgb565;
 
-/// ILI9341 display with Reset pin
-/// in Rgb666 color mode
-/// Backlight pin is not controlled
+/// ILI9341 display in Rgb666 color mode.
 pub struct ILI9341Rgb666;
 
 impl Model for ILI9341Rgb565 {
@@ -39,7 +35,7 @@ impl Model for ILI9341Rgb565 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
@@ -76,7 +72,7 @@ impl Model for ILI9341Rgb666 {
             None => dcs.write_command(SoftReset)?,
         }
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
 
@@ -99,14 +95,17 @@ impl<DI> Builder<DI, ILI9341Rgb565>
 where
     DI: WriteOnlyDataCommand,
 {
-    ///
-    /// Creates a new [Display] instance with [ILI9341] as the [Model]
-    /// with the default framebuffer size and display size of 240x320
-    /// *WARNING* Rgb565 only works on non-SPI setups with the ILI9341!
+    /// Creates a new display builder for an ILI9341 display in Rgb565 color mode.
+    /// 
+    /// The default framebuffer size and display size is 240x320 pixels.
+    /// 
+    /// # Limitations
+    /// 
+    /// The Rgb565 color mode is not supported for displays with SPI connection.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn ili9341_rgb565(di: DI) -> Self {
         Self::with_model(di, ILI9341Rgb565)
@@ -117,13 +116,13 @@ impl<DI> Builder<DI, ILI9341Rgb666>
 where
     DI: WriteOnlyDataCommand,
 {
-    ///
-    /// Creates a new [Display] instance with [ILI9341] as the [Model]
-    /// with the default framebuffer size and display size of 320x240
+    /// Creates a new display builder for an ILI9341 display in Rgb565 color mode.
+    /// 
+    /// The default framebuffer size and display size is 240x320 pixels.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn ili9341_rgb666(di: DI) -> Self {
         Self::with_model(di, ILI9341Rgb666)

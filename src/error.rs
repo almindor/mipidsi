@@ -2,13 +2,12 @@
 
 use display_interface::DisplayError;
 
-///
-/// An error holding its source [embedded_hal::digital::v2::OutputPin::Error]
-/// or [display_interface::DisplayError]
-///
+/// Error returned by [`Builder::init`](crate::Builder).
 #[derive(Debug)]
 pub enum InitError<PE> {
+    /// Error caused by the display interface.
     DisplayError,
+    /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::v2::OutputPin) implementation.
     Pin(PE),
 }
 

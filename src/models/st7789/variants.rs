@@ -8,34 +8,33 @@ impl<DI> Builder<DI, ST7789>
 where
     DI: WriteOnlyDataCommand,
 {
+    /// Creates a new display builder for a ST7789 display in Rgb565 color mode.
     ///
-    /// Creates a new [Display] instance with [ST7789] as the [super::Model] with
-    /// general variant using display framebuffer size of 240x320
+    /// The default framebuffer size and display size is 240x320 pixels.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn st7789(di: DI) -> Self {
         Self::with_model(di, ST7789)
     }
 
+    /// Creates a new display builder for the pico1 variant of a ST7789 display in Rgb565 color
+    /// mode.
     ///
-    /// Creates a new [Display] instance with [ST7789] as the [super::Model] with
-    /// pico1 variant using display and framebuffer size of 135x240 and a clipping offset
+    /// The pico1 variant uses a display and framebuffer size of 135x240 and a clipping offset.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn st7789_pico1(di: DI) -> Self {
+        let mut options = ModelOptions::with_all((135, 240), (135, 240), pico1_offset);
+        options.set_invert_colors(ColorInversion::Inverted);
+
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
-        Self::new(
-            di,
-            ST7789,
-            ModelOptions::with_all((135, 240), (135, 240), pico1_offset)
-                .with_invert_colors(ColorInversion::Inverted),
-        )
+        Self::new(di, ST7789, options)
     }
 }
 
