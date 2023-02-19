@@ -13,8 +13,7 @@ use crate::{
 
 use super::{Dcs, Model};
 
-/// ST7735s SPI display with Reset pin
-/// Only SPI with DC pin interface is supported
+/// ST7735s display in Rgb565 color mode.
 pub struct ST7735s;
 
 impl Model for ST7735s {
@@ -69,7 +68,7 @@ impl Model for ST7735s {
             ],
         )?; // set GAMMA -Polarity characteristics
 
-        let pf = PixelFormat::with_all(BitsPerPixel::from_rgbcolor::<Self::ColorFormat>());
+        let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         dcs.write_command(SetPixelFormat::new(pf))?; // set interface pixel format, 16bit pixel into frame memory
 
         dcs.write_command(madctl)?; // set memory data access control, Top -> Bottom, RGB, Left -> Right
@@ -92,7 +91,10 @@ impl Model for ST7735s {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((80, 160), (132, 162)).with_invert_colors(ColorInversion::Inverted)
+        let mut options = ModelOptions::with_sizes((80, 160), (132, 162));
+        options.set_invert_colors(ColorInversion::Inverted);
+
+        options
     }
 }
 
@@ -102,15 +104,13 @@ impl<DI> Builder<DI, ST7735s>
 where
     DI: WriteOnlyDataCommand,
 {
+    /// Creates a new display builder for ST7735s displays in Rgb565 color mode.
     ///
-    /// Creates a new [Display] instance with [ST7735s] as the [Model] with a
-    /// hard reset Pin with the default framebuffer size of 132x162
-    /// and display size of 80x160
+    /// The default framebuffer size is 132x162 pixels and display size is 80x160 pixels.
     ///
     /// # Arguments
     ///
-    /// * `di` - a [DisplayInterface](WriteOnlyDataCommand) for talking with the display
-    /// * `options` - the [DisplayOptions] for this display/model
+    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn st7735s(di: DI) -> Self {
         Self::with_model(di, ST7735s)

@@ -1,9 +1,8 @@
-//! Module holding [ModelOptions] and other helper types for [super::Display]
+//! [ModelOptions] and other helper types.
 
+/// [ModelOptions] holds the settings for [Model](crate::Model)s.
 ///
-/// [ModelOptions] hold all the various settings that can impact a particular [super::Model]
 /// `display_size` being set is the minimum requirement.
-///
 #[derive(Clone)]
 pub struct ModelOptions {
     /// Specify display color ordering
@@ -24,10 +23,9 @@ pub struct ModelOptions {
 }
 
 impl ModelOptions {
+    /// Creates model options for the given display and framebuffer sizes.
     ///
-    /// Constructs a [ModelOptions]
-    /// with given display and framebuffer sizes
-    ///
+    /// All other settings are initialized to their default value.
     pub fn with_sizes(display_size: (u16, u16), framebuffer_size: (u16, u16)) -> Self {
         Self {
             color_order: ColorOrder::default(),
@@ -40,10 +38,7 @@ impl ModelOptions {
         }
     }
 
-    ///
-    /// Constructs a [ModelOptions]
-    /// with given display and framebuffer sizes and provided window offset handler
-    ///
+    /// Creates model options for the given sizes and offset handler.
     pub fn with_all(
         display_size: (u16, u16),
         framebuffer_size: (u16, u16),
@@ -60,24 +55,22 @@ impl ModelOptions {
         }
     }
 
-    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
+    /// Sets the color inversion setting.
+    pub fn set_invert_colors(&mut self, color_inversion: ColorInversion) {
         self.invert_colors = color_inversion;
-        self
     }
 
+    /// Returns the display size based on current orientation and display options.
     ///
-    /// Returns display size based on current orientation and display options.
     /// Used by models.
-    ///
-    pub fn display_size(&self) -> (u16, u16) {
+    pub(crate) fn display_size(&self) -> (u16, u16) {
         Self::orient_size(self.display_size, self.orientation())
     }
 
-    ///
     /// Returns framebuffer size based on current orientation and display options.
-    /// Used by models. Uses display_size if framebuffer_size is not set.
     ///
-    pub fn framebuffer_size(&self) -> (u16, u16) {
+    /// Used by models. Uses display_size if framebuffer_size is not set.
+    pub(crate) fn framebuffer_size(&self) -> (u16, u16) {
         let size = if self.framebuffer_size == (0, 0) {
             self.display_size
         } else {
@@ -87,31 +80,28 @@ impl ModelOptions {
         Self::orient_size(size, self.orientation())
     }
 
+    /// Returns the larger of framebuffer width or height.
     ///
-    /// Returns the larger of framebuffer width or height. Used for scroll
-    /// area setups.
-    ///
-    pub fn framebuffer_size_max(&self) -> u16 {
+    /// Used for scroll area setups.
+    pub(crate) fn framebuffer_size_max(&self) -> u16 {
         let (w, h) = self.framebuffer_size();
 
         w.max(h)
     }
 
-    ///
     /// Returns window offset (x, y) based on current orientation and display options.
-    /// Used by [Display::set_address_window]
     ///
-    pub fn window_offset(&mut self) -> (u16, u16) {
+    /// Used by [Display::set_address_window](crate::Display::set_address_window).
+    pub(crate) fn window_offset(&mut self) -> (u16, u16) {
         (self.window_offset_handler)(self)
     }
 
+    /// Returns the current orientation.
     pub fn orientation(&self) -> Orientation {
         self.orientation
     }
 
-    ///
-    /// Sets the current [Orientation]
-    ///
+    /// Sets the orientation.
     pub fn set_orientation(&mut self, orientation: Orientation) {
         self.orientation = orientation;
     }
@@ -171,24 +161,12 @@ impl Default for Orientation {
     }
 }
 
-impl Orientation {
-    pub fn value_u8(&self) -> u8 {
-        match self {
-            Orientation::Portrait(false) => 0b0000_0000,
-            Orientation::Portrait(true) => 0b0100_0000,
-            Orientation::PortraitInverted(false) => 0b1100_0000,
-            Orientation::PortraitInverted(true) => 0b1000_0000,
-            Orientation::Landscape(false) => 0b0010_0000,
-            Orientation::Landscape(true) => 0b0110_0000,
-            Orientation::LandscapeInverted(false) => 0b1110_0000,
-            Orientation::LandscapeInverted(true) => 0b1010_0000,
-        }
-    }
-}
-
+/// Color inversion.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ColorInversion {
+    /// Normal colors.
     Normal,
+    /// Inverted colors.
     Inverted,
 }
 
@@ -198,9 +176,12 @@ impl Default for ColorInversion {
     }
 }
 
+/// Vertical refresh order.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum VerticalRefreshOrder {
+    /// Refresh from top to bottom.
     TopToBottom,
+    /// Refresh from bottom to top.
     BottomToTop,
 }
 
@@ -211,6 +192,8 @@ impl Default for VerticalRefreshOrder {
 }
 
 impl VerticalRefreshOrder {
+    /// Returns the opposite refresh order.
+    #[must_use]
     pub const fn flip(self) -> Self {
         match self {
             Self::TopToBottom => Self::BottomToTop,
@@ -219,9 +202,12 @@ impl VerticalRefreshOrder {
     }
 }
 
+/// Horizontal refresh order.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum HorizontalRefreshOrder {
+    /// Refresh from left to right.
     LeftToRight,
+    /// Refresh from right to left.
     RightToLeft,
 }
 
@@ -232,6 +218,8 @@ impl Default for HorizontalRefreshOrder {
 }
 
 impl HorizontalRefreshOrder {
+    /// Returns the opposite refresh order.
+    #[must_use]
     pub const fn flip(self) -> Self {
         match self {
             Self::LeftToRight => Self::RightToLeft,
@@ -240,16 +228,19 @@ impl HorizontalRefreshOrder {
     }
 }
 
+/// Display refresh order.
 ///
-/// Display refresh order, defaults to left to right, top to bottom
-///
+/// Defaults to left to right, top to bottom.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct RefreshOrder {
+    /// Vertical refresh order.
     pub vertical: VerticalRefreshOrder,
+    /// Horizontal refresh order.
     pub horizontal: HorizontalRefreshOrder,
 }
 
 impl RefreshOrder {
+    /// Creates a new refresh order.
     pub const fn new(vertical: VerticalRefreshOrder, horizontal: HorizontalRefreshOrder) -> Self {
         Self {
             vertical,
@@ -257,32 +248,26 @@ impl RefreshOrder {
         }
     }
 
+    /// Returns a refresh order with flipped vertical refresh order.
+    #[must_use]
     pub const fn flip_vertical(self) -> Self {
-        let Self {
-            vertical,
-            horizontal,
-        } = self;
         Self {
-            vertical: vertical.flip(),
-            horizontal,
+            vertical: self.vertical.flip(),
+            ..self
         }
     }
 
+    /// Returns a refresh order with flipped horizontal refresh order.
+    #[must_use]
     pub const fn flip_horizontal(self) -> Self {
-        let Self {
-            vertical,
-            horizontal,
-        } = self;
         Self {
-            vertical,
-            horizontal: horizontal.flip(),
+            horizontal: self.horizontal.flip(),
+            ..self
         }
     }
 }
 
-///
 /// Tearing effect output setting.
-///
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum TearingEffect {
     /// Disable output.
@@ -293,12 +278,12 @@ pub enum TearingEffect {
     HorizontalAndVertical,
 }
 
-///
-/// Defines expected color component ordering, RGB or BGR
-///
+/// Subpixel order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorOrder {
+    /// RGB subpixel order.
     Rgb,
+    /// BGR subpixel order.
     Bgr,
 }
 

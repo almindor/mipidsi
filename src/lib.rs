@@ -1,6 +1,7 @@
 #![no_std]
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
+#![warn(missing_docs)]
 
 //! This crate provides a generic display driver to connect to TFT displays
 //! that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
@@ -36,7 +37,7 @@ pub use error::Error;
 pub mod options;
 pub use options::*;
 
-pub mod builder;
+mod builder;
 pub use builder::Builder;
 
 pub mod dcs;

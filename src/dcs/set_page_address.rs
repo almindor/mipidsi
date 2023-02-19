@@ -4,6 +4,7 @@ use crate::Error;
 
 use super::DcsCommand;
 
+/// Set Page Address
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetPageAddress {
     start_row: u16,
@@ -11,9 +12,7 @@ pub struct SetPageAddress {
 }
 
 impl SetPageAddress {
-    ///
-    /// Construct a new Raset range
-    ///
+    /// Creates a new Set Page Address command.
     pub fn new(start_row: u16, end_row: u16) -> Self {
         Self { start_row, end_row }
     }

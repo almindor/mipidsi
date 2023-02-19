@@ -116,7 +116,8 @@ where
 }
 
 impl BitsPerPixel {
-    pub const fn from_rgbcolor<C: RgbColor>() -> Self {
+    /// Returns the bits per pixel for a embedded-graphics [`RgbColor`].
+    pub const fn from_rgb_color<C: RgbColor>() -> Self {
         let bpp = C::MAX_R.trailing_ones() + C::MAX_G.trailing_ones() + C::MAX_B.trailing_ones();
 
         match bpp {
@@ -137,24 +138,24 @@ mod test {
     use embedded_graphics_core::pixelcolor::*;
 
     #[test]
-    fn bpp_from_rgbcolor_works() {
+    fn bpp_from_rgb_color_works() {
         assert_eq!(
-            BitsPerPixel::from_rgbcolor::<Rgb565>(),
+            BitsPerPixel::from_rgb_color::<Rgb565>(),
             BitsPerPixel::Sixteen
         );
         assert_eq!(
-            BitsPerPixel::from_rgbcolor::<Rgb666>(),
+            BitsPerPixel::from_rgb_color::<Rgb666>(),
             BitsPerPixel::Eighteen
         );
         assert_eq!(
-            BitsPerPixel::from_rgbcolor::<Rgb888>(),
+            BitsPerPixel::from_rgb_color::<Rgb888>(),
             BitsPerPixel::TwentyFour
         );
     }
 
     #[test]
     #[should_panic]
-    fn bpp_from_rgbcolor_invalid_panics() {
-        BitsPerPixel::from_rgbcolor::<Rgb555>();
+    fn bpp_from_rgb_color_invalid_panics() {
+        BitsPerPixel::from_rgb_color::<Rgb555>();
     }
 }

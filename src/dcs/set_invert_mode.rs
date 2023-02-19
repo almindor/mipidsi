@@ -2,6 +2,7 @@ use crate::{ColorInversion, Error};
 
 use super::DcsCommand;
 
+/// Set Invert Mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SetInvertMode(pub ColorInversion);
 

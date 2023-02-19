@@ -4,6 +4,7 @@ use crate::Error;
 
 use super::DcsCommand;
 
+/// Set Column Address
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetColumnAddress {
     start_column: u16,
@@ -11,9 +12,7 @@ pub struct SetColumnAddress {
 }
 
 impl SetColumnAddress {
-    ///
-    /// Construct a new Caset range
-    ///
+    /// Creates a new Set Column Address command.
     pub fn new(start_column: u16, end_column: u16) -> Self {
         Self {
             start_column,
