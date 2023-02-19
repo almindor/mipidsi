@@ -71,11 +71,11 @@ where
     }
 
     /// Sends a raw command with the given `instruction` to the display interface.
-    /// 
+    ///
     /// The `param_bytes` slice can contain the instruction parameters, which are sent as data after
     /// the instruction code was sent. If no parameters are required an empty slice can be passed to
     /// this method.
-    /// 
+    ///
     /// This method is intended to be used for sending commands which are not part of the MIPI DCS
     /// user command set. Use [`write_command`](Self::write_command) for commands in the user
     /// command set.

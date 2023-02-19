@@ -1,7 +1,7 @@
 //! [ModelOptions] and other helper types.
 
 /// [ModelOptions] holds the settings for [Model](crate::Model)s.
-/// 
+///
 /// `display_size` being set is the minimum requirement.
 #[derive(Clone)]
 pub struct ModelOptions {

@@ -14,7 +14,7 @@ pub struct SetScrollArea {
 
 impl SetScrollArea {
     /// Creates a new Set Scroll Area command.
-    /// 
+    ///
     /// VSA should default to the display's height (or width) framebuffer size.
     pub fn new(tfa: u16, vsa: u16, bfa: u16) -> Self {
         Self { tfa, vsa, bfa }

@@ -60,7 +60,7 @@ pub trait Model {
     }
 
     /// Writes pixels to the display IC via the given display interface.
-    /// 
+    ///
     /// Any pixel color format conversion is done here.
     fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
@@ -68,7 +68,7 @@ pub trait Model {
         I: IntoIterator<Item = Self::ColorFormat>;
 
     /// Creates default [ModelOptions] for this particular [Model].
-    /// 
+    ///
     /// This serves as a "sane default". There can be additional variants which will be provided via
     /// helper constructors.
     fn default_options() -> ModelOptions;

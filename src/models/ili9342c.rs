@@ -96,11 +96,11 @@ where
     DI: WriteOnlyDataCommand,
 {
     /// Creates a new display builder for an ILI9342C display in Rgb565 color mode.
-    /// 
+    ///
     /// The default framebuffer size and display size is 320x240 pixels.
-    /// 
+    ///
     /// # Limitations
-    /// 
+    ///
     /// The Rgb565 color mode is not supported for displays with SPI connection.
     ///
     /// # Arguments
@@ -117,7 +117,7 @@ where
     DI: WriteOnlyDataCommand,
 {
     /// Creates a new display builder for an ILI9342C display in Rgb666 color mode.
-    /// 
+    ///
     /// The default framebuffer size and display size is 320x240
     ///
     /// # Arguments

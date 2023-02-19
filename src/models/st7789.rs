@@ -17,7 +17,7 @@ use super::Model;
 mod variants;
 
 /// ST7789 display in Rgb565 color mode.
-/// 
+///
 /// Only SPI with DC pin interface is supported
 pub struct ST7789;
 

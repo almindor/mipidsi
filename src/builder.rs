@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Builder for [Display] instances.
-/// 
+///
 /// Exposes all possible display options.
 pub struct Builder<DI, MODEL>
 where
