@@ -1,5 +1,5 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
-use embedded_graphics_core::pixelcolor::{IntoStorage, Rgb565, Rgb666, RgbColor};
+use embedded_graphics_core::pixelcolor::{IntoStorage, Rgb565, Rgb666, Rgb888, RgbColor};
 use embedded_hal::blocking::delay::DelayUs;
 
 use crate::{
@@ -54,6 +54,23 @@ pub fn write_pixels_rgb666<DI, I>(dcs: &mut Dcs<DI>, colors: I) -> Result<(), Er
 where
     DI: WriteOnlyDataCommand,
     I: IntoIterator<Item = Rgb666>,
+{
+    dcs.write_command(WriteMemoryStart)?;
+    let mut iter = colors.into_iter().flat_map(|c| {
+        let red = c.r() << 2;
+        let green = c.g() << 2;
+        let blue = c.b() << 2;
+        [red, green, blue]
+    });
+
+    let buf = DataFormat::U8Iter(&mut iter);
+    dcs.di.send_data(buf)
+}
+
+pub fn write_pixels_rgb888<DI, I>(dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
+where
+    DI: WriteOnlyDataCommand,
+    I: IntoIterator<Item = Rgb888>,
 {
     dcs.write_command(WriteMemoryStart)?;
     let mut iter = colors.into_iter().flat_map(|c| {
