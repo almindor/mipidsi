@@ -24,7 +24,7 @@ where
     let madctl = SetAddressMode::from(options);
 
     // Workaround problem with ignoring initialization commands
-    delay.delay_us(100);
+    delay.delay_us(1_000);
 
     dcs.write_command(ExitSleepMode)?; // turn off sleep
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
