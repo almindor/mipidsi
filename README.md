@@ -4,7 +4,7 @@
     <a href="https://crates.io/crates/mipidsi"><img src="https://img.shields.io/crates/v/mipidsi.svg" alt="Crates.io"></a>
     <a href="https://docs.rs/mipidsi"><img src="https://docs.rs/mipidsi/badge.svg" alt="Docs.rs"></a>
     <a href="https://matrix.to/#/#rust-embedded-graphics:matrix.org"><img src="https://img.shields.io/matrix/rust-embedded-graphics:matrix.org" alt="Discuss driver on embedded-graphics on Matrix"></a>
-</p>V
+</p>
 
 This crate provides a generic display driver to connect to TFT displays
 that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
