@@ -23,6 +23,9 @@ where
 {
     let madctl = SetAddressMode::from(options);
 
+    // Workaround problem with ignoring initialization commands
+    delay.delay_us(100);
+
     dcs.write_command(ExitSleepMode)?; // turn off sleep
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
     dcs.write_raw(0xB4, &[0x0])?; //Inversion Control [00]
