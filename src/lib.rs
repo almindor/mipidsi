@@ -4,8 +4,9 @@
 #![warn(missing_docs)]
 
 //! This crate provides a generic display driver to connect to TFT displays
-//! that implement the [MIPI DSI](https://www.mipi.org/specifications/dsi).
-//! Currently only supports SPI with DC pin setups via the [display_interface]
+//! that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
+//!
+//! Uses [display_interface](https://crates.io/crates/display-interface) to talk to the hardware via transports (currently SPI, I2C and Parallel GPIO).
 //!
 //! An optional batching of draws is supported via the `batch` feature (default on)
 //!
@@ -26,6 +27,11 @@
 //!     .init(&mut delay, Some(rst));
 //! // clear the display to black
 //! display.clear(Rgb666::BLACK).unwrap();
+//! ```
+//!
+//! ## Troubleshooting
+//! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
+//!
 
 use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
