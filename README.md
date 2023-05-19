@@ -1,7 +1,7 @@
 # mipidsi
 
 This crate provides a generic display driver to connect to TFT displays
-that implement the [MIPI DCS](https://www.mipi.org/specifications/display-command-set).
+that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
 
 Uses [display_interface](https://crates.io/crates/display-interface) to talk to the hardware via transports (currently SPI, I2C and Parallel GPIO).
 
@@ -9,9 +9,7 @@ An optional batching of draws is supported via the `batch` feature (default on)
 
 *NOTES*: 
 
-* The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI DCS via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI DSI is NOT supported at this time.
-
-* This driver does **NOT** handle the backlight pin to keep the code simpler. Users must control the backlight manually.
+* The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
 
 ## Architecture
 
@@ -35,7 +33,11 @@ Variants that require different screen sizes and window addressing offsets are n
 
 ## Migration
 
-See [MIGRATION.md](MIGRATION.md) document.
+See [MIGRATION.md](docs/MIGRATION.md) document.
+
+## Troubleshooting
+
+See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) document.
 
 ### Example
 ```rust
