@@ -23,17 +23,25 @@ where
 {
     let madctl = SetAddressMode::from(options);
 
+    // Datasheet info - 8.2.2. Software Reset (01h): It will be necessary to wait 5msec before sending new command following software reset. The display module loads all display
+    // supplier factory default values to the registers during this 5msec
+    delay.delay_us(5_000);
+
     dcs.write_command(ExitSleepMode)?; // turn off sleep
+
+    // Datasheet info - 8.2.2. Software Reset (01h): If Software Reset is applied during Sleep Out mode, it will be
+    // necessary to wait 120msec before sending Sleep out command. Software Reset Command cannot be sent during Sleep Out
+    // sequence.
+    delay.delay_us(120_000);
+
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
     dcs.write_raw(0xB4, &[0x0])?; //Inversion Control [00]
     dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
     dcs.write_command(SetPixelFormat::new(pixel_format))?; // pixel format
 
     dcs.write_command(EnterNormalMode)?; // turn to normal mode
-    dcs.write_command(SetDisplayOn)?; // turn on display
 
-    // DISPON requires some time otherwise we risk SPI data issues
-    delay.delay_us(120_000);
+    dcs.write_command(SetDisplayOn)?; // turn on display
 
     Ok(madctl)
 }
