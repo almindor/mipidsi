@@ -84,6 +84,6 @@ impl Model for ST7789 {
         let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
         options.set_invert_colors(ColorInversion::Normal);
 
-        return options;
+        options
     }
 }
