@@ -7,16 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [v0.7.0] - 2023-05-24
+## [v0.7.1] - 2023-05-24
 
-### Added
+### Changed
+
+ - fixed MSRV in `Cargo.toml` to match the rest at `v1.61`
+
+## [v0.7.0] - 2023-05-24
 
 ### Changed
 
 - switched `embedded-graphics-core v0.4.0`
 - updated initialization delays `ILI934x` model
-
-### Removed
 
 ## [v0.6.0] - 2023-01-12
 
