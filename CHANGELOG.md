@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- added `GC9A01` model support
+
 ## [v0.7.1] - 2023-05-24
 
 ### Changed
