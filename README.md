@@ -13,7 +13,7 @@ Uses [display_interface](https://crates.io/crates/display-interface) to talk to 
 
 An optional batching of draws is supported via the `batch` feature (default on)
 
-*NOTES*: 
+*NOTES*:
 
 * The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
 
@@ -36,6 +36,7 @@ Variants that require different screen sizes and window addressing offsets are n
 * ILI9486
 * ILI9341
 * ILI9342C
+* GC9A01
 
 ## Migration
 
