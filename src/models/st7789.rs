@@ -18,7 +18,7 @@ mod variants;
 
 /// ST7789 display in Rgb565 color mode.
 ///
-/// Only SPI with DC pin interface is supported
+/// Interfaces implemented by the [display-interface](https://crates.io/crates/display-interface) are supported.
 pub struct ST7789;
 
 impl Model for ST7789 {
