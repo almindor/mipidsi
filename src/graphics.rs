@@ -1,7 +1,7 @@
 use embedded_graphics_core::prelude::{DrawTarget, Point, RgbColor, Size};
 use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 
 use crate::dcs::BitsPerPixel;
 use crate::models::Model;
