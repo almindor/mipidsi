@@ -124,7 +124,9 @@ where
         RST: OutputPin,
     {
         let mut dcs = Dcs::write_only(self.di);
-        let madctl = self.model.init(delay_source, &self.options, &mut rst)?;
+        let madctl = self
+            .model
+            .init(&mut dcs, delay_source, &self.options, &mut rst)?;
         let display = Display {
             dcs,
             model: self.model,
@@ -155,7 +157,7 @@ where
         let mut dcs = Dcs::write_only(self.di);
         let madctl = self
             .model
-            .init(delay_source, &self.options, &mut rst)
+            .init(&mut dcs, delay_source, &self.options, &mut rst)
             .await?;
         let display = Display {
             dcs,
