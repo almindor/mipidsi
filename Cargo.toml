@@ -12,9 +12,10 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.61"
 
 [dependencies]
-display-interface = { git = "https://github.com/bugadani/display-interface.git", branch = "async" }
+display-interface = { git = "https://github.com/bugadani/display-interface.git", branch = "async"}
 embedded-graphics-core = "0.4.0"
 embedded-hal = "1.0.0-alpha.10"
+embedded-hal-async = "0.2.0-alpha.1"
 nb = "1.0.0"
 
 [dependencies.heapless]
@@ -22,5 +23,6 @@ optional = true
 version = "0.7.16"
 
 [features]
-default = ["batch"]
+default = ["batch", "async"] # TODO: Remove nightly after feature completed
 batch = ["heapless"]
+async =  ["display-interface/async", "display-interface/nightly"]

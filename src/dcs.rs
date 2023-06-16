@@ -49,10 +49,7 @@ pub struct Dcs<DI> {
     pub di: DI,
 }
 
-impl<DI> Dcs<DI>
-where
-    DI: WriteOnlyDataCommand,
-{
+impl<DI> Dcs<DI> {
     /// Creates a new [Dcs] instance from a display interface.
     pub fn write_only(di: DI) -> Self {
         Self { di }
@@ -62,7 +59,12 @@ where
     pub fn release(self) -> DI {
         self.di
     }
+}
 
+impl<DI> Dcs<DI>
+where
+    DI: WriteOnlyDataCommand,
+{
     /// Sends a DCS command to the display interface.
     pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
         let mut param_bytes: [u8; 16] = [0; 16];
@@ -89,6 +91,35 @@ where
     }
 }
 
+#[cfg(feature = "async")]
+impl<DI> Dcs<DI>
+where
+    DI: display_interface::AsyncWriteOnlyDataCommand,
+{
+    /// Async version of [Self::write_command], see for more information
+    pub async fn async_write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
+        let mut param_bytes: [u8; 16] = [0; 16];
+        let n = command.fill_params_buf(&mut param_bytes)?;
+        self.async_write_raw(command.instruction(), &param_bytes[..n])
+            .await
+    }
+
+    /// Async version of [Self::write_raw], see for more information
+    pub async fn async_write_raw(
+        &mut self,
+        instruction: u8,
+        param_bytes: &[u8],
+    ) -> Result<(), Error> {
+        self.di
+            .send_commands(DataFormat::U8(&[instruction]))
+            .await?;
+
+        if !param_bytes.is_empty() {
+            self.di.send_data(DataFormat::U8(param_bytes)).await?; // TODO: empty guard?
+        }
+        Ok(())
+    }
+}
 // DCS commands that don't use any parameters
 
 dcs_basic_command!(
