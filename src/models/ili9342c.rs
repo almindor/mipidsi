@@ -9,11 +9,25 @@ use crate::{
     Builder, Error, ModelOptions,
 };
 
+use super::DefaultModel;
+
 /// ILI9342C display in Rgb565 color mode.
 pub struct ILI9342CRgb565;
 
 /// ILI9342C display in Rgb666 color mode.
 pub struct ILI9342CRgb666;
+
+impl DefaultModel for ILI9342CRgb565 {
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 240), (320, 240))
+    }
+}
+
+impl DefaultModel for ILI9342CRgb666 {
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 240), (320, 240))
+    }
+}
 
 impl Model for ILI9342CRgb565 {
     type ColorFormat = Rgb565;
@@ -45,10 +59,6 @@ impl Model for ILI9342CRgb565 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb565(dcs, colors)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((320, 240), (320, 240))
     }
 }
 
@@ -82,10 +92,6 @@ impl Model for ILI9342CRgb666 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb666(dcs, colors)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((320, 240), (320, 240))
     }
 }
 

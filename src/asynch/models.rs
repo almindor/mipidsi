@@ -7,10 +7,11 @@ use embedded_hal_async::delay::DelayUs;
 
 use crate::dcs::{Dcs, SetAddressMode};
 use crate::error::InitError;
+use crate::models::DefaultModel;
 use crate::{Error, ModelOptions};
 
 /// Display model.
-pub trait Model {
+pub trait Model: DefaultModel {
     /// The color format.
     type ColorFormat: RgbColor;
 

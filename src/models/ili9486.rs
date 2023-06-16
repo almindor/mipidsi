@@ -14,13 +14,25 @@ use crate::{
     Builder, Error, ModelOptions,
 };
 
-use super::Model;
+use super::{DefaultModel, Model};
 
 /// ILI9486 display in Rgb565 color mode.
 pub struct ILI9486Rgb565;
 
 /// ILI9486 display in Rgb666 color mode.
 pub struct ILI9486Rgb666;
+
+impl DefaultModel for ILI9486Rgb565 {
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
+    }
+}
+
+impl DefaultModel for ILI9486Rgb666 {
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((320, 480), (320, 480))
+    }
+}
 
 impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
@@ -57,10 +69,6 @@ impl Model for ILI9486Rgb565 {
 
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((320, 480), (320, 480))
     }
 }
 
@@ -105,10 +113,6 @@ impl Model for ILI9486Rgb666 {
 
         let buf = DataFormat::U8Iter(&mut iter);
         dcs.di.send_data(buf)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((320, 480), (320, 480))
     }
 }
 

@@ -11,7 +11,7 @@ use crate::{
     ColorInversion, Error, ModelOptions,
 };
 
-use super::Model;
+use super::{DefaultModel, Model};
 
 /// Module containing all ST7789 variants.
 mod variants;
@@ -20,6 +20,15 @@ mod variants;
 ///
 /// Interfaces implemented by the [display-interface](https://crates.io/crates/display-interface) are supported.
 pub struct ST7789;
+
+impl DefaultModel for ST7789 {
+    fn default_options() -> crate::ModelOptions {
+        let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
+        options.set_invert_colors(ColorInversion::Normal);
+
+        options
+    }
+}
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
@@ -78,13 +87,6 @@ impl Model for ST7789 {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)?;
         Ok(())
-    }
-
-    fn default_options() -> crate::ModelOptions {
-        let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
-        options.set_invert_colors(ColorInversion::Normal);
-
-        options
     }
 }
 

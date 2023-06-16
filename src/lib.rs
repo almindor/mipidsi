@@ -67,12 +67,7 @@ mod batch;
 ///
 /// Display driver to connect to TFT displays.
 ///
-pub struct Display<DI, MODEL, RST>
-where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
-    RST: OutputPin,
-{
+pub struct Display<DI, MODEL, RST> {
     // DCS provider
     dcs: Dcs<DI>,
     // Model
@@ -85,12 +80,7 @@ where
     madctl: dcs::SetAddressMode,
 }
 
-impl<DI, M, RST> Display<DI, M, RST>
-where
-    DI: WriteOnlyDataCommand,
-    M: Model,
-    RST: OutputPin,
-{
+impl<DI, M, RST> Display<DI, M, RST> {
     ///
     /// Returns currently set [Orientation]
     ///
@@ -98,6 +88,21 @@ where
         self.options.orientation()
     }
 
+    ///
+    /// Release resources allocated to this driver back.
+    /// This returns the display interface, reset pin and and the model deconstructing the driver.
+    ///
+    pub fn release(self) -> (DI, M, Option<RST>) {
+        (self.dcs.release(), self.model, self.rst)
+    }
+}
+
+impl<DI, M, RST> Display<DI, M, RST>
+where
+    DI: WriteOnlyDataCommand,
+    M: Model,
+    RST: OutputPin,
+{
     ///
     /// Sets display [Orientation]
     ///
@@ -177,14 +182,6 @@ where
         self.dcs.write_command(vscad)
     }
 
-    ///
-    /// Release resources allocated to this driver back.
-    /// This returns the display interface, reset pin and and the model deconstructing the driver.
-    ///
-    pub fn release(self) -> (DI, M, Option<RST>) {
-        (self.dcs.release(), self.model, self.rst)
-    }
-
     // Sets the address window for the display.
     fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
         // add clipping offsets if present
@@ -199,6 +196,101 @@ where
     /// Configures the tearing effect output.
     ///
     pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
+        self.dcs
+            .write_command(dcs::SetTearingEffect(tearing_effect))
+    }
+}
+
+#[cfg(feature = "nightly")]
+impl<DI, M, RST> Display<DI, M, RST>
+where
+    DI: AsyncWriteOnlyDataCommand,
+    M: crate::asynch::models::Model,
+    RST: OutputPin,
+{
+    ///  Async version of [Self::set_orientation]
+    pub async fn async_set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
+        self.madctl = self.madctl.with_orientation(orientation); // set orientation
+        self.dcs.write_command(self.madctl).await?;
+
+        Ok(())
+    }
+
+    ///  Async version of [Self::set_pixel]
+    pub async fn async_set_pixel(
+        &mut self,
+        x: u16,
+        y: u16,
+        color: M::ColorFormat,
+    ) -> Result<(), Error> {
+        self.asyn_set_address_window(x, y, x, y).await?;
+        self.model
+            .write_pixels(&mut self.dcs, core::iter::once(color))
+            .await?;
+
+        Ok(())
+    }
+
+    ///  Async version of [Self::set_pixels]
+    pub async fn async_set_pixels<T>(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        colors: T,
+    ) -> Result<(), Error>
+    where
+        T: IntoIterator<Item = M::ColorFormat>,
+    {
+        self.async_set_address_window(sx, sy, ex, ey).await?;
+        self.model.write_pixels(&mut self.dcs, colors).await?;
+
+        Ok(())
+    }
+
+    ///  Async version of [Self::set_scroll_region]
+    pub async fn async_set_scroll_region(
+        &mut self,
+        tfa: u16,
+        vsa: u16,
+        bfa: u16,
+    ) -> Result<(), Error> {
+        let vscrdef = dcs::SetScrollArea::new(tfa, vsa, bfa);
+        self.dcs.write_command(vscrdef).await
+    }
+
+    ///  Async version of [Self::set_scroll_offset]
+    pub async fn async_set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
+        let vscad = dcs::SetScrollStart::new(offset);
+        self.dcs.write_command(vscad).await
+    }
+
+    // Sets the address window for the display.
+    async fn async_set_address_window(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+    ) -> Result<(), Error> {
+        // add clipping offsets if present
+        let offset = self.options.window_offset();
+        let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
+
+        self.dcs
+            .write_command(dcs::SetColumnAddress::new(sx, ex))
+            .await?;
+        self.dcs
+            .write_command(dcs::SetPageAddress::new(sy, ey))
+            .await
+    }
+
+    ///  Async version of [Self::set_tearing_effect]
+    pub async fn async_set_tearing_effect(
+        &mut self,
+        tearing_effect: TearingEffect,
+    ) -> Result<(), Error> {
         self.dcs
             .write_command(dcs::SetTearingEffect(tearing_effect))
     }

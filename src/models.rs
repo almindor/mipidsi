@@ -25,8 +25,16 @@ pub use ili9486::*;
 pub use st7735s::*;
 pub use st7789::*;
 
+pub trait DefaultModel {
+    /// Creates default [ModelOptions] for this particular [Model].
+    ///
+    /// This serves as a "sane default". There can be additional variants which will be provided via
+    /// helper constructors.
+    fn default_options() -> ModelOptions;
+}
+
 /// Display model.
-pub trait Model {
+pub trait Model: DefaultModel {
     /// The color format.
     type ColorFormat: RgbColor;
 
@@ -68,10 +76,4 @@ pub trait Model {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
-
-    /// Creates default [ModelOptions] for this particular [Model].
-    ///
-    /// This serves as a "sane default". There can be additional variants which will be provided via
-    /// helper constructors.
-    fn default_options() -> ModelOptions;
 }

@@ -23,6 +23,6 @@ optional = true
 version = "0.7.16"
 
 [features]
-default = ["batch", "async"] # TODO: Remove nightly after feature completed
+default = ["batch", "async"] # TODO: Remove async as default after feature completed
 batch = ["heapless"]
 async =  ["display-interface/async", "display-interface/nightly"]

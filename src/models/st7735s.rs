@@ -11,10 +11,19 @@ use crate::{
     Builder, ColorInversion, Error, ModelOptions,
 };
 
-use super::{Dcs, Model};
+use super::{Dcs, DefaultModel, Model};
 
 /// ST7735s display in Rgb565 color mode.
 pub struct ST7735s;
+
+impl DefaultModel for ST7735s {
+    fn default_options() -> ModelOptions {
+        let mut options = ModelOptions::with_sizes((80, 160), (132, 162));
+        options.set_invert_colors(ColorInversion::Inverted);
+
+        options
+    }
+}
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
@@ -89,21 +98,11 @@ impl Model for ST7735s {
         dcs.di.send_data(buf)?;
         Ok(())
     }
-
-    fn default_options() -> ModelOptions {
-        let mut options = ModelOptions::with_sizes((80, 160), (132, 162));
-        options.set_invert_colors(ColorInversion::Inverted);
-
-        options
-    }
 }
 
 // simplified constructor on Display
 
-impl<DI> Builder<DI, ST7735s>
-where
-    DI: WriteOnlyDataCommand,
-{
+impl<DI> Builder<DI, ST7735s> {
     /// Creates a new display builder for ST7735s displays in Rgb565 color mode.
     ///
     /// The default framebuffer size is 132x162 pixels and display size is 80x160 pixels.

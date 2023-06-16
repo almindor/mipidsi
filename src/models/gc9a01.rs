@@ -11,10 +11,16 @@ use crate::{
     Builder, Error, ModelOptions,
 };
 
-use super::{Dcs, Model};
+use super::{Dcs, DefaultModel, Model};
 
 /// GC9A01 display in Rgb565 color mode.
 pub struct GC9A01;
+
+impl DefaultModel for GC9A01 {
+    fn default_options() -> ModelOptions {
+        ModelOptions::with_sizes((240, 240), (240, 240))
+    }
+}
 
 impl Model for GC9A01 {
     type ColorFormat = Rgb565;
@@ -140,10 +146,6 @@ impl Model for GC9A01 {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)?;
         Ok(())
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((240, 240), (240, 240))
     }
 }
 

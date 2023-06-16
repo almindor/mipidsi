@@ -4,18 +4,16 @@ use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 use crate::{
-    dcs::Dcs, error::InitError, models::Model, ColorInversion, ColorOrder, Display, ModelOptions,
-    Orientation, RefreshOrder,
+    dcs::Dcs,
+    error::InitError,
+    models::{DefaultModel, Model},
+    ColorInversion, ColorOrder, Display, ModelOptions, Orientation, RefreshOrder,
 };
 
 /// Builder for [Display] instances.
 ///
 /// Exposes all possible display options.
-pub struct Builder<DI, MODEL>
-where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
-{
+pub struct Builder<DI, MODEL> {
     di: DI,
     model: MODEL,
     options: ModelOptions,
@@ -23,8 +21,7 @@ where
 
 impl<DI, MODEL> Builder<DI, MODEL>
 where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
+    MODEL: DefaultModel,
 {
     ///
     /// Constructs a new builder from given [WriteOnlyDataCommand], [Model]
@@ -104,7 +101,13 @@ where
         self.options.window_offset_handler = window_offset_handler;
         self
     }
+}
 
+impl<DI, MODEL> Builder<DI, MODEL>
+where
+    DI: WriteOnlyDataCommand,
+    MODEL: Model,
+{
     ///
     /// Consumes the builder to create a new [Display] with an optional reset [OutputPin].
     /// Blocks using the provided [DelayUs] `delay_source` to perform the display initialization.
@@ -121,9 +124,39 @@ where
         RST: OutputPin,
     {
         let mut dcs = Dcs::write_only(self.di);
+        let madctl = self.model.init(delay_source, &self.options, &mut rst)?;
+        let display = Display {
+            dcs,
+            model: self.model,
+            rst,
+            options: self.options,
+            madctl,
+        };
+
+        Ok(display)
+    }
+}
+
+#[cfg(feature = "async")]
+impl<DI, MODEL> Builder<DI, MODEL>
+where
+    DI: display_interface::AsyncWriteOnlyDataCommand,
+    MODEL: crate::asynch::models::Model,
+{
+    /// Async version of [Self::init]
+    pub async fn async_init<RST>(
+        mut self,
+        delay_source: &mut impl embedded_hal_async::delay::DelayUs,
+        mut rst: Option<RST>,
+    ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>>
+    where
+        RST: OutputPin,
+    {
+        let mut dcs = Dcs::write_only(self.di);
         let madctl = self
             .model
-            .init(&mut dcs, delay_source, &self.options, &mut rst)?;
+            .init(delay_source, &self.options, &mut rst)
+            .await?;
         let display = Display {
             dcs,
             model: self.model,
