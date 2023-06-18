@@ -8,7 +8,7 @@ use crate::{
         SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::InitError,
-    Builder, ColorInversion, Error, ModelOptions,
+    Builder, Error, ModelOptions,
 };
 
 use super::{Dcs, Model};
