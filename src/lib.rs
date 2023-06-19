@@ -201,17 +201,17 @@ where
     }
 }
 
-#[cfg(feature = "nightly")]
+#[cfg(feature = "async")]
 impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: AsyncWriteOnlyDataCommand,
+    DI: display_interface::AsyncWriteOnlyDataCommand,
     M: crate::asynch::models::Model,
     RST: OutputPin,
 {
     ///  Async version of [Self::set_orientation]
     pub async fn async_set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
-        self.dcs.write_command(self.madctl).await?;
+        self.dcs.async_write_command(self.madctl).await?;
 
         Ok(())
     }
@@ -223,9 +223,9 @@ where
         y: u16,
         color: M::ColorFormat,
     ) -> Result<(), Error> {
-        self.asyn_set_address_window(x, y, x, y).await?;
+        self.async_set_address_window(x, y, x, y).await?;
         self.model
-            .write_pixels(&mut self.dcs, core::iter::once(color))
+            .write_pixels_iter(&mut self.dcs, core::iter::once(color))
             .await?;
 
         Ok(())
@@ -257,13 +257,13 @@ where
         bfa: u16,
     ) -> Result<(), Error> {
         let vscrdef = dcs::SetScrollArea::new(tfa, vsa, bfa);
-        self.dcs.write_command(vscrdef).await
+        self.dcs.async_write_command(vscrdef).await
     }
 
     ///  Async version of [Self::set_scroll_offset]
     pub async fn async_set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
         let vscad = dcs::SetScrollStart::new(offset);
-        self.dcs.write_command(vscad).await
+        self.dcs.async_write_command(vscad).await
     }
 
     // Sets the address window for the display.
@@ -279,10 +279,10 @@ where
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
         self.dcs
-            .write_command(dcs::SetColumnAddress::new(sx, ex))
+            .async_write_command(dcs::SetColumnAddress::new(sx, ex))
             .await?;
         self.dcs
-            .write_command(dcs::SetPageAddress::new(sy, ey))
+            .async_write_command(dcs::SetPageAddress::new(sy, ey))
             .await
     }
 
@@ -292,6 +292,7 @@ where
         tearing_effect: TearingEffect,
     ) -> Result<(), Error> {
         self.dcs
-            .write_command(dcs::SetTearingEffect(tearing_effect))
+            .async_write_command(dcs::SetTearingEffect(tearing_effect))
+            .await
     }
 }

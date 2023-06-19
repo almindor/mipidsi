@@ -25,6 +25,7 @@ pub use ili9486::*;
 pub use st7735s::*;
 pub use st7789::*;
 
+/// Trait that allows the creations of default options for a [Model]
 pub trait DefaultModel {
     /// Creates default [ModelOptions] for this particular [Model].
     ///

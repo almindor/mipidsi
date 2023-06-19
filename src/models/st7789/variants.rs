@@ -1,13 +1,8 @@
-use display_interface::WriteOnlyDataCommand;
-
 use crate::{Builder, ColorInversion, ModelOptions, Orientation};
 
 use super::ST7789;
 
-impl<DI> Builder<DI, ST7789>
-where
-    DI: WriteOnlyDataCommand,
-{
+impl<DI> Builder<DI, ST7789> {
     /// Creates a new display builder for a ST7789 display in Rgb565 color mode.
     ///
     /// The default framebuffer size and display size is 240x320 pixels.
