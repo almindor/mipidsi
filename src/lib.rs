@@ -225,7 +225,7 @@ where
     ) -> Result<(), Error> {
         self.async_set_address_window(x, y, x, y).await?;
         self.model
-            .write_pixels_iter(&mut self.dcs, core::iter::once(color))
+            .write_pixels(&mut self.dcs, core::iter::once(color))
             .await?;
 
         Ok(())

@@ -40,7 +40,7 @@ pub trait Model: DefaultModel {
         DELAY: DelayUs,
     {
         rst.set_low().map_err(InitError::Pin)?;
-        delay.delay_us(10);
+        delay.delay_us(10).await;
         rst.set_high().map_err(InitError::Pin)?;
 
         Ok(())
