@@ -159,6 +159,31 @@ where
     }
 
     ///
+    /// Sets pixel colors in given rectangle bounds.
+    ///
+    /// # Arguments
+    ///
+    /// * `sx` - x coordinate start
+    /// * `sy` - y coordinate start
+    /// * `ex` - x coordinate end
+    /// * `ey` - y coordinate end
+    /// * `colors` - a buffer of u16
+    ///
+    pub fn set_pixels_raw(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        colors: &mut [u16],
+    ) -> Result<(), Error> {
+        self.set_address_window(sx, sy, ex, ey)?;
+        self.model.write_pixels_raw(&mut self.dcs, colors)?;
+
+        Ok(())
+    }
+
+    ///
     /// Sets scroll region
     /// # Arguments
     ///
@@ -245,6 +270,31 @@ where
     {
         self.async_set_address_window(sx, sy, ex, ey).await?;
         self.model.write_pixels(&mut self.dcs, colors).await?;
+
+        Ok(())
+    }
+
+    ///
+    /// Sets pixel colors in given rectangle bounds.
+    ///
+    /// # Arguments
+    ///
+    /// * `sx` - x coordinate start
+    /// * `sy` - y coordinate start
+    /// * `ex` - x coordinate end
+    /// * `ey` - y coordinate end
+    /// * `colors` - a buffer of u16
+    ///
+    pub async fn async_set_pixels_raw(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        colors: &mut [u16],
+    ) -> Result<(), Error> {
+        self.async_set_address_window(sx, sy, ex, ey).await?;
+        self.model.write_pixels_raw(&mut self.dcs, colors).await?;
 
         Ok(())
     }

@@ -89,11 +89,7 @@ impl Model for ST7789 {
         Ok(())
     }
 
-    async fn write_pixels_raw<DI>(
-        &mut self,
-        dcs: &mut Dcs<DI>,
-        colors: &mut [u16],
-    ) -> Result<(), Error>
+    fn write_pixels_raw<DI>(&mut self, dcs: &mut Dcs<DI>, colors: &mut [u16]) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
     {

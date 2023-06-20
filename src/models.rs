@@ -81,11 +81,7 @@ pub trait Model: DefaultModel {
     /// Writes pixels to the display IC via the given display interface.
     ///
     /// Any pixel color format conversion is done before.
-    async fn write_pixels_raw<DI>(
-        &mut self,
-        dcs: &mut Dcs<DI>,
-        colors: &mut [u16],
-    ) -> Result<(), Error>
+    fn write_pixels_raw<DI>(&mut self, dcs: &mut Dcs<DI>, colors: &mut [u16]) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand;
 }
