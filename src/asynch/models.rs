@@ -53,4 +53,15 @@ pub trait Model: DefaultModel {
     where
         DI: AsyncWriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
+
+    /// Writes pixels to the display IC via the given display interface.
+    ///
+    /// Any pixel color format conversion is done here.
+    async fn write_pixels_raw<DI>(
+        &mut self,
+        di: &mut Dcs<DI>,
+        colors: &mut [u16],
+    ) -> Result<(), Error>
+    where
+        DI: AsyncWriteOnlyDataCommand;
 }

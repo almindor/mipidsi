@@ -10,19 +10,19 @@ use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 // existing model implementations
-mod gc9a01;
-mod ili9341;
-mod ili9342c;
-mod ili934x;
-mod ili9486;
-mod st7735s;
+// mod gc9a01;
+// mod ili9341;
+// mod ili9342c;
+// mod ili934x;
+// mod ili9486;
+// mod st7735s;
 mod st7789;
 
-pub use gc9a01::*;
-pub use ili9341::*;
-pub use ili9342c::*;
-pub use ili9486::*;
-pub use st7735s::*;
+// pub use gc9a01::*;
+// pub use ili9341::*;
+// pub use ili9342c::*;
+// pub use ili9486::*;
+// pub use st7735s::*;
 pub use st7789::*;
 
 /// Trait that allows the creations of default options for a [Model]
@@ -77,4 +77,15 @@ pub trait Model: DefaultModel {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
+
+    /// Writes pixels to the display IC via the given display interface.
+    ///
+    /// Any pixel color format conversion is done before.
+    async fn write_pixels_raw<DI>(
+        &mut self,
+        dcs: &mut Dcs<DI>,
+        colors: &mut [u16],
+    ) -> Result<(), Error>
+    where
+        DI: WriteOnlyDataCommand;
 }

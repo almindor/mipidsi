@@ -88,6 +88,20 @@ impl Model for ST7789 {
         dcs.di.send_data(buf)?;
         Ok(())
     }
+
+    async fn write_pixels_raw<DI>(
+        &mut self,
+        dcs: &mut Dcs<DI>,
+        colors: &mut [u16],
+    ) -> Result<(), Error>
+    where
+        DI: WriteOnlyDataCommand,
+    {
+        dcs.write_command(WriteMemoryStart)?;
+        let buf = DataFormat::U16BE(colors);
+        dcs.di.send_data(buf)?;
+        Ok(())
+    }
 }
 
 #[cfg(feature = "async")]
@@ -168,6 +182,20 @@ mod asynch {
             let mut iter = colors.into_iter().map(Rgb565::into_storage);
 
             let buf = DataFormat::U16BEIter(&mut iter);
+            dcs.di.send_data(buf).await?;
+            Ok(())
+        }
+
+        async fn write_pixels_raw<DI>(
+            &mut self,
+            dcs: &mut Dcs<DI>,
+            colors: &mut [u16],
+        ) -> Result<(), Error>
+        where
+            DI: AsyncWriteOnlyDataCommand,
+        {
+            dcs.async_write_command(WriteMemoryStart).await?;
+            let buf = DataFormat::U16BE(colors);
             dcs.di.send_data(buf).await?;
             Ok(())
         }
