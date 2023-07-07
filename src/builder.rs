@@ -14,7 +14,7 @@ use crate::{
 ///
 ///
 /// ## Example
-/// ```
+/// ```rust ignore
 /// let mut display = Builder::ili9342c_rgb565(di)
 ///     .with_color_order(ColorOrder::Bgr);
 ///     .with_display_size(320, 240);
