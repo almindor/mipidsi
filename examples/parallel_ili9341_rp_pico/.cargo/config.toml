@@ -1,0 +1,32 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+# Choose a default "cargo run" tool:
+# - probe-run provides flashing and defmt via a hardware debugger
+# - cargo embed offers flashing, rtt, defmt and a gdb server via a hardware debugger
+#     it is configured via the Embed.toml in the root of this project
+# - elf2uf2-rs loads firmware over USB when the rp2040 is in boot mode
+# runner = "probe-run --chip RP2040"
+# runner = "cargo embed"
+runner = "elf2uf2-rs -d"
+
+rustflags = [
+  "-C", "linker=flip-link",
+  "-C", "link-arg=--nmagic",
+  "-C", "link-arg=-Tlink.x",
+  "-C", "link-arg=-Tdefmt.x",
+
+  # Code-size optimizations.
+  #   trap unreachable can save a lot of space, but requires nightly compiler.
+  #   uncomment the next line if you wish to enable it
+  # "-Z", "trap-unreachable=no",
+  "-C", "inline-threshold=5",
+  "-C", "no-vectorize-loops",
+]
+
+[build]
+target = "thumbv6m-none-eabi"
+
+[env]
+DEFMT_LOG = "debug"
+
+[target.thumbv6m-none-eabi]
+runner = "elf2uf2-rs -d"

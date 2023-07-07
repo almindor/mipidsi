@@ -1,0 +1,20 @@
+[package]
+edition = "2021"
+name = "parallel_ili9341_rp_pico"
+version = "0.1.0"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+embedded-hal = { version = "0.2.5", features = ["unproven"] }
+
+defmt = "0.3"
+defmt-rtt = "0.4"
+panic-probe = { version = "0.3", features = ["print-defmt"] }
+
+rp-pico = "0.7"
+
+embedded-graphics = "0.8.0"
+embedded-graphics-core = "0.4.0"
+display-interface-parallel-gpio = "0.6.0"
+mipidsi = "0.7.1"

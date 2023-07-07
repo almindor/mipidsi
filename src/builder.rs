@@ -11,6 +11,15 @@ use crate::{
 /// Builder for [Display] instances.
 ///
 /// Exposes all possible display options.
+///
+///
+/// ## Example
+/// ```
+/// let mut display = Builder::ili9342c_rgb565(di)
+///     .with_color_order(ColorOrder::Bgr);
+///     .with_display_size(320, 240);
+///     .init(&mut delay, Some(rst)).unwrap();
+/// ```
 pub struct Builder<DI, MODEL>
 where
     DI: WriteOnlyDataCommand,
@@ -108,10 +117,10 @@ where
     ///
     /// Consumes the builder to create a new [Display] with an optional reset [OutputPin].
     /// Blocks using the provided [DelayUs] `delay_source` to perform the display initialization.
+    ///
     /// ### WARNING
     /// The reset pin needs to be in *high* state in order for the display to operate.
     /// If it wasn't provided the user needs to ensure this is the case.
-    ///
     pub fn init<RST>(
         mut self,
         delay_source: &mut impl DelayUs<u32>,
