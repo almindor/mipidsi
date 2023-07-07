@@ -40,7 +40,7 @@
 //! display.clear(Rgb666::BLACK).unwrap();
 //! ```
 //!
-//! **For the ili9341 display, using the Parallel port, with the RGB666 color space and the Bgr 
+//! **For the ili9341 display, using the Parallel port, with the RGB666 color space and the Bgr
 //! color order:**
 //! ```rust ignore
 //! // Provides the builder for DisplayInterface
@@ -52,11 +52,11 @@
 //!
 //! /* Define digital output pins d0 - d7 for the parallel port as `lcd_dX` */
 //! /* Define the D/C digital output pin as `dc` */
-//! /* Define the WR and Reset digital output pins with the initial state set as High as `wr` and 
+//! /* Define the WR and Reset digital output pins with the initial state set as High as `wr` and
 //! `rst` */
 //!
 //! // Create the DisplayInterface from a Generic8BitBus, which is made from the parallel pins
-//! let bus = Generic8BitBus::new((lcd_d0, lcd_d1, lcd_d2, 
+//! let bus = Generic8BitBus::new((lcd_d0, lcd_d1, lcd_d2,
 //!     lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7)).unwrap();
 //! let di = PGPIO8BitInterface::new(bus, dc, wr);
 //!
