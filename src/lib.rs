@@ -168,11 +168,8 @@ where
         Ok(())
     }
 
-    /// Sets pixel colors in given rectangle bounds.
+    /// Sets pixel colors in any given rectangle bounds. Does not perform any bounds checking on the input color iterator.
     ///
-    /// # Warning
-    ///
-    /// `set_pixels` does not perform any bounds checking on the input color iterator.
     /// This lack of bounds checking can potentially lead to unexpected behavior if the iterator returns more or fewer color values than the number of pixels within the designated update region.
     /// To mitigate this risk, it is recommended to consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
     /// function from the `embedded-graphics` crate as an alternative. Unlike set_pixels, fill_contiguous incorporates bounds checking,
