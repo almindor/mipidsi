@@ -179,6 +179,23 @@ where
     /// * `ey` - y coordinate end
     /// * `colors` - anything that can provide `IntoIterator<Item = u16>` to iterate over pixel data
     ///
+    /// # Example
+    /// An array of `Rgb666` values is an example of something that provides `IntoIterator<Item =
+    /// u16>`.
+    ///
+    /// This example assumes `my_sprite` is a 256 value array, representing the RGB values of a 16*16 sprite
+    ///
+    /// ```rust ignore
+    /// // A 256 value array, representing a 16*16 sprite.
+    /// // Each value is a tuple with the (r, g, b) values of each pixel
+    /// let my_sprite: [(u8, u8, u8); 256] = [(255, 124, 0), (230, 215, 75) ...`
+    ///
+    /// // Turn my_sprite into an array of pixels in the right colorspace
+    /// let display_sprite: [Rgb666; 255] = your_sprite.map(|(r, g, b)| Rgb666::new(r, g, b));
+    ///
+    /// // Draw the sprite, starting at (0, 0) and ending at (15, 15)
+    /// display.set_pixels(0, 0, 15, 15 display_sprite).unwrap();
+    /// ```
     pub fn set_pixels<T>(
         &mut self,
         sx: u16,
