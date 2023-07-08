@@ -19,7 +19,7 @@ use embedded_graphics::{
     geometry::Point,
     // Provides colors from the Rgb565 color space
     pixelcolor::{Rgb565, RgbColor},
-    prelude::WebColors,
+    prelude::{Size, WebColors},
     primitives::{Circle, Primitive, PrimitiveStyle, Rectangle, Triangle},
     Drawable,
 };
@@ -92,26 +92,31 @@ fn main() -> ! {
         .init(&mut delay, Some(rst))
         .unwrap();
 
-    let sprite_rectangle = Rectangle::with_corners(Point::new(0, 0), Point::new(15, 15));
-
-    // make the display all black
+    // Make the display all black
     display.clear(Rgb565::BLACK).unwrap();
 
-    // draw the 16*16 sprite on the top left corner of the screen
+    // Draw the SPRITE on a 16*16 pixel rectangle
+    let sprite_rectangle = Rectangle::new(Point::zero(), Size::new(16, 16));
     display.fill_contiguous(&sprite_rectangle, SPRITE).unwrap();
 
-    /* --- Draw a smily face with white eyes and a red mouth --- */
+    // Draw a smiley face with white eyes and a red mouth
+    draw_smiley(&mut display).unwrap();
+
+    loop {
+        // Do nothing
+    }
+}
+
+fn draw_smiley<T: DrawTarget<Color = Rgb565>>(display: &mut T) -> Result<(), T::Error> {
     // Draw the left eye as a circle located at (50, 100), with a diameter of 40, filled with white
     Circle::new(Point::new(50, 100), 40)
         .into_styled(PrimitiveStyle::with_fill(Rgb565::WHITE))
-        .draw(&mut display)
-        .unwrap();
+        .draw(display)?;
 
     // Draw the right eye as a circle located at (50, 200), with a diameter of 40, filled with white
     Circle::new(Point::new(50, 200), 40)
         .into_styled(PrimitiveStyle::with_fill(Rgb565::WHITE))
-        .draw(&mut display)
-        .unwrap();
+        .draw(display)?;
 
     // Draw an upside down red triangle to represent a smiling mouth
     Triangle::new(
@@ -120,8 +125,7 @@ fn main() -> ! {
         Point::new(160, 170),
     )
     .into_styled(PrimitiveStyle::with_fill(Rgb565::RED))
-    .draw(&mut display)
-    .unwrap();
+    .draw(display)?;
 
     // Cover the top part of the mouth with a black triangle so it looks closed instead of open
     Triangle::new(
@@ -130,12 +134,9 @@ fn main() -> ! {
         Point::new(150, 170),
     )
     .into_styled(PrimitiveStyle::with_fill(Rgb565::BLACK))
-    .draw(&mut display)
-    .unwrap();
+    .draw(display)?;
 
-    loop {
-        // Do nothing
-    }
+    Ok(())
 }
 
 // Contains all the pixel colors for a 16*16 sprite as a 256 value array of (r, g, b) values

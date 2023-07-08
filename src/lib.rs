@@ -170,6 +170,14 @@ where
 
     /// Sets pixel colors in given rectangle bounds.
     ///
+    /// # Warning
+    ///
+    /// `set_pixels` does not perform any bounds checking on the input color iterator.
+    /// This lack of bounds checking can potentially lead to unexpected behavior if the iterator returns more or fewer color values than the number of pixels within the designated update region.
+    /// To mitigate this risk, it is recommended to consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
+    /// function from the `embedded-graphics` crate as an alternative. Unlike set_pixels, fill_contiguous incorporates bounds checking,
+    /// ensuring that the provided color values match the dimensions of the specified region.
+    ///
     /// # Arguments
     ///
     /// * `sx` - x coordinate start
@@ -190,7 +198,7 @@ where
     /// display.set_pixels(0, 0, 15, 15, sprite).unwrap();
     /// ```
     /// # Warning
-    /// It is suggested to use [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous) from `embedded-graphics` instead, since it's behavior is more constrained. Using this can lead to unexpected behavior.
+    /// It is suggested to use  from `embedded-graphics` instead, since it's behavior is more constrained. Using this can lead to unexpected behavior.
     pub fn set_pixels<T>(
         &mut self,
         sx: u16,
