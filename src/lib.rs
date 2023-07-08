@@ -169,10 +169,10 @@ where
     }
 
     /// Sets pixel colors in any given rectangle bounds. Does not perform any bounds checking on the input color iterator.
+    /// It's not meat to be used directly, it's exposed for frameworks to be able to use it.
     ///
-    /// This lack of bounds checking can potentially lead to unexpected behavior if the iterator returns more or fewer color values than the number of pixels within the designated update region.
-    /// To mitigate this risk, it is recommended to consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
-    /// function from the `embedded-graphics` crate as an alternative. Unlike set_pixels, fill_contiguous incorporates bounds checking,
+    /// Consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
+    /// function from the `embedded-graphics` crate as an alternative. Unlike `set_pixels`, `fill_contiguous` incorporates bounds checking,
     /// ensuring that the provided color values match the dimensions of the specified region.
     ///
     /// # Arguments
@@ -182,20 +182,6 @@ where
     /// * `ex` - x coordinate end
     /// * `ey` - y coordinate end
     /// * `colors` - anything that can provide `IntoIterator<Item = u16>` to iterate over pixel data
-    ///
-    /// # Example
-    /// An array of `Rgb666` values is an example of something that provides `IntoIterator<Item =
-    /// u16>`.
-    ///
-    /// ```rust ignore
-    /// // A 256 value array, representing a 16*16 sprite.
-    /// let sprite: [Rgb666; 255] = [Rgb565::RED, Rgb565::ORANGE, Rgb565::YELLOW...
-    ///
-    /// // Draw the sprite, starting at (0, 0) and ending at (15, 15)
-    /// display.set_pixels(0, 0, 15, 15, sprite).unwrap();
-    /// ```
-    /// # Warning
-    /// It is suggested to use  from `embedded-graphics` instead, since it's behavior is more constrained. Using this can lead to unexpected behavior.
     pub fn set_pixels<T>(
         &mut self,
         sx: u16,
