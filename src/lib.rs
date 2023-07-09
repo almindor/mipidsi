@@ -168,12 +168,17 @@ where
         Ok(())
     }
 
-    /// Sets pixel colors in any given rectangle bounds. Does not perform any bounds checking on the input color iterator.
-    /// It's not meat to be used directly, it's exposed for frameworks to be able to use it.
     ///
+    /// Sets pixel colors in a rectangular region.
+    ///
+    /// The color values from the `colors` iterator will be drawn to the given region starting
+    /// at the top left corner and continuing, row first, to the bottom right corner. No bounds
+    /// checking is performed on the `colors` iterator and drawing will wrap around if the
+    /// iterator returns more color values than the number of pixels in the given region.
+    ///
+    /// This is a low level function, which isn't intended to be used in regular user code.
     /// Consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
-    /// function from the `embedded-graphics` crate as an alternative. Unlike `set_pixels`, `fill_contiguous` incorporates bounds checking,
-    /// ensuring that the provided color values match the dimensions of the specified region.
+    /// function from the `embedded-graphics` crate as an instead.
     ///
     /// # Arguments
     ///
