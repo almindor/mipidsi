@@ -80,7 +80,7 @@ use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 pub use error::Error;
 
 pub mod options;

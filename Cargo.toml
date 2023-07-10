@@ -12,9 +12,9 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.61"
 
 [dependencies]
-display-interface = "0.4.1"
+display-interface = { git = "https://github.com/bugadani/display-interface.git", branch = "async" }
 embedded-graphics-core = "0.4.0"
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0-alpha.10"
 nb = "1.0.0"
 
 [dependencies.heapless]
