@@ -1,0 +1,13 @@
+[package]
+name = "spi_ili9486_esp32c3"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hal = { package = "esp32c3-hal", version = "0.10.0" }
+esp-backtrace = { version = "0.7.0", features = ["esp32c3", "panic-handler", "exception-handler", "print-uart"] }
+esp-println       = { version = "0.5.0", features = ["esp32c3"] }
+embedded-graphics = "0.8.0"
+display-interface-spi = "0.4.1"
+mipidsi = "0.7.1"
+fugit = "0.3.7"
