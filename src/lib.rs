@@ -178,7 +178,7 @@ where
     ///
     /// This is a low level function, which isn't intended to be used in regular user code.
     /// Consider using the [`fill_contiguous`](https://docs.rs/embedded-graphics/latest/embedded_graphics/draw_target/trait.DrawTarget.html#method.fill_contiguous)
-    /// function from the `embedded-graphics` crate as an instead.
+    /// function from the `embedded-graphics` crate as an alternative instead.
     ///
     /// # Arguments
     ///
