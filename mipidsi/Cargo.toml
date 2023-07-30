@@ -1,12 +1,12 @@
 [package]
 name = "mipidsi"
-description = "MIPI Display Serial Interface generic driver"
+description = "MIPI Display Command Set compatible generic driver"
 version = "0.7.1"
 authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2018"
 license = "MIT"
 repository = "https://github.com/almindor/mipidsi"
-keywords = ["embedded-hal-driver", "mipi", "dsi", "display"]
+keywords = ["embedded-hal-driver", "mipi", "dcs", "display"]
 readme = "README.md"
 documentation = "https://docs.rs/mipidsi"
 rust-version = "1.61"

@@ -1,6 +1,6 @@
 [package]
 name = "mipidsi-async"
-description = "MIPI Display Serial Interface generic driver async version"
+description = "MIPI Display Command Set compatible generic driver async version"
 version = "0.1.0"
 authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2018"
