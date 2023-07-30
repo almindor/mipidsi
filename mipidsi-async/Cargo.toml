@@ -1,0 +1,26 @@
+[package]
+name = "mipidsi-async"
+description = "MIPI Display Command Set compatible generic driver async version"
+version = "0.1.0"
+authors = ["Ales Katona <almindor@gmail.com>"]
+edition = "2018"
+license = "MIT"
+repository = "https://github.com/almindor/mipidsi"
+keywords = ["embedded-hal-driver", "mipi", "dcs", "display"]
+readme = "README.md"
+documentation = "https://docs.rs/mipidsi"
+rust-version = "1.61"
+
+[dependencies]
+display-interface = "0.4.1"
+embedded-graphics-core = "0.4.0"
+embedded-hal = "0.2.7"
+nb = "1.0.0"
+
+[dependencies.heapless]
+optional = true
+version = "0.7.16"
+
+[features]
+default = ["batch"]
+batch = ["heapless"]
