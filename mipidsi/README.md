@@ -17,6 +17,8 @@ An optional batching of draws is supported via the `batch` feature (default on)
 
 * The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
 
+License: MIT
+
 ## Architecture
 
 The `Display` driver itself contains most of the functionality. Each specific display model implements the `Model` trait for every color format it supports. Each model can also have different variants which are handled via the `Builder` struct.
@@ -56,8 +58,6 @@ let mut display = Builder::ili9486_rgb666(di)
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```
-
-License: MIT
 
 ## Minimum Supported Rust Version (MSRV)
 
