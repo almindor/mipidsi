@@ -51,3 +51,34 @@ pub(crate) fn pico1_offset(options: &ModelOptions) -> (u16, u16) {
         Orientation::LandscapeInverted(true) => (40, 52),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{ModelOptions, Orientation};
+    use strum::IntoEnumIterator;
+
+    #[test]
+    fn test_pico1_offsets() {
+        let mut mo = ModelOptions::with_sizes((240, 240), (320, 240));
+
+        for orientation in Orientation::iter() {
+            for mirror in [false, true] {
+                let orientation = orientation.set_mirror(mirror);
+
+                let (ox, oy) = match orientation {
+                    Orientation::Portrait(false) => (52, 40),
+                    Orientation::Portrait(true) => (53, 40),
+                    Orientation::Landscape(false) => (40, 52),
+                    Orientation::Landscape(true) => (40, 53),
+                    Orientation::PortraitInverted(false) => (53, 40),
+                    Orientation::PortraitInverted(true) => (52, 40),
+                    Orientation::LandscapeInverted(false) => (40, 53),
+                    Orientation::LandscapeInverted(true) => (40, 52),
+                };
+                mo.set_orientation(orientation);
+
+                assert_eq!((ox, oy), super::pico1_offset(&mo))
+            }
+        }
+    }
+}

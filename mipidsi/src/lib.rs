@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
 #![warn(missing_docs)]

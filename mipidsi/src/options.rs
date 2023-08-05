@@ -140,10 +140,14 @@ fn no_offset(options: &ModelOptions) -> (u16, u16) {
     }
 }
 
+#[cfg(test)]
+use strum::EnumIter;
+
 ///
 /// Display orientation.
 ///
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(test, derive(EnumIter))]
 pub enum Orientation {
     /// Portrait orientation, with mirror image parameter
     Portrait(bool),
@@ -153,6 +157,18 @@ pub enum Orientation {
     PortraitInverted(bool),
     /// Inverted Lanscape orientation, with mirror image parameter
     LandscapeInverted(bool),
+}
+
+#[cfg(test)]
+impl Orientation {
+    pub fn set_mirror(self, value: bool) -> Self {
+        match self {
+            Self::Portrait(_) => Self::Portrait(value),
+            Self::Landscape(_) => Self::Landscape(value),
+            Self::PortraitInverted(_) => Self::PortraitInverted(value),
+            Self::LandscapeInverted(_) => Self::LandscapeInverted(value),
+        }
+    }
 }
 
 impl Default for Orientation {
