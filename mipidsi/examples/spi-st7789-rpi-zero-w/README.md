@@ -10,7 +10,7 @@ Prerequisite: musl-cross (Homebrew users: `brew install filosottile/musl-cross/m
 
 ```bash
 # build for rpi zero 2 w
-cargo build --release --target=arm-unknown-linux-musleabihf -p spi-st7789-rpi-zero-w
+cargo build --release --target=arm-unknown-linux-musleabihf
 # look at the size of the bin file
 ls -lh target/arm-unknown-linux-musleabihf/release/spi-st7789-rpi-zero-w
 # strip it
