@@ -8,8 +8,6 @@ Tested with [Display HAT Mini by Pomoroni](https://shop.pimoroni.com/products/di
 
 Prerequisite: musl-cross (Homebrew users: `brew install filosottile/musl-cross/musl-cross`)
 
-https://github.com/FiloSottile/homebrew-musl-cross
-
 ```bash
 # build for rpi zero 2 w
 cargo build --release --target=arm-unknown-linux-musleabihf -p spi-st7789-rpi-zero-w
