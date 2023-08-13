@@ -2,5 +2,6 @@
 
 members = [
     "mipidsi",
+    "mipidsi/examples/*",
     "mipidsi-async",
 ]
