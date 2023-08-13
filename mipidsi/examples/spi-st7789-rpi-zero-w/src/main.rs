@@ -1,8 +1,9 @@
 use display_interface_spi::SPIInterface;
 use embedded_graphics::{
+    mono_font::{ascii::FONT_6X10, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::*,
-    primitives::{PrimitiveStyleBuilder, Rectangle},
+    text::Text,
 };
 use mipidsi::Builder;
 use rppal::gpio::{Gpio, OutputPin};
@@ -28,51 +29,50 @@ fn main() -> ExitCode {
     let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, clock_speed, Mode::Mode0).unwrap();
     let di = SPIInterface::new(spi, dc, cs);
 
-    let w = 240_u16;
-    let h = 320_u16;
+    const W: i32 = 320;
+    const H: i32 = 240;
     let mut display = Builder::st7789(di)
-        .with_display_size(w, h)
-        // .with_orientation(mipidsi::Orientation::Landscape(false))
+        // width and height are switched on porpuse because of the orientation
+        .with_display_size(H as u16, W as u16)
+        // this orientation applies for the Display HAT Mini by Pimoroni
+        .with_orientation(mipidsi::Orientation::LandscapeInverted(true))
         .with_invert_colors(mipidsi::ColorInversion::Inverted)
         .init(&mut delay, None::<OutputPin>)
         .unwrap();
 
-    // Turn on backlight
-    backlight.set_low();
-    sleep(Duration::from_millis(150));
-    backlight.set_high();
+    // Text
+    let character_style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
+    let text = "Hello World ^_^";
+    let text_w = text.len() as i32 * 6;
+    let mut text_x = W;
+
+    // Anternating color
+    let colors = [Rgb565::RED, Rgb565::GREEN, Rgb565::BLUE];
+    let mut color_index = 0;
 
     // Clear the display initially
-    let style = PrimitiveStyleBuilder::new()
-        .fill_color(Rgb565::BLACK)
-        .build();
-    Rectangle::new(Point::new(0, 0), Size::new(w.into(), h.into()))
-        .into_styled(style)
-        .draw(&mut display)
-        .unwrap();
-    sleep(Duration::from_millis(150));
+    display.clear(colors[0]).unwrap();
+
+    // Turn on backlight
+    backlight.set_high();
 
     loop {
+        // Text scroll
+        text_x = (text_x - 6) % (W + text_w);
+        if text_x < -text_w {
+            text_x = W;
+        }
+
         // Fill the display with red
-        let style = PrimitiveStyleBuilder::new().fill_color(Rgb565::RED).build();
-        Rectangle::new(Point::new(0, 0), Size::new(w.into(), h.into()))
-            .into_styled(style)
+        display.clear(colors[color_index]).unwrap();
+        color_index = (color_index + 1) % colors.len();
+
+        // Draw text
+        Text::new(text, Point::new(text_x, H / 2), character_style)
             .draw(&mut display)
             .unwrap();
 
         // Wait for some time
-        sleep(Duration::from_millis(500));
-
-        // Clear the display
-        let style = PrimitiveStyleBuilder::new()
-            .fill_color(Rgb565::BLUE)
-            .build();
-        Rectangle::new(Point::new(0, 0), Size::new(w.into(), h.into()))
-            .into_styled(style)
-            .draw(&mut display)
-            .unwrap();
-
-        // Wait for some time
-        sleep(Duration::from_millis(500));
+        sleep(Duration::from_millis(250));
     }
 }
