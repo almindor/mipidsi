@@ -1,6 +1,6 @@
 use display_interface_spi::SPIInterface;
 use embedded_graphics::{
-    mono_font::{ascii::FONT_6X10, MonoTextStyle},
+    mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::*,
     text::Text,
@@ -10,29 +10,48 @@ use rppal::gpio::{Gpio, OutputPin};
 use rppal::hal::Delay;
 use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 use std::process::ExitCode;
-use std::thread::sleep;
-use std::time::Duration;
 
 // Pins
+
 const SPI_CS: u8 = 1;
 const SPI_DC: u8 = 9;
 const BACKLIGHT: u8 = 13;
+
+const BUTTON_A: u8 = 5;
+const BUTTON_B: u8 = 6;
+const BUTTON_X: u8 = 16;
+const BUTTON_Y: u8 = 24;
+
+const LED_R: u8 = 17;
+const LED_G: u8 = 27;
+const LED_B: u8 = 22;
 
 // Display
 const W: i32 = 320;
 const H: i32 = 240;
 
 fn main() -> ExitCode {
+    // GPIO
     let gpio = Gpio::new().unwrap();
     let dc = gpio.get(SPI_DC).unwrap().into_output();
     let cs = gpio.get(SPI_CS).unwrap().into_output();
     let mut backlight = gpio.get(BACKLIGHT).unwrap().into_output();
 
-    let mut delay = Delay::new();
+    // LEDs
+    let mut led_r = gpio.get(LED_R).unwrap().into_output();
+    let mut led_g = gpio.get(LED_G).unwrap().into_output();
+    let mut led_b = gpio.get(LED_B).unwrap().into_output();
 
+    // Buttons
+    let button_a = gpio.get(BUTTON_A).unwrap().into_input_pullup();
+    let button_b = gpio.get(BUTTON_B).unwrap().into_input_pullup();
+    let button_x = gpio.get(BUTTON_X).unwrap().into_input_pullup();
+    let button_y = gpio.get(BUTTON_Y).unwrap().into_input_pullup();
+
+    // SPI Display
     let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
     let di = SPIInterface::new(spi, dc, cs);
-
+    let mut delay = Delay::new();
     let mut display = Builder::st7789(di)
         // width and height are switched on porpuse because of the orientation
         .with_display_size(H as u16, W as u16)
@@ -43,33 +62,81 @@ fn main() -> ExitCode {
         .unwrap();
 
     // Text
-    let char_w = 6;
-    let text_style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
-    let text = "Hello World ^_^";
+    let char_w = 10;
+    let char_h = 20;
+    let text_style = MonoTextStyle::new(&FONT_10X20, Rgb565::WHITE);
+    let text = "Hello World ^_^;";
     let mut text_x = W;
+    let mut text_y = H / 2;
 
     // Alternating color
-    let mut colors = [Rgb565::RED, Rgb565::GREEN, Rgb565::BLUE]
-        .into_iter()
-        .cycle();
+    let colors = [Rgb565::RED, Rgb565::GREEN, Rgb565::BLUE];
 
     // Clear the display initially
-    display.clear(colors.nth(0).unwrap()).unwrap();
+    display.clear(colors[0]).unwrap();
 
     // Turn on backlight
     backlight.set_high();
 
+    // Set LEDs to PWM mode
+    led_r.set_pwm_frequency(50., 1.).unwrap();
+    led_g.set_pwm_frequency(50., 1.).unwrap();
+    led_b.set_pwm_frequency(50., 1.).unwrap();
+
+    let start = std::time::Instant::now();
+    let mut last = std::time::Instant::now();
+    let mut led_flags = 0b000;
+    let mut counter = 0;
     loop {
-        // Fill the display with alternating colors
-        display.clear(colors.next().unwrap()).unwrap();
+        let elapsed = last.elapsed().as_secs_f64();
+        if elapsed < 0.125 {
+            continue;
+        }
+        last = std::time::Instant::now();
+        counter += 1;
+
+        // X: move text up
+        if button_x.is_low() {
+            text_y -= char_h;
+        }
+        // Y: move text down
+        if button_y.is_low() {
+            text_y += char_h;
+        }
+        // A: change led color
+        if button_a.is_low() {
+            led_flags = (led_flags + 1) % 7;
+        }
+        // B: exit
+        if button_b.is_low() {
+            break;
+        }
+
+        // Fill the display with alternating colors every 8 frames
+        display.clear(colors[(counter / 8) % colors.len()]).unwrap();
 
         // Draw text
-        let right = Text::new(text, Point::new(text_x, H / 2), text_style)
+        let right = Text::new(text, Point::new(text_x, text_y), text_style)
             .draw(&mut display)
             .unwrap();
         text_x = if right.x <= 0 { W } else { text_x - char_w };
 
-        // Wait for some time
-        sleep(Duration::from_millis(250));
+        // Led
+        let y = ((start.elapsed().as_secs_f64().sin() + 1.) * 50.).round() / 100.;
+        led_r
+            .set_pwm_frequency(50., if led_flags & 0b100 != 0 { y } else { 1. })
+            .unwrap();
+        led_g
+            .set_pwm_frequency(50., if led_flags & 0b010 != 0 { y } else { 1. })
+            .unwrap();
+        led_b
+            .set_pwm_frequency(50., if led_flags & 0b001 != 0 { y } else { 1. })
+            .unwrap();
     }
+
+    // Turn off backlight and clear the display
+    backlight.set_low();
+    display.clear(Rgb565::BLACK).unwrap();
+
+    ExitCode::SUCCESS
 }
