@@ -13,9 +13,14 @@ use std::process::ExitCode;
 use std::thread::sleep;
 use std::time::Duration;
 
-const SPI_DC: u8 = 9;
+// Pins
 const SPI_CS: u8 = 1;
+const SPI_DC: u8 = 9;
 const BACKLIGHT: u8 = 13;
+
+// Display
+const W: i32 = 320;
+const H: i32 = 240;
 
 fn main() -> ExitCode {
     let gpio = Gpio::new().unwrap();
@@ -25,12 +30,9 @@ fn main() -> ExitCode {
 
     let mut delay = Delay::new();
 
-    let clock_speed = 60_000_000_u32;
-    let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, clock_speed, Mode::Mode0).unwrap();
+    let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
     let di = SPIInterface::new(spi, dc, cs);
 
-    const W: i32 = 320;
-    const H: i32 = 240;
     let mut display = Builder::st7789(di)
         // width and height are switched on porpuse because of the orientation
         .with_display_size(H as u16, W as u16)
@@ -41,36 +43,31 @@ fn main() -> ExitCode {
         .unwrap();
 
     // Text
-    let character_style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
+    let char_w = 6;
+    let text_style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
     let text = "Hello World ^_^";
-    let text_w = text.len() as i32 * 6;
     let mut text_x = W;
 
-    // Anternating color
-    let colors = [Rgb565::RED, Rgb565::GREEN, Rgb565::BLUE];
-    let mut color_index = 0;
+    // Alternating color
+    let mut colors = [Rgb565::RED, Rgb565::GREEN, Rgb565::BLUE]
+        .into_iter()
+        .cycle();
 
     // Clear the display initially
-    display.clear(colors[0]).unwrap();
+    display.clear(colors.nth(0).unwrap()).unwrap();
 
     // Turn on backlight
     backlight.set_high();
 
     loop {
-        // Text scroll
-        text_x = (text_x - 6) % (W + text_w);
-        if text_x < -text_w {
-            text_x = W;
-        }
-
-        // Fill the display with red
-        display.clear(colors[color_index]).unwrap();
-        color_index = (color_index + 1) % colors.len();
+        // Fill the display with alternating colors
+        display.clear(colors.next().unwrap()).unwrap();
 
         // Draw text
-        Text::new(text, Point::new(text_x, H / 2), character_style)
+        let right = Text::new(text, Point::new(text_x, H / 2), text_style)
             .draw(&mut display)
             .unwrap();
+        text_x = if right.x <= 0 { W } else { text_x - char_w };
 
         // Wait for some time
         sleep(Duration::from_millis(250));
