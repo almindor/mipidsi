@@ -1,4 +1,22 @@
-use display_interface_spi::SPIInterface;
+/*
+# SPI ST7789 on a Raspberry Pi Zero W Example
+
+This example demonstrates how to use the [Display HAT Mini by Pomoroni](https://shop.pimoroni.com/products/display-hat-mini?variant=39496084717651)
+on a Raspberry Pi Zero W.
+
+The example shows a scrolling text and a pulsing RGB LED.
+
+Buttons:
+
+- A: change LED color
+- B: exit
+- X: move text up
+- Y: move text down
+
+Read the README.md for more information.
+*/
+
+use display_interface_spi::SPIInterfaceNoCS;
 use embedded_graphics::{
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
@@ -13,7 +31,6 @@ use std::process::ExitCode;
 
 // Pins
 
-const SPI_CS: u8 = 1;
 const SPI_DC: u8 = 9;
 const BACKLIGHT: u8 = 13;
 
@@ -34,7 +51,6 @@ fn main() -> ExitCode {
     // GPIO
     let gpio = Gpio::new().unwrap();
     let dc = gpio.get(SPI_DC).unwrap().into_output();
-    let cs = gpio.get(SPI_CS).unwrap().into_output();
     let mut backlight = gpio.get(BACKLIGHT).unwrap().into_output();
 
     // LEDs
@@ -50,10 +66,10 @@ fn main() -> ExitCode {
 
     // SPI Display
     let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
-    let di = SPIInterface::new(spi, dc, cs);
+    let di = SPIInterfaceNoCS::new(spi, dc);
     let mut delay = Delay::new();
     let mut display = Builder::st7789(di)
-        // width and height are switched on porpuse because of the orientation
+        // width and height are switched on purpose because of the orientation
         .with_display_size(H as u16, W as u16)
         // this orientation applies for the Display HAT Mini by Pimoroni
         .with_orientation(mipidsi::Orientation::LandscapeInverted(true))
@@ -105,7 +121,7 @@ fn main() -> ExitCode {
         }
         // A: change led color
         if button_a.is_low() {
-            led_flags = (led_flags + 1) % 7;
+            led_flags = (led_flags + 1) % 8;
         }
         // B: exit
         if button_b.is_low() {
