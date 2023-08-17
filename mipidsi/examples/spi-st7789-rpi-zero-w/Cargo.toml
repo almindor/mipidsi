@@ -1,0 +1,12 @@
+[package]
+name = "spi-st7789-rpi-zero-w"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+display-interface-spi = "0.4.1"
+embedded-graphics = "0.8.0"
+mipidsi = "0.7.1"
+rppal = { version = "0.14.1", features = ["hal"] }
+
+[workspace]
