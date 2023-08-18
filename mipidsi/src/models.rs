@@ -10,6 +10,8 @@ use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 #[cfg(feature = "async")]
+use crate::dcs::DcsAsync;
+#[cfg(feature = "async")]
 use display_interface::AsyncWriteOnlyDataCommand;
 #[cfg(feature = "async")]
 use embedded_hal_async::delay::DelayUs as DelayUsAsync;
@@ -33,8 +35,9 @@ pub use st7789::*;
 /// Display model.
 #[maybe_async_cfg::maybe(
     idents(
-        WriteOnlyDataCommand(sync, async = "AsyncWriteOnlyDataCommand"),
+        Dcs(sync, async = "DcsAsync"),
         DelayUs(sync, async = "DelayUsAsync"),
+        WriteOnlyDataCommand(sync, async = "AsyncWriteOnlyDataCommand"),
     ),
     sync(keep_self),
     async(feature = "async")
@@ -86,5 +89,5 @@ pub trait Model {
     ///
     /// This serves as a "sane default". There can be additional variants which will be provided via
     /// helper constructors.
-    async fn default_options() -> ModelOptions;
+    fn default_options() -> ModelOptions;
 }
