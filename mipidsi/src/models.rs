@@ -10,12 +10,9 @@ use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{delay::DelayUs, digital::OutputPin};
 
 #[cfg(feature = "async")]
-mod asynch {
-    pub use display_interface::AsyncWriteOnlyDataCommand;
-    pub use embedded_hal_async::delay::DelayUs as DelayUsAsync;
-}
+use display_interface::AsyncWriteOnlyDataCommand;
 #[cfg(feature = "async")]
-use asynch::*;
+use embedded_hal_async::delay::DelayUs as DelayUsAsync;
 
 // existing model implementations
 mod gc9a01;

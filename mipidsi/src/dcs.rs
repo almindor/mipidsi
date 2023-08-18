@@ -2,6 +2,9 @@
 
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
+#[cfg(feature = "async")]
+use display_interface::AsyncWriteOnlyDataCommand;
+
 use crate::Error;
 
 #[macro_use]
@@ -44,11 +47,17 @@ pub trait DcsCommand {
 /// All other commands, which do not have an associated type in this module, can be sent using
 /// the [`write_raw`](Self::write_raw) method. The underlying display interface is also accessible
 /// using the public [`di`](Self::di) field.
+#[maybe_async_cfg::maybe(sync(keep_self), async(feature = "async"))]
 pub struct Dcs<DI> {
     /// Display interface instance.
     pub di: DI,
 }
 
+#[maybe_async_cfg::maybe(
+    idents(WriteOnlyDataCommand(sync, async = "AsyncWriteOnlyDataCommand"),),
+    sync(keep_self),
+    async(feature = "async")
+)]
 impl<DI> Dcs<DI>
 where
     DI: WriteOnlyDataCommand,
@@ -64,10 +73,11 @@ where
     }
 
     /// Sends a DCS command to the display interface.
-    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
+    pub async fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
         let mut param_bytes: [u8; 16] = [0; 16];
         let n = command.fill_params_buf(&mut param_bytes)?;
         self.write_raw(command.instruction(), &param_bytes[..n])
+            .await
     }
 
     /// Sends a raw command with the given `instruction` to the display interface.
@@ -79,11 +89,13 @@ where
     /// This method is intended to be used for sending commands which are not part of the MIPI DCS
     /// user command set. Use [`write_command`](Self::write_command) for commands in the user
     /// command set.
-    pub fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Error> {
-        self.di.send_commands(DataFormat::U8(&[instruction]))?;
+    pub async fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Error> {
+        self.di
+            .send_commands(DataFormat::U8(&[instruction]))
+            .await?;
 
         if !param_bytes.is_empty() {
-            self.di.send_data(DataFormat::U8(param_bytes))?; // TODO: empty guard?
+            self.di.send_data(DataFormat::U8(param_bytes)).await?; // TODO: empty guard?
         }
         Ok(())
     }
