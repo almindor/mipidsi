@@ -7,7 +7,15 @@ use crate::{
 };
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayUs, digital::OutputPin};
+
+#[cfg(feature = "async")]
+mod asynch {
+    pub use display_interface::AsyncWriteOnlyDataCommand;
+    pub use embedded_hal_async::delay::DelayUs as DelayUsAsync;
+}
+#[cfg(feature = "async")]
+use asynch::*;
 
 // existing model implementations
 mod gc9a01;
@@ -26,13 +34,21 @@ pub use st7735s::*;
 pub use st7789::*;
 
 /// Display model.
+#[maybe_async_cfg::maybe(
+    idents(
+        WriteOnlyDataCommand(sync, async = "AsyncWriteOnlyDataCommand"),
+        DelayUs(sync, async = "DelayUsAsync"),
+    ),
+    sync(keep_self),
+    async(feature = "async")
+)]
 pub trait Model {
     /// The color format.
     type ColorFormat: RgbColor;
 
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
-    fn init<RST, DELAY, DI>(
+    async fn init<RST, DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
@@ -41,18 +57,18 @@ pub trait Model {
     ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
         DI: WriteOnlyDataCommand;
 
     /// Resets the display using a reset pin.
-    fn hard_reset<RST, DELAY>(
+    async fn hard_reset<RST, DELAY>(
         &mut self,
         rst: &mut RST,
         delay: &mut DELAY,
     ) -> Result<(), InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayUs,
     {
         rst.set_low().map_err(InitError::Pin)?;
         delay.delay_us(10);
@@ -64,7 +80,7 @@ pub trait Model {
     /// Writes pixels to the display IC via the given display interface.
     ///
     /// Any pixel color format conversion is done here.
-    fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
+    async fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
@@ -73,5 +89,5 @@ pub trait Model {
     ///
     /// This serves as a "sane default". There can be additional variants which will be provided via
     /// helper constructors.
-    fn default_options() -> ModelOptions;
+    async fn default_options() -> ModelOptions;
 }

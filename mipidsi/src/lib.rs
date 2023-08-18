@@ -2,6 +2,11 @@
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
 #![warn(missing_docs)]
+#![cfg_attr(
+    all(feature = "async"),
+    allow(incomplete_features),
+    feature(async_fn_in_trait, impl_trait_projections)
+)]
 
 //! This crate provides a generic display driver to connect to TFT displays
 //! that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
