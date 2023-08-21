@@ -12,9 +12,12 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.61"
 
 [dependencies]
-display-interface = "0.4.1"
+display-interface = { version = "0.5.0-alpha.1", git = "https://github.com/therealprof/display-interface", features = ["async"] }
 embedded-graphics-core = "0.4.0"
-embedded-hal = "0.2.7"
+embedded-hal = "1.0.0-rc.1"
+embedded-hal-async = { version = "1.0.0-rc.1" }
+maybe-async-cfg = "0.2"
+mipidsi = { version = "0.7", path = "../mipidsi" }
 nb = "1.0.0"
 
 [dependencies.heapless]
