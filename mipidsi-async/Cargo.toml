@@ -25,4 +25,4 @@ version = "0.7.16"
 
 [features]
 default = ["batch"]
-batch = ["heapless"]
+batch = ["heapless", "mipidsi/batch"]

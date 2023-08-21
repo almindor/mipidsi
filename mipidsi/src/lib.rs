@@ -97,7 +97,7 @@ use models::Model;
 mod graphics;
 
 #[cfg(feature = "batch")]
-mod batch;
+pub mod batch;
 
 ///
 /// Display driver to connect to TFT displays.
