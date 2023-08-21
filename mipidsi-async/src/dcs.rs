@@ -4,10 +4,10 @@ use display_interface::DataFormat;
 
 use display_interface::AsyncWriteOnlyDataCommand;
 pub use mipidsi::dcs::{
-    DcsCommand, EnterIdleMode, EnterNormalMode, EnterPartialMode, EnterSleepMode, ExitIdleMode,
-    ExitSleepMode, SetAddressMode, SetColumnAddress, SetDisplayOff, SetDisplayOn, SetInvertMode,
-    SetPageAddress, SetPixelFormat, SetScrollArea, SetScrollStart, SetTearingEffect, SoftReset,
-    WriteMemoryStart,
+    BitsPerPixel, DcsCommand, EnterIdleMode, EnterNormalMode, EnterPartialMode, EnterSleepMode,
+    ExitIdleMode, ExitSleepMode, PixelFormat, SetAddressMode, SetColumnAddress, SetDisplayOff,
+    SetDisplayOn, SetInvertMode, SetPageAddress, SetPixelFormat, SetScrollArea, SetScrollStart,
+    SetTearingEffect, SoftReset, WriteMemoryStart,
 };
 
 use mipidsi::Error;
