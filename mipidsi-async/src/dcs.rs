@@ -3,19 +3,14 @@
 use display_interface::DataFormat;
 
 use display_interface::AsyncWriteOnlyDataCommand;
+pub use mipidsi::dcs::{
+    DcsCommand, EnterIdleMode, EnterNormalMode, EnterPartialMode, EnterSleepMode, ExitIdleMode,
+    ExitSleepMode, SetAddressMode, SetColumnAddress, SetDisplayOff, SetDisplayOn, SetInvertMode,
+    SetPageAddress, SetPixelFormat, SetScrollArea, SetScrollStart, SetTearingEffect, SoftReset,
+    WriteMemoryStart,
+};
 
 use mipidsi::Error;
-
-/// Common trait for DCS commands.
-///
-/// The methods in this traits are used to convert a DCS command into bytes.
-pub trait DcsCommand {
-    /// Returns the instruction code.
-    fn instruction(&self) -> u8;
-
-    /// Fills the given buffer with the command parameters.
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error>;
-}
 
 /// Wrapper around [`WriteOnlyDataCommand`] with support for writing DCS commands.
 ///
