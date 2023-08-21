@@ -84,18 +84,13 @@ use display_interface::AsyncWriteOnlyDataCommand;
 
 use embedded_hal::digital::OutputPin;
 
-// pub mod options;
-// pub use options::*;
-
 mod builder;
 pub use builder::Builder;
 
 use models::Model;
 
-// mod graphics;
-
 #[cfg(feature = "batch")]
-mod batch;
+pub mod batch;
 
 ///
 /// Display driver to connect to TFT displays.
