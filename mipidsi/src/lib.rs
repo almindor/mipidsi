@@ -253,4 +253,19 @@ where
         self.dcs
             .write_command(dcs::SetTearingEffect(tearing_effect))
     }
+  
+    ///
+    /// Puts the display to sleep, reducing power consumption.
+    /// Need to call [Self::wake] before issuing other commands
+    ///
+    pub fn sleep(&mut self) -> Result<(), Error> {
+        self.dcs.write_command(dcs::EnterSleepMode)
+    }
+  
+    ///
+    /// Wakes the display after it's been set to sleep via [Self::sleep]
+    ///
+    pub fn wake(&mut self) -> Result<(), Error> {
+        self.dcs.write_command(dcs::ExitSleepMode)
+    }
 }
