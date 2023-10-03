@@ -117,7 +117,8 @@ where
     ///
     /// Consumes the builder to create a new [Display] with an optional reset [OutputPin].
     /// Blocks using the provided [DelayUs] `delay_source` to perform the display initialization.
-    ///
+    /// The display will be awake ready to use, no need to call [Display::wake] after init.
+    /// 
     /// ### WARNING
     /// The reset pin needs to be in *high* state in order for the display to operate.
     /// If it wasn't provided the user needs to ensure this is the case.
