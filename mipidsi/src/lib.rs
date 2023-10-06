@@ -119,6 +119,8 @@ where
     options: ModelOptions,
     // Current MADCTL value copy for runtime updates
     madctl: dcs::SetAddressMode,
+    // State monitor for sleeping TODO: refactor to a Model-connected state machine
+    sleeping: bool,
 }
 
 impl<DI, M, RST> Display<DI, M, RST>
@@ -256,6 +258,14 @@ where
     }
 
     ///
+    /// Returns `true` if display is currently set to sleep.
+    /// NOTE: value before call to `init` is considered undefined.
+    ///
+    pub fn is_sleeping<D: DelayUs<u32>>(&self) -> bool {
+        self.sleeping
+    }
+
+    ///
     /// Puts the display to sleep, reducing power consumption.
     /// Need to call [Self::wake] before issuing other commands
     ///
@@ -263,6 +273,7 @@ where
         self.dcs.write_command(dcs::EnterSleepMode)?;
         // All supported models requires a 120ms delay before issuing other commands
         delay.delay_us(120_000);
+        self.sleeping = true;
         Ok(())
     }
 
@@ -273,6 +284,7 @@ where
         self.dcs.write_command(dcs::ExitSleepMode)?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);
+        self.sleeping = false;
         Ok(())
     }
 }

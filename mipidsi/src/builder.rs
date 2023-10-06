@@ -140,6 +140,7 @@ where
             rst,
             options: self.options,
             madctl,
+            sleeping: false, // TODO: init should lock state
         };
 
         Ok(display)
