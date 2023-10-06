@@ -261,7 +261,8 @@ where
     ///
     pub fn sleep<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
         self.dcs.write_command(dcs::EnterSleepMode)?;
-        delay.delay_us(120_000); // All supported models requires a 120ms delay
+        // All supported models requires a 120ms delay before issuing other commands
+        delay.delay_us(120_000);
         Ok(())
     }
 
@@ -270,7 +271,8 @@ where
     ///
     pub fn wake<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
         self.dcs.write_command(dcs::ExitSleepMode)?;
-        delay.delay_us(120_000); // ST77xx have the highest wait delay of 120ms
+        // ST7789 and st7735s have the highest minimal delay of 120ms
+        delay.delay_us(120_000);
         Ok(())
     }
 }
