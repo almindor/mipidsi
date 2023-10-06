@@ -80,6 +80,7 @@ use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
+use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
 pub use error::Error;
 
@@ -258,14 +259,18 @@ where
     /// Puts the display to sleep, reducing power consumption.
     /// Need to call [Self::wake] before issuing other commands
     ///
-    pub fn sleep(&mut self) -> Result<(), Error> {
-        self.dcs.write_command(dcs::EnterSleepMode)
+    pub fn sleep<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
+        self.dcs.write_command(dcs::EnterSleepMode)?;
+        delay.delay_us(120_000); // All supported models requires a 120ms delay
+        Ok(())
     }
 
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
-    pub fn wake(&mut self) -> Result<(), Error> {
-        self.dcs.write_command(dcs::ExitSleepMode)
+    pub fn wake<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
+        self.dcs.write_command(dcs::ExitSleepMode)?;
+        delay.delay_us(120_000); // ST77xx have the highest wait delay of 120ms
+        Ok(())
     }
 }
