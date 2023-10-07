@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `Display::wake` method
 - added `Display::sleep` method
 
+### Changed
+
+- replaced `window_offset_handler` function pointer with `offset` field
+- default to disabled color inversion for all generic models
+
+### Removed
+
+- removed `Builder::with_framebuffer_size`
+
 ## [v0.7.1] - 2023-05-24
 
 ### Changed

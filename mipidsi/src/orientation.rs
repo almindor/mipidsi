@@ -1,3 +1,5 @@
+use crate::{models::Model, Display};
+
 /// Display rotation.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Rotation {

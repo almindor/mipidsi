@@ -1,6 +1,6 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{Builder, ColorInversion, ModelOptions, Orientation};
+use crate::{Builder, ColorInversion, ModelOptions};
 
 use super::ST7789;
 
@@ -30,25 +30,10 @@ where
     /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
     ///
     pub fn st7789_pico1(di: DI) -> Self {
-        let mut options = ModelOptions::with_all((135, 240), (135, 240), pico1_offset);
+        let mut options = ModelOptions::with_all((135, 240), (52, 40));
         options.set_invert_colors(ColorInversion::Inverted);
 
         // pico v1 is cropped to 135x240 size with an offset of (40, 53)
         Self::new(di, ST7789, options)
     }
-}
-
-// ST7789 pico1 variant with variable offset
-pub(crate) fn pico1_offset(options: &ModelOptions) -> (u16, u16) {
-    (0, 0)
-    // match options.orientation() {
-    //     Orientation::Portrait(false) => (52, 40),
-    //     Orientation::Portrait(true) => (53, 40),
-    //     Orientation::Landscape(false) => (40, 52),
-    //     Orientation::Landscape(true) => (40, 53),
-    //     Orientation::PortraitInverted(false) => (53, 40),
-    //     Orientation::PortraitInverted(true) => (52, 40),
-    //     Orientation::LandscapeInverted(false) => (40, 53),
-    //     Orientation::LandscapeInverted(true) => (40, 52),
-    // }
 }
