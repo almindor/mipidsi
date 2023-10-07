@@ -97,6 +97,9 @@ use models::Model;
 
 mod graphics;
 
+mod test_image;
+pub use test_image::TestImage;
+
 #[cfg(feature = "batch")]
 mod batch;
 
