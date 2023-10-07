@@ -100,6 +100,9 @@ mod graphics;
 mod test_image;
 pub use test_image::TestImage;
 
+mod orientation;
+pub use orientation::{Rotation, Orientation, InvalidAngleError};
+
 #[cfg(feature = "batch")]
 mod batch;
 

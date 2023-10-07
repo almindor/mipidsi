@@ -1,5 +1,7 @@
 //! [ModelOptions] and other helper types.
 
+use crate::Orientation;
+
 /// [ModelOptions] holds the settings for [Model](crate::Model)s.
 ///
 /// `display_size` being set is the minimum requirement.
@@ -108,9 +110,10 @@ impl ModelOptions {
 
     // Flip size according to orientation, in general
     fn orient_size(size: (u16, u16), orientation: Orientation) -> (u16, u16) {
-        match orientation {
-            Orientation::Portrait(_) | Orientation::PortraitInverted(_) => size,
-            Orientation::Landscape(_) | Orientation::LandscapeInverted(_) => (size.1, size.0),
+        if orientation.rotation.is_vertical() {
+            (size.1, size.0)
+        } else {
+            size
         }
     }
 }
@@ -120,45 +123,25 @@ impl ModelOptions {
 /// and to framebuffer_size - display_size otherwise.
 ///
 fn no_offset(options: &ModelOptions) -> (u16, u16) {
-    // do FB size - Display size offset for inverted setups
-    match options.orientation {
-        Orientation::PortraitInverted(_) | Orientation::LandscapeInverted(_) => {
-            let hdiff = options.framebuffer_size.1 - options.display_size.1;
+    (0, 0)
+    // // do FB size - Display size offset for inverted setups
+    // match options.orientation {
+    //     Orientation::PortraitInverted(_) | Orientation::LandscapeInverted(_) => {
+    //         let hdiff = options.framebuffer_size.1 - options.display_size.1;
 
-            let mut x = 0;
-            let mut y = 0;
+    //         let mut x = 0;
+    //         let mut y = 0;
 
-            match options.orientation {
-                Orientation::PortraitInverted(_) => y = hdiff,
-                Orientation::LandscapeInverted(_) => x = hdiff,
-                _ => {}
-            }
+    //         match options.orientation {
+    //             Orientation::PortraitInverted(_) => y = hdiff,
+    //             Orientation::LandscapeInverted(_) => x = hdiff,
+    //             _ => {}
+    //         }
 
-            (x, y)
-        }
-        _ => (0, 0),
-    }
-}
-
-///
-/// Display orientation.
-///
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Orientation {
-    /// Portrait orientation, with mirror image parameter
-    Portrait(bool),
-    /// Landscape orientation, with mirror image parameter
-    Landscape(bool),
-    /// Inverted Portrait orientation, with mirror image parameter
-    PortraitInverted(bool),
-    /// Inverted Lanscape orientation, with mirror image parameter
-    LandscapeInverted(bool),
-}
-
-impl Default for Orientation {
-    fn default() -> Self {
-        Self::Portrait(false)
-    }
+    //         (x, y)
+    //     }
+    //     _ => (0, 0),
+    // }
 }
 
 /// Color inversion.
