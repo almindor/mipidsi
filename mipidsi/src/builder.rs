@@ -1,11 +1,15 @@
 //! [super::Display] builder module
 
+use core::marker::PhantomData;
+
 use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
-    dcs::Dcs, error::InitError, models::Model, ColorInversion, ColorOrder, Display, ModelOptions,
-    Orientation, RefreshOrder,
+    controllers::{Controller, NoResetPin},
+    dcs::Dcs,
+    error::InitError,
+    ColorInversion, ColorOrder, Display, Orientation, RefreshOrder,
 };
 
 /// Builder for [Display] instances.
@@ -20,97 +24,108 @@ use crate::{
 ///     .with_display_size(320, 240);
 ///     .init(&mut delay, Some(rst)).unwrap();
 /// ```
-pub struct Builder<DI, MODEL>
-where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
-{
-    di: DI,
-    model: MODEL,
-    options: ModelOptions,
+pub struct Builder<C, DI, RST> {
+    display: Display<C, DI, RST>,
 }
 
-impl<DI, MODEL> Builder<DI, MODEL>
-where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
-{
+impl<DI: WriteOnlyDataCommand> Builder<(), DI, NoResetPin> {
     ///
     /// Constructs a new builder from given [WriteOnlyDataCommand], [Model]
     /// and [ModelOptions]. For use by [Model] helpers, not public
     ///
-    pub(crate) fn new(di: DI, model: MODEL, options: ModelOptions) -> Self {
-        Self { di, model, options }
-    }
-
-    ///
-    /// Constructs a new builder for given [Model] using the model's
-    /// `default_options`
-    ///
-    pub fn with_model(di: DI, model: MODEL) -> Self {
-        Self {
-            di,
-            model,
-            options: MODEL::default_options(),
+    #[must_use]
+    pub fn new<C: Controller>(di: DI) -> Builder<C, DI, NoResetPin> {
+        Builder {
+            display: Display {
+                controller: PhantomData,
+                dcs: Dcs::write_only(di),
+                rst: None,
+                size: C::FRAMEBUFFER_SIZE,
+                offset: (0, 0),
+                color_order: ColorOrder::default(),
+                orientation: Orientation::default(),
+                invert_colors: ColorInversion::default(),
+                refresh_order: RefreshOrder::default(),
+            },
         }
     }
+}
 
+impl<C, DI, RST> Builder<C, DI, RST>
+where
+    C: Controller,
+    DI: WriteOnlyDataCommand,
+    RST: OutputPin,
+{
     ///
     /// Sets the invert color flag
     ///
-    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
-        self.options.invert_colors = color_inversion;
+    #[must_use]
+    pub fn invert_colors(mut self, invert_colors: ColorInversion) -> Self {
+        self.display.invert_colors = invert_colors;
         self
     }
 
     ///
     /// Sets the [ColorOrder]
     ///
-    pub fn with_color_order(mut self, color_order: ColorOrder) -> Self {
-        self.options.color_order = color_order;
+    #[must_use]
+    pub fn color_order(mut self, color_order: ColorOrder) -> Self {
+        self.display.color_order = color_order;
         self
     }
 
     ///
     /// Sets the [Orientation]
     ///
-    pub fn with_orientation(mut self, orientation: Orientation) -> Self {
-        self.options.orientation = orientation;
+    #[must_use]
+    pub fn orientation(mut self, orientation: Orientation) -> Self {
+        self.display.orientation = orientation;
         self
     }
 
     ///
     /// Sets refresh order
     ///
-    pub fn with_refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
-        self.options.refresh_order = refresh_order;
+    #[must_use]
+    pub fn refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
+        self.display.refresh_order = refresh_order;
         self
+    }
+
+    /// Sets the reset pin.
+    #[must_use]
+    pub fn reset_pin<RST2: OutputPin>(self, reset_pin: RST2) -> Builder<C, DI, RST2> {
+        Builder {
+            display: Display {
+                dcs: self.display.dcs,
+                invert_colors: self.display.invert_colors,
+                size: self.display.size,
+                offset: self.display.offset,
+                color_order: self.display.color_order,
+                orientation: self.display.orientation,
+                refresh_order: self.display.refresh_order,
+                controller: PhantomData,
+                rst: Some(reset_pin),
+            },
+        }
     }
 
     ///
     /// Sets the display size
     ///
-    pub fn with_display_size(mut self, width: u16, height: u16) -> Self {
-        self.options.display_size = (width, height);
+    #[must_use]
+    pub fn display_size(mut self, width: u16, height: u16) -> Self {
+        self.display.size = (width, height);
         self
     }
 
     ///
-    /// Sets the framebuffer size
+    /// Sets the display offset
     ///
-    pub fn with_framebuffer_size(mut self, width: u16, height: u16) -> Self {
-        self.options.framebuffer_size = (width, height);
-        self
-    }
-
-    ///
-    /// Sets the window offset handler
-    ///
-    pub fn with_window_offset_handler(
-        mut self,
-        window_offset_handler: fn(_: &ModelOptions) -> (u16, u16),
-    ) -> Self {
-        self.options.window_offset_handler = window_offset_handler;
+    #[must_use]
+    pub fn display_offset(mut self, x: u16, y: u16) -> Self {
+        self.display.offset = (x, y);
         self
     }
 
@@ -122,26 +137,13 @@ where
     /// ### WARNING
     /// The reset pin needs to be in *high* state in order for the display to operate.
     /// If it wasn't provided the user needs to ensure this is the case.
-    pub fn init<RST>(
+    #[must_use]
+    pub fn init(
         mut self,
         delay_source: &mut impl DelayUs<u32>,
-        mut rst: Option<RST>,
-    ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>>
-    where
-        RST: OutputPin,
-    {
-        let mut dcs = Dcs::write_only(self.di);
-        let madctl = self
-            .model
-            .init(&mut dcs, delay_source, &self.options, &mut rst)?;
-        let display = Display {
-            dcs,
-            model: self.model,
-            rst,
-            options: self.options,
-            madctl,
-        };
+    ) -> Result<Display<C, DI, RST>, InitError<RST::Error>> {
+        C::init(&mut self.display, delay_source)?;
 
-        Ok(display)
+        Ok(self.display)
     }
 }

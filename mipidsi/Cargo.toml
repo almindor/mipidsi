@@ -22,5 +22,5 @@ optional = true
 version = "0.7.16"
 
 [features]
-default = ["batch"]
+#default = ["batch"]
 batch = ["heapless"]

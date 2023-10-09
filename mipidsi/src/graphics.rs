@@ -3,19 +3,19 @@ use embedded_graphics_core::primitives::Rectangle;
 use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
 use embedded_hal::digital::v2::OutputPin;
 
+use crate::controllers::Controller;
 use crate::dcs::BitsPerPixel;
-use crate::models::Model;
 use crate::{Display, Error};
 use display_interface::WriteOnlyDataCommand;
 
-impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
+impl<C, DI, RST> DrawTarget for Display<C, DI, RST>
 where
+    C: Controller,
     DI: WriteOnlyDataCommand,
-    M: Model,
     RST: OutputPin,
 {
     type Error = Error;
-    type Color = M::ColorFormat;
+    type Color = C::Color;
 
     #[cfg(not(feature = "batch"))]
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
@@ -67,10 +67,12 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.options.framebuffer_size();
-        let fb_rect = Rectangle::with_corners(
-            Point::new(0, 0),
-            Point::new(fb_size.0 as i32 - 1, fb_size.1 as i32 - 1),
+        let fb_rect = Rectangle::new(
+            Point::zero(),
+            Size::new(
+                u32::from(C::FRAMEBUFFER_SIZE.0),
+                u32::from(C::FRAMEBUFFER_SIZE.1),
+            ),
         );
         let area = area.intersection(&fb_rect);
 
@@ -95,22 +97,21 @@ where
     }
 
     fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.options.framebuffer_size();
+        let fb_size = C::FRAMEBUFFER_SIZE;
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
         self.set_pixels(0, 0, fb_size.0 - 1, fb_size.1 - 1, colors)
     }
 }
 
-impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
+impl<C, DI, RST> OriginDimensions for Display<C, DI, RST>
 where
+    C: Controller,
     DI: WriteOnlyDataCommand,
-    MODEL: Model,
     RST: OutputPin,
 {
     fn size(&self) -> Size {
-        let ds = self.options.display_size();
-        let (width, height) = (u32::from(ds.0), u32::from(ds.1));
+        let (width, height) = (u32::from(self.size.0), u32::from(self.size.1));
         Size::new(width, height)
     }
 }
