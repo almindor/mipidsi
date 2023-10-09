@@ -76,15 +76,20 @@
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
+use core::marker::PhantomData;
+
+use controllers::Controller;
 use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
+use embedded_graphics_core::prelude::*;
 use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
 pub use error::Error;
 
 pub mod options;
+use error::InitError;
 pub use options::*;
 
 mod builder;
@@ -92,8 +97,10 @@ pub use builder::Builder;
 
 pub mod dcs;
 
-pub mod models;
-use models::Model;
+// pub mod models;
+// use models::Model;
+
+pub mod controllers;
 
 mod graphics;
 
@@ -106,35 +113,34 @@ mod batch;
 ///
 /// Display driver to connect to TFT displays.
 ///
-pub struct Display<DI, MODEL, RST>
-where
-    DI: WriteOnlyDataCommand,
-    MODEL: Model,
-    RST: OutputPin,
-{
+pub struct Display<C, DI, RST> {
     // DCS provider
     dcs: Dcs<DI>,
-    // Model
-    model: MODEL,
+    // Controller type
+    controller: PhantomData<C>,
     // Reset pin
     rst: Option<RST>,
-    // Model Options, includes current orientation
-    options: ModelOptions,
-    // Current MADCTL value copy for runtime updates
-    madctl: dcs::SetAddressMode,
+
+    size: (u16, u16),
+    offset: (u16, u16),
+
+    invert_colors: ColorInversion,
+    orientation: Orientation,
+    color_order: ColorOrder,
+    refresh_order: RefreshOrder,
 }
 
-impl<DI, M, RST> Display<DI, M, RST>
+impl<C, DI, RST> Display<C, DI, RST>
 where
+    C: Controller,
     DI: WriteOnlyDataCommand,
-    M: Model,
     RST: OutputPin,
 {
     ///
     /// Returns currently set [Orientation]
     ///
     pub fn orientation(&self) -> Orientation {
-        self.options.orientation()
+        self.orientation
     }
 
     ///
@@ -145,8 +151,9 @@ where
     /// display.orientation(Orientation::Portrait(false)).unwrap();
     /// ```
     pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
-        self.madctl = self.madctl.with_orientation(orientation); // set orientation
-        self.dcs.write_command(self.madctl)?;
+        self.orientation = orientation;
+        // self.madctl = self.madctl.with_orientation(orientation); // set orientation
+        // self.dcs.write_command(self.madctl)?;
 
         Ok(())
     }
@@ -164,10 +171,9 @@ where
     /// ```rust ignore
     /// display.set_pixel(100, 200, Rgb666::new(251, 188, 20)).unwrap();
     /// ```
-    pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
+    pub fn set_pixel(&mut self, x: u16, y: u16, color: C::Color) -> Result<(), Error> {
         self.set_address_window(x, y, x, y)?;
-        self.model
-            .write_pixels(&mut self.dcs, core::iter::once(color))?;
+        C::write_pixels(self, core::iter::once(color))?;
 
         Ok(())
     }
@@ -200,10 +206,10 @@ where
         colors: T,
     ) -> Result<(), Error>
     where
-        T: IntoIterator<Item = M::ColorFormat>,
+        T: IntoIterator<Item = C::Color>,
     {
         self.set_address_window(sx, sy, ex, ey)?;
-        self.model.write_pixels(&mut self.dcs, colors)?;
+        C::write_pixels(self, colors)?;
 
         Ok(())
     }
@@ -236,14 +242,14 @@ where
     /// Release resources allocated to this driver back.
     /// This returns the display interface, reset pin and and the model deconstructing the driver.
     ///
-    pub fn release(self) -> (DI, M, Option<RST>) {
-        (self.dcs.release(), self.model, self.rst)
+    pub fn release(self) -> (DI, Option<RST>) {
+        (self.dcs.release(), self.rst)
     }
 
     // Sets the address window for the display.
     fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
         // add clipping offsets if present
-        let offset = self.options.window_offset();
+        let offset = (0, 0); //self.options.window_offset();
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
         self.dcs.write_command(dcs::SetColumnAddress::new(sx, ex))?;
@@ -276,6 +282,20 @@ where
         self.dcs.write_command(dcs::ExitSleepMode)?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);
+        Ok(())
+    }
+
+    fn reset<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), InitError<RST::Error>> {
+        match self.rst {
+            Some(ref mut rst) => {
+                rst.set_low().map_err(InitError::Pin)?;
+                delay.delay_us(10);
+                rst.set_high().map_err(InitError::Pin)?;
+                // self.hard_reset(rst, delay)?,
+            }
+            None => self.dcs.write_command(dcs::SoftReset)?,
+        }
+
         Ok(())
     }
 }

@@ -1,7 +1,7 @@
 //! Module for the MADCTL instruction constructors
 
 use crate::{
-    ColorOrder, Error, HorizontalRefreshOrder, ModelOptions, Orientation, RefreshOrder,
+    ColorOrder, Error, HorizontalRefreshOrder, Orientation, RefreshOrder,
     VerticalRefreshOrder,
 };
 
@@ -80,15 +80,6 @@ impl DcsCommand for SetAddressMode {
     fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
         buffer[0] = self.0;
         Ok(1)
-    }
-}
-
-impl From<&ModelOptions> for SetAddressMode {
-    fn from(options: &ModelOptions) -> Self {
-        Self::default()
-            .with_color_order(options.color_order)
-            .with_orientation(options.orientation)
-            .with_refresh_order(options.refresh_order)
     }
 }
 
