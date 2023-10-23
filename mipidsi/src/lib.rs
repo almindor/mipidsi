@@ -259,7 +259,6 @@ where
 
     ///
     /// Returns `true` if display is currently set to sleep.
-    /// NOTE: value before call to `init` is considered undefined.
     ///
     pub fn is_sleeping<D: DelayUs<u32>>(&self) -> bool {
         self.sleeping
