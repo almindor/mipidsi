@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `GC9A01` model support
 - added `Display::wake` method
 - added `Display::sleep` method
+- added `Display::is_sleeping` method
 
 ## [v0.7.1] - 2023-05-24
 
