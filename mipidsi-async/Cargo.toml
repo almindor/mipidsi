@@ -12,14 +12,13 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.61"
 
 [dependencies]
-display-interface = "0.4.1"
-embedded-graphics-core = "0.4.0"
-embedded-hal = "0.2.7"
-nb = "1.0.0"
+display-interface = { git = "https://github.com/therealprof/display-interface.git" }
+embedded-graphics-core = ">= 0.4.0"
+embedded-hal = "1.0.0-rc.1"
 
 [dependencies.heapless]
 optional = true
-version = "0.7.16"
+version = ">= 0.7.16"
 
 [features]
 default = ["batch"]
