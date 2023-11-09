@@ -80,8 +80,8 @@ use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
-use embedded_hal::blocking::delay::DelayUs;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::delay::DelayUs;
+use embedded_hal::digital::OutputPin;
 pub use error::Error;
 
 pub mod options;
@@ -263,7 +263,7 @@ where
     ///
     /// Returns `true` if display is currently set to sleep.
     ///
-    pub fn is_sleeping<D: DelayUs<u32>>(&self) -> bool {
+    pub fn is_sleeping<D: DelayUs>(&self) -> bool {
         self.sleeping
     }
 
@@ -271,7 +271,7 @@ where
     /// Puts the display to sleep, reducing power consumption.
     /// Need to call [Self::wake] before issuing other commands
     ///
-    pub fn sleep<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
+    pub fn sleep<D: DelayUs>(&mut self, delay: &mut D) -> Result<(), Error> {
         self.dcs.write_command(dcs::EnterSleepMode)?;
         // All supported models requires a 120ms delay before issuing other commands
         delay.delay_us(120_000);
@@ -282,7 +282,7 @@ where
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
-    pub fn wake<D: DelayUs<u32>>(&mut self, delay: &mut D) -> Result<(), Error> {
+    pub fn wake<D: DelayUs>(&mut self, delay: &mut D) -> Result<(), Error> {
         self.dcs.write_command(dcs::ExitSleepMode)?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);

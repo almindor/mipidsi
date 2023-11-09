@@ -7,7 +7,7 @@ use display_interface::DisplayError;
 pub enum InitError<PE> {
     /// Error caused by the display interface.
     DisplayError,
-    /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::v2::OutputPin) implementation.
+    /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::OutputPin) implementation.
     Pin(PE),
 }
 

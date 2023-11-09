@@ -4,7 +4,7 @@
 use crate::{models::Model, Display, Error};
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::*;
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 
 pub trait DrawBatch<DI, M, I>
 where
