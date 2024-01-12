@@ -112,8 +112,8 @@ where
     MODEL: Model,
     RST: OutputPin,
 {
-    // DCS provider
-    dcs: Dcs<DI>,
+    /// DCS provider, can be used directly to send custom DCS commands to the device
+    pub dcs: Dcs<DI>,
     // Model
     model: MODEL,
     // Reset pin
