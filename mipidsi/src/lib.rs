@@ -289,4 +289,16 @@ where
         self.sleeping = false;
         Ok(())
     }
+
+    /// Returns the DCS interface for sending raw commands.
+    ///
+    /// # Safety
+    ///
+    /// Sending raw commands to the controller can lead to undefined behaviour,
+    /// because the rest of the code isn't aware of any state changes that were caused by sending raw commands.
+    /// The user must ensure that the state of the controller isn't altered in a way that interferes with the normal
+    /// operation of this crate.
+    pub unsafe fn dcs(&mut self) -> &mut Dcs<DI> {
+        &mut self.dcs
+    }
 }

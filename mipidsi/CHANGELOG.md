@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `Display::wake` method
 - added `Display::sleep` method
 - added `Display::is_sleeping` method
+- added `Display::dcs` method to allow sending custom DCS commands to the device
 
 ## [v0.7.1] - 2023-05-24
 
