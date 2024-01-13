@@ -112,8 +112,8 @@ where
     MODEL: Model,
     RST: OutputPin,
 {
-    /// DCS provider, can be used directly to send custom DCS commands to the device
-    pub dcs: Dcs<DI>,
+    // DCS provider
+    dcs: Dcs<DI>,
     // Model
     model: MODEL,
     // Reset pin
@@ -288,5 +288,13 @@ where
         delay.delay_us(120_000);
         self.sleeping = false;
         Ok(())
+    }
+
+    ///
+    /// Returns the DCS interface for sending raw commands.
+    /// *WARNING*: user is responsible for ensuring display state validity
+    ///
+    pub unsafe fn dcs(&mut self) -> &mut Dcs<DI> {
+        &mut self.dcs
     }
 }
