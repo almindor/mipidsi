@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `Display::is_sleeping` method
 - added `Display::dcs` method to allow sending custom DCS commands to the device
 
+### Changed
+
+- DCS command constructors (such as `SetAddressMode::new`) are now marked as `const`, so DCS commands can be constructed in
+  [const contexts](https://doc.rust-lang.org/reference/const_eval.html#const-context)
+
 ## [v0.7.1] - 2023-05-24
 
 ### Changed

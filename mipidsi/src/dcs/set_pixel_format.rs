@@ -10,7 +10,7 @@ pub struct SetPixelFormat(PixelFormat);
 
 impl SetPixelFormat {
     /// Creates a new Set Pixel Format command.
-    pub fn new(pixel_format: PixelFormat) -> Self {
+    pub const fn new(pixel_format: PixelFormat) -> Self {
         Self(pixel_format)
     }
 }

@@ -13,12 +13,12 @@ pub struct SetAddressMode(u8);
 
 impl SetAddressMode {
     /// Creates a new Set Address Mode command.
-    pub fn new(
+    pub const fn new(
         color_order: ColorOrder,
         orientation: Orientation,
         refresh_order: RefreshOrder,
     ) -> Self {
-        Self::default()
+        Self(0)
             .with_color_order(color_order)
             .with_orientation(orientation)
             .with_refresh_order(refresh_order)
@@ -26,7 +26,7 @@ impl SetAddressMode {
 
     /// Returns this Madctl with [ColorOrder] set to new value
     #[must_use]
-    pub fn with_color_order(self, color_order: ColorOrder) -> Self {
+    pub const fn with_color_order(self, color_order: ColorOrder) -> Self {
         let mut result = self;
         match color_order {
             ColorOrder::Rgb => result.0 &= 0b1111_0111,
@@ -38,7 +38,7 @@ impl SetAddressMode {
 
     /// Returns this Madctl with [Orientation] set to new value
     #[must_use]
-    pub fn with_orientation(self, orientation: Orientation) -> Self {
+    pub const fn with_orientation(self, orientation: Orientation) -> Self {
         let mut result = self;
         let value = match orientation {
             Orientation::Portrait(false) => 0b0000_0000,
@@ -57,7 +57,7 @@ impl SetAddressMode {
 
     /// Returns this Madctl with [RefreshOrder] set to new value
     #[must_use]
-    pub fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
+    pub const fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
         let mut result = self;
         let value = match (refresh_order.vertical, refresh_order.horizontal) {
             (VerticalRefreshOrder::TopToBottom, HorizontalRefreshOrder::LeftToRight) => 0b0000_0000,

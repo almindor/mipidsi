@@ -13,7 +13,7 @@ pub struct SetPageAddress {
 
 impl SetPageAddress {
     /// Creates a new Set Page Address command.
-    pub fn new(start_row: u16, end_row: u16) -> Self {
+    pub const fn new(start_row: u16, end_row: u16) -> Self {
         Self { start_row, end_row }
     }
 }
