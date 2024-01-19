@@ -6,20 +6,20 @@
 #[derive(Clone)]
 pub struct ModelOptions {
     /// Specify display color ordering
-    pub(crate) color_order: ColorOrder,
+    pub color_order: ColorOrder,
     /// Initial display orientation (without inverts)
-    pub(crate) orientation: Orientation,
+    pub orientation: Orientation,
     /// Whether to invert colors for this display/model (INVON)
-    pub(crate) invert_colors: ColorInversion,
+    pub invert_colors: ColorInversion,
     /// Display refresh order
-    pub(crate) refresh_order: RefreshOrder,
+    pub refresh_order: RefreshOrder,
     /// Offset override function returning (w, h) offset for current
     /// display orientation if display is "clipped" and needs an offset for (e.g. Pico v1)
-    pub(crate) window_offset_handler: fn(&ModelOptions) -> (u16, u16),
+    pub window_offset_handler: fn(&ModelOptions) -> (u16, u16),
     /// Display size (w, h) for given display/model
-    pub(crate) display_size: (u16, u16),
+    pub display_size: (u16, u16),
     /// Framebuffer size (w, h) for given display/model
-    pub(crate) framebuffer_size: (u16, u16),
+    pub framebuffer_size: (u16, u16),
 }
 
 impl ModelOptions {
@@ -92,7 +92,7 @@ impl ModelOptions {
     /// Returns window offset (x, y) based on current orientation and display options.
     ///
     /// Used by [Display::set_address_window](crate::Display::set_address_window).
-    pub(crate) fn window_offset(&mut self) -> (u16, u16) {
+    pub fn window_offset(&mut self) -> (u16, u16) {
         (self.window_offset_handler)(self)
     }
 

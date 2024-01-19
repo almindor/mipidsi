@@ -140,7 +140,7 @@ where
 
 /// Batch the pixels into Pixel Rows, which are contiguous pixels on the same row.
 /// P can be any Pixel Iterator (e.g. a rectangle).
-fn to_rows<C, P>(pixels: P) -> RowIterator<C, P>
+pub fn to_rows<C, P>(pixels: P) -> RowIterator<C, P>
 where
     C: PixelColor,
     P: Iterator<Item = Pixel<C>>,
@@ -157,7 +157,7 @@ where
 
 /// Batch the Pixel Rows into Pixel Blocks, which are contiguous Pixel Rows with the same start and end column number
 /// R can be any Pixel Row Iterator.
-fn to_blocks<C, R>(rows: R) -> BlockIterator<C, R>
+pub fn to_blocks<C, R>(rows: R) -> BlockIterator<C, R>
 where
     C: PixelColor,
     R: Iterator<Item = PixelRow<C>>,

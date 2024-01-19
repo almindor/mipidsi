@@ -101,7 +101,7 @@ mod test_image;
 pub use test_image::TestImage;
 
 #[cfg(feature = "batch")]
-mod batch;
+pub mod batch;
 
 ///
 /// Display driver to connect to TFT displays.
