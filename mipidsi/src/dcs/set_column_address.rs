@@ -13,7 +13,7 @@ pub struct SetColumnAddress {
 
 impl SetColumnAddress {
     /// Creates a new Set Column Address command.
-    pub fn new(start_column: u16, end_column: u16) -> Self {
+    pub const fn new(start_column: u16, end_column: u16) -> Self {
         Self {
             start_column,
             end_column,

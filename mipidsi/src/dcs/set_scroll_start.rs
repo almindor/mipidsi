@@ -10,7 +10,7 @@ pub struct SetScrollStart(u16);
 
 impl SetScrollStart {
     /// Creates a new Set Scroll Start command.
-    pub fn new(offset: u16) -> Self {
+    pub const fn new(offset: u16) -> Self {
         Self(offset)
     }
 }
