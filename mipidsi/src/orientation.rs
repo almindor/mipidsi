@@ -197,7 +197,6 @@ impl From<Orientation> for MemoryMapping {
     fn from(value: Orientation) -> Self {
         Self::with_orientation(value)
     }
-    
 }
 
 #[cfg(test)]

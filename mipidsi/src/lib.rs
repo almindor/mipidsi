@@ -102,7 +102,7 @@ use orientation::MemoryMapping;
 pub use test_image::TestImage;
 
 mod orientation;
-pub use orientation::{Rotation, Orientation, InvalidAngleError};
+pub use orientation::{InvalidAngleError, Orientation, Rotation};
 
 #[cfg(feature = "batch")]
 mod batch;
