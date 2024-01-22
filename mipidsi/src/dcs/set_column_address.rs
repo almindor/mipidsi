@@ -1,6 +1,6 @@
 //! Module for the CASET address window instruction constructors
 
-use crate::Error;
+use crate::error::Error;
 
 use super::DcsCommand;
 

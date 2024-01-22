@@ -7,8 +7,9 @@ use crate::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat, SetScrollArea, SoftReset, WriteMemoryStart,
     },
+    error::Error,
     error::InitError,
-    ColorInversion, Error, ModelOptions,
+    options::{ColorInversion, ModelOptions},
 };
 
 use super::Model;
@@ -80,7 +81,7 @@ impl Model for ST7789 {
         Ok(())
     }
 
-    fn default_options() -> crate::ModelOptions {
+    fn default_options() -> ModelOptions {
         let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
         options.set_invert_colors(ColorInversion::Normal);
 

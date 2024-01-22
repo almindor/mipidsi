@@ -80,12 +80,12 @@ use dcs::Dcs;
 use display_interface::WriteOnlyDataCommand;
 
 pub mod error;
+use error::Error;
+
 use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
-pub use error::Error;
 
 pub mod options;
-pub use options::*;
 
 mod builder;
 pub use builder::Builder;
@@ -119,7 +119,7 @@ where
     // Reset pin
     rst: Option<RST>,
     // Model Options, includes current orientation
-    options: ModelOptions,
+    options: options::ModelOptions,
     // Current MADCTL value copy for runtime updates
     madctl: dcs::SetAddressMode,
     // State monitor for sleeping TODO: refactor to a Model-connected state machine
@@ -135,7 +135,7 @@ where
     ///
     /// Returns currently set [Orientation]
     ///
-    pub fn orientation(&self) -> Orientation {
+    pub fn orientation(&self) -> options::Orientation {
         self.options.orientation()
     }
 
@@ -146,7 +146,7 @@ where
     /// ```rust ignore
     /// display.orientation(Orientation::Portrait(false)).unwrap();
     /// ```
-    pub fn set_orientation(&mut self, orientation: Orientation) -> Result<(), Error> {
+    pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
         self.dcs.write_command(self.madctl)?;
 
@@ -255,7 +255,10 @@ where
     ///
     /// Configures the tearing effect output.
     ///
-    pub fn set_tearing_effect(&mut self, tearing_effect: TearingEffect) -> Result<(), Error> {
+    pub fn set_tearing_effect(
+        &mut self,
+        tearing_effect: options::TearingEffect,
+    ) -> Result<(), Error> {
         self.dcs
             .write_command(dcs::SetTearingEffect::new(tearing_effect))
     }

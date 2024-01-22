@@ -4,9 +4,11 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
 use crate::{
     dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
+    error::Error,
     error::InitError,
     models::{ili934x, Model},
-    Builder, Error, ModelOptions,
+    options::ModelOptions,
+    Builder,
 };
 
 /// ILI9342C display in Rgb565 color mode.

@@ -7,7 +7,8 @@ use crate::{
         Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat, WriteMemoryStart,
     },
-    Error, ModelOptions,
+    error::Error,
+    options::ModelOptions,
 };
 
 /// Common init for all ILI934x controllers and color formats.

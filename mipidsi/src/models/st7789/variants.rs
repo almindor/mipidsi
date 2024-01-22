@@ -1,6 +1,9 @@
 use display_interface::WriteOnlyDataCommand;
 
-use crate::{Builder, ColorInversion, ModelOptions, Orientation};
+use crate::{
+    options::{ColorInversion, ModelOptions, Orientation},
+    Builder,
+};
 
 use super::ST7789;
 

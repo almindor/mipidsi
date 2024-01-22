@@ -1,6 +1,6 @@
 //! Module for the VSCAD visual scroll offset instruction constructors
 
-use crate::Error;
+use crate::error::Error;
 
 use super::DcsCommand;
 

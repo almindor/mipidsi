@@ -7,8 +7,10 @@ use crate::{
         BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
         SetPixelFormat, SoftReset, WriteMemoryStart,
     },
+    error::Error,
     error::InitError,
-    Builder, ColorInversion, Error, ModelOptions,
+    options::{ColorInversion, ModelOptions},
+    Builder,
 };
 
 use super::{Dcs, Model};
