@@ -29,7 +29,7 @@ where
 
     dcs.write_command(madctl)?;
     dcs.write_raw(0xB4, &[0x0])?;
-    dcs.write_command(SetInvertMode(options.invert_colors))?;
+    dcs.write_command(SetInvertMode::new(options.invert_colors))?;
     dcs.write_command(SetPixelFormat::new(pixel_format))?;
 
     dcs.write_command(EnterNormalMode)?;

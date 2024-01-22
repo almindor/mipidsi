@@ -42,7 +42,7 @@ impl Model for ST7735s {
         dcs.write_command(ExitSleepMode)?; // turn off sleep
         delay.delay_us(120_000);
 
-        dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
+        dcs.write_command(SetInvertMode::new(options.invert_colors))?; // set color inversion
         dcs.write_raw(0xB1, &[0x05, 0x3A, 0x3A])?; // set frame rate
         dcs.write_raw(0xB2, &[0x05, 0x3A, 0x3A])?; // set frame rate
         dcs.write_raw(0xB3, &[0x05, 0x3A, 0x3A, 0x05, 0x3A, 0x3A])?; // set frame rate

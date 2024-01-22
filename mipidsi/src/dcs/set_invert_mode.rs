@@ -4,7 +4,14 @@ use super::DcsCommand;
 
 /// Set Invert Mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SetInvertMode(pub ColorInversion);
+pub struct SetInvertMode(ColorInversion);
+
+impl SetInvertMode {
+    /// Construct a new SetInvertMode DCS with the given value
+    pub fn new(color_inversion: ColorInversion) -> Self {
+        SetInvertMode(color_inversion)
+    }
+}
 
 impl DcsCommand for SetInvertMode {
     fn instruction(&self) -> u8 {

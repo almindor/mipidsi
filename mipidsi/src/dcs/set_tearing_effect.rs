@@ -4,7 +4,14 @@ use super::DcsCommand;
 
 /// Set Tearing Effect
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SetTearingEffect(pub TearingEffect);
+pub struct SetTearingEffect(TearingEffect);
+
+impl SetTearingEffect {
+    /// Construct a new SetTearingEffect DCS with the given value
+    pub fn new(tearing_effect: TearingEffect) -> Self {
+        SetTearingEffect(tearing_effect)
+    }
+}
 
 impl DcsCommand for SetTearingEffect {
     fn instruction(&self) -> u8 {

@@ -119,7 +119,7 @@ impl Model for GC9A01 {
         dcs.write_raw(0x74, &[0x10, 0x85, 0x80, 0x00, 0x00, 0x4E, 0x00])?;
         dcs.write_raw(0x98, &[0x3e, 0x07])?;
 
-        dcs.write_command(SetInvertMode(options.invert_colors))?; // set color inversion
+        dcs.write_command(SetInvertMode::new(options.invert_colors))?; // set color inversion
 
         dcs.write_command(ExitSleepMode)?; // turn off sleep
         delay.delay_us(120_000);

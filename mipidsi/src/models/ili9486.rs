@@ -169,7 +169,7 @@ where
     dcs.write_command(madctl)?; // left -> right, bottom -> top RGB
                                 // dcs.write_command(Instruction::VCMOFSET, &[0x00, 0x48, 0x00, 0x48])?; //VCOM  Control 1 [00 40 00 40]
                                 // dcs.write_command(Instruction::INVCO, &[0x0])?; //Inversion Control [00]
-    dcs.write_command(SetInvertMode(options.invert_colors))?;
+    dcs.write_command(SetInvertMode::new(options.invert_colors))?;
 
     // optional gamma setup
     // dcs.write_raw(Instruction::PGC, &[0x00, 0x2C, 0x2C, 0x0B, 0x0C, 0x04, 0x4C, 0x64, 0x36, 0x03, 0x0E, 0x01, 0x10, 0x01, 0x00])?; // Positive Gamma Control

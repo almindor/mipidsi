@@ -51,7 +51,7 @@ impl Model for ST7789 {
         dcs.write_command(SetScrollArea::from(options))?;
         dcs.write_command(madctl)?;
 
-        dcs.write_command(SetInvertMode(options.invert_colors))?;
+        dcs.write_command(SetInvertMode::new(options.invert_colors))?;
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         dcs.write_command(SetPixelFormat::new(pf))?;
