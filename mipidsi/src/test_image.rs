@@ -14,9 +14,9 @@ pub struct TestImage<C: RgbColor> {
     color_type: PhantomData<C>,
 }
 
-impl<C: RgbColor> TestImage<C> {
-    /// Creates a new test image.
-    pub fn new() -> Self {
+impl<C: RgbColor> Default for TestImage<C> {
+    /// Creates a new default test image.
+    fn default() -> Self {
         Self {
             color_type: PhantomData,
         }
