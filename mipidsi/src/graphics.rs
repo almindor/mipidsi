@@ -67,7 +67,7 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.options.framebuffer_size();
+        let fb_size = M::FRAMEBUFFER_SIZE;
         let fb_rect = Rectangle::with_corners(
             Point::new(0, 0),
             Point::new(fb_size.0 as i32 - 1, fb_size.1 as i32 - 1),
@@ -95,7 +95,7 @@ where
     }
 
     fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = self.options.framebuffer_size();
+        let fb_size = M::FRAMEBUFFER_SIZE;
         let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
         let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
         self.set_pixels(0, 0, fb_size.0 - 1, fb_size.1 - 1, colors)
