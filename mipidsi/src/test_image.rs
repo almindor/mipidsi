@@ -10,13 +10,14 @@ use embedded_graphics_core::{
 ///
 /// The test image can be used to check if the display is working and to
 /// identify the correct orientation and color settings.
+#[derive(Default)]
 pub struct TestImage<C: RgbColor> {
     color_type: PhantomData<C>,
 }
 
-impl<C: RgbColor> Default for TestImage<C> {
-    /// Creates a new default test image.
-    fn default() -> Self {
+impl<C: RgbColor> TestImage<C> {
+    /// Creates a new test image
+    pub const fn new() -> Self {
         Self {
             color_type: PhantomData,
         }

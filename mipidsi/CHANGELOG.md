@@ -14,10 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `Display::sleep` method
 - added `Display::is_sleeping` method
 - added `Display::dcs` method to allow sending custom DCS commands to the device
+- added `TestImage::default`
 
 ### Changed
 
-- `TestImage::new` changed to `TestImage::default` to appease clippy
 - DCS commands param fields are now all consistently private with added constructors for all such commands
 - DCS command constructors (such as `SetAddressMode::new`) are now marked as `const`, so DCS commands can be constructed in
   [const contexts](https://doc.rust-lang.org/reference/const_eval.html#const-context)
