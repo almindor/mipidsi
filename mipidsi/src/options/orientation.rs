@@ -40,6 +40,7 @@ impl Rotation {
     }
 
     /// Rotates one rotation by another rotation.
+    #[must_use]
     pub const fn rotate(self, other: Rotation) -> Self {
         match Self::try_from_degree(self.degree() + other.degree()) {
             Ok(r) => r,
@@ -111,6 +112,7 @@ impl Orientation {
     }
 
     /// Rotates the orientation.
+    #[must_use]
     pub const fn rotate(self, rotation: Rotation) -> Self {
         Self {
             rotation: self.rotation.rotate(rotation),
@@ -119,6 +121,7 @@ impl Orientation {
     }
 
     /// Flips the orientation across the horizontal display axis.
+    #[must_use]
     const fn flip_horizontal_absolute(self) -> Self {
         Self {
             rotation: self.rotation,
@@ -127,6 +130,7 @@ impl Orientation {
     }
 
     /// Flips the orientation across the vertical display axis.
+    #[must_use]
     const fn flip_vertical_absolute(self) -> Self {
         Self {
             rotation: self.rotation.rotate(Rotation::Deg180),
@@ -135,6 +139,7 @@ impl Orientation {
     }
 
     /// Flips the orientation across the horizontal axis.
+    #[must_use]
     pub const fn flip_horizontal(self) -> Self {
         if self.rotation.is_vertical() {
             self.flip_vertical_absolute()
@@ -144,6 +149,7 @@ impl Orientation {
     }
 
     /// Flips the orientation across the vertical axis.
+    #[must_use]
     pub const fn flip_vertical(self) -> Self {
         if self.rotation.is_vertical() {
             self.flip_horizontal_absolute()
