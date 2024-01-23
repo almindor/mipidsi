@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 use crate::options::{
-    ColorOrder, HorizontalRefreshOrder, ModelOptions, Orientation, RefreshOrder,
+    ColorOrder, HorizontalRefreshOrder, MemoryMapping, ModelOptions, Orientation, RefreshOrder,
     VerticalRefreshOrder,
 };
 
@@ -40,20 +40,21 @@ impl SetAddressMode {
     /// Returns this Madctl with [Orientation] set to new value
     #[must_use]
     pub const fn with_orientation(self, orientation: Orientation) -> Self {
-        let mut result = self;
-        let value = match orientation {
-            Orientation::Portrait(false) => 0b0000_0000,
-            Orientation::Portrait(true) => 0b0100_0000,
-            Orientation::PortraitInverted(false) => 0b1100_0000,
-            Orientation::PortraitInverted(true) => 0b1000_0000,
-            Orientation::Landscape(false) => 0b0010_0000,
-            Orientation::Landscape(true) => 0b0110_0000,
-            Orientation::LandscapeInverted(false) => 0b1110_0000,
-            Orientation::LandscapeInverted(true) => 0b1010_0000,
-        };
-        result.0 = (result.0 & 0b0001_1111) | value;
+        let mut result = self.0;
+        result &= 0b0001_1111;
 
-        result
+        let mapping = MemoryMapping::from_orientation(orientation);
+        if mapping.reverse_rows {
+            result |= 1 << 7;
+        }
+        if mapping.reverse_columns {
+            result |= 1 << 6;
+        }
+        if mapping.swap_rows_and_columns {
+            result |= 1 << 5;
+        }
+
+        Self(result)
     }
 
     /// Returns this Madctl with [RefreshOrder] set to new value
@@ -95,6 +96,8 @@ impl From<&ModelOptions> for SetAddressMode {
 
 #[cfg(test)]
 mod tests {
+    use crate::options::Rotation;
+
     use super::*;
 
     #[test]
@@ -105,7 +108,7 @@ mod tests {
                 VerticalRefreshOrder::BottomToTop,
                 HorizontalRefreshOrder::RightToLeft,
             ))
-            .with_orientation(Orientation::LandscapeInverted(true));
+            .with_orientation(Orientation::default().rotate(Rotation::Deg270));
 
         let mut bytes = [0u8];
         assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);

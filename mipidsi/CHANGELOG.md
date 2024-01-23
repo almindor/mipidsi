@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DCS commands param fields are now all consistently private with added constructors for all such commands
 - DCS command constructors (such as `SetAddressMode::new`) are now marked as `const`, so DCS commands can be constructed in
   [const contexts](https://doc.rust-lang.org/reference/const_eval.html#const-context)
+- replaced `window_offset_handler` function pointer with `offset` field
+- default to disabled color inversion for all generic models
+
+### Removed
+
+- removed `Builder::with_framebuffer_size`
 
 ## [v0.7.1] - 2023-05-24
 

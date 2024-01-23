@@ -86,6 +86,7 @@ use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::digital::v2::OutputPin;
 
 pub mod options;
+use options::MemoryMapping;
 
 mod builder;
 pub use builder::Builder;
@@ -245,7 +246,18 @@ where
     // Sets the address window for the display.
     fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
         // add clipping offsets if present
-        let offset = self.options.window_offset();
+        let mut offset = self.options.display_offset;
+        let mapping = MemoryMapping::from(self.options.orientation);
+        if mapping.reverse_columns {
+            offset.0 = M::FRAMEBUFFER_SIZE.0 - (self.options.display_size.0 + offset.0);
+        }
+        if mapping.reverse_rows {
+            offset.1 = M::FRAMEBUFFER_SIZE.1 - (self.options.display_size.1 + offset.1);
+        }
+        if mapping.swap_rows_and_columns {
+            offset = (offset.1, offset.0);
+        }
+
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
         self.dcs.write_command(dcs::SetColumnAddress::new(sx, ex))?;

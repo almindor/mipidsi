@@ -47,7 +47,8 @@ impl From<&ModelOptions> for SetScrollArea {
     fn from(options: &ModelOptions) -> Self {
         Self {
             tfa: 0,
-            vsa: options.framebuffer_size_max(),
+            //vsa: options.framebuffer_size_max(),
+            vsa: 0, //TODO: fix
             bfa: 0,
         }
     }

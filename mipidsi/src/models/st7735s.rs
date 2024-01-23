@@ -9,7 +9,7 @@ use crate::{
     },
     error::Error,
     error::InitError,
-    options::{ColorInversion, ModelOptions},
+    options::ModelOptions,
     Builder,
 };
 
@@ -20,6 +20,7 @@ pub struct ST7735s;
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (132, 162);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -93,10 +94,7 @@ impl Model for ST7735s {
     }
 
     fn default_options() -> ModelOptions {
-        let mut options = ModelOptions::with_sizes((80, 160), (132, 162));
-        options.set_invert_colors(ColorInversion::Inverted);
-
-        options
+        ModelOptions::full_size::<Self>()
     }
 }
 

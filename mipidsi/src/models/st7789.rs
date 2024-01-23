@@ -9,7 +9,7 @@ use crate::{
     },
     error::Error,
     error::InitError,
-    options::{ColorInversion, ModelOptions},
+    options::ModelOptions,
 };
 
 use super::Model;
@@ -24,6 +24,7 @@ pub struct ST7789;
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -82,9 +83,6 @@ impl Model for ST7789 {
     }
 
     fn default_options() -> ModelOptions {
-        let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
-        options.set_invert_colors(ColorInversion::Normal);
-
-        options
+        ModelOptions::full_size::<Self>()
     }
 }

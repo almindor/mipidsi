@@ -31,6 +31,9 @@ pub trait Model {
     /// The color format.
     type ColorFormat: RgbColor;
 
+    /// The framebuffer size in pixels.
+    const FRAMEBUFFER_SIZE: (u16, u16);
+
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
     fn init<RST, DELAY, DI>(

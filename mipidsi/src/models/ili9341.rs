@@ -19,6 +19,7 @@ pub struct ILI9341Rgb666;
 
 impl Model for ILI9341Rgb565 {
     type ColorFormat = Rgb565;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -50,12 +51,13 @@ impl Model for ILI9341Rgb565 {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320))
+        ModelOptions::full_size::<Self>()
     }
 }
 
 impl Model for ILI9341Rgb666 {
     type ColorFormat = Rgb666;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -87,7 +89,7 @@ impl Model for ILI9341Rgb666 {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((240, 320), (240, 320))
+        ModelOptions::full_size::<Self>()
     }
 }
 
