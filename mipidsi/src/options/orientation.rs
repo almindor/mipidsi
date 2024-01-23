@@ -72,7 +72,7 @@ pub struct InvalidAngleError;
 /// # Examples
 ///
 /// ```
-/// use mipidsi::{Orientation, Rotation};
+/// use mipidsi::options::{Orientation, Rotation};
 ///
 /// // Rotate display content by 90 degree clockwise.
 /// let rotated = Orientation::new().rotate(Rotation::Deg90);
@@ -84,7 +84,7 @@ pub struct InvalidAngleError;
 /// Multiple transformations can be combined to build more complex orientations:
 ///
 /// ```
-/// use mipidsi::{Orientation, Rotation};
+/// use mipidsi::options::{Orientation, Rotation};
 ///
 /// let orientation = Orientation::new().rotate(Rotation::Deg270).flip_vertical();
 ///
