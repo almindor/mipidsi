@@ -2,8 +2,9 @@
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
+    error::Error,
     error::InitError,
-    Error, ModelOptions,
+    options::ModelOptions,
 };
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;

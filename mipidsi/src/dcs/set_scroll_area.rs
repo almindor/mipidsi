@@ -1,6 +1,7 @@
 //! Module for the VSCRDEF visual scroll definition instruction constructors
 
-use crate::{Error, ModelOptions};
+use crate::error::Error;
+use crate::options::ModelOptions;
 
 use super::DcsCommand;
 

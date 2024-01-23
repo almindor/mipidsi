@@ -1,4 +1,5 @@
-use crate::{ColorInversion, Error};
+use crate::error::Error;
+use crate::options::ColorInversion;
 
 use super::DcsCommand;
 

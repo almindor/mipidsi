@@ -1,6 +1,6 @@
 //! Module for the COLMOD instruction constructors
 
-use crate::Error;
+use crate::error::Error;
 
 use super::DcsCommand;
 

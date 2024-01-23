@@ -3,10 +3,9 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 
-use crate::{
-    dcs::Dcs, error::InitError, models::Model, ColorInversion, ColorOrder, Display, ModelOptions,
-    Orientation, RefreshOrder,
-};
+use crate::{dcs::Dcs, error::InitError, models::Model, Display};
+
+use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
 
 /// Builder for [Display] instances.
 ///

@@ -5,7 +5,7 @@ use embedded_hal::digital::v2::OutputPin;
 
 use crate::dcs::BitsPerPixel;
 use crate::models::Model;
-use crate::{Display, Error};
+use crate::{error::Error, Display};
 use display_interface::WriteOnlyDataCommand;
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>

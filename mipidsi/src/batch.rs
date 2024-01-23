@@ -1,7 +1,7 @@
 //! Original code from: [this repo](https://github.com/lupyuen/piet-embedded/blob/master/piet-embedded-graphics/src/batch.rs)
 //! Batch the pixels to be rendered into Pixel Rows and Pixel Blocks (contiguous Pixel Rows).
 //! This enables the pixels to be rendered efficiently as Pixel Blocks, which may be transmitted in a single Non-Blocking SPI request.
-use crate::{models::Model, Display, Error};
+use crate::{error::Error, models::Model, Display};
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::*;
 use embedded_hal::digital::v2::OutputPin;

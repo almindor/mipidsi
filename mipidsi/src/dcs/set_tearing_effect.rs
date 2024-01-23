@@ -1,4 +1,5 @@
-use crate::{Error, TearingEffect};
+use crate::error::Error;
+use crate::options::TearingEffect;
 
 use super::DcsCommand;
 

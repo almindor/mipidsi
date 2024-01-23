@@ -2,7 +2,7 @@
 
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
-use crate::Error;
+use crate::error::Error;
 
 #[macro_use]
 mod macros;

@@ -1,7 +1,8 @@
 //! Module for the MADCTL instruction constructors
 
-use crate::{
-    ColorOrder, Error, HorizontalRefreshOrder, ModelOptions, Orientation, RefreshOrder,
+use crate::error::Error;
+use crate::options::{
+    ColorOrder, HorizontalRefreshOrder, ModelOptions, Orientation, RefreshOrder,
     VerticalRefreshOrder,
 };
 
