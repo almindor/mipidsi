@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- `options` and `error` submodule types are no longer re-exported from the main library
 - DCS commands param fields are now all consistently private with added constructors for all such commands
 - DCS command constructors (such as `SetAddressMode::new`) are now marked as `const`, so DCS commands can be constructed in
   [const contexts](https://doc.rust-lang.org/reference/const_eval.html#const-context)
