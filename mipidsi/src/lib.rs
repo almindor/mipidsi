@@ -133,14 +133,14 @@ where
     RST: OutputPin,
 {
     ///
-    /// Returns currently set [Orientation]
+    /// Returns currently set [options::Orientation]
     ///
     pub fn orientation(&self) -> options::Orientation {
         self.options.orientation()
     }
 
     ///
-    /// Sets display [Orientation] with mirror image parameter
+    /// Sets display [options::Orientation] with mirror image parameter
     ///
     /// # Example
     /// ```rust ignore
