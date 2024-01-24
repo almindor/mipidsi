@@ -1,6 +1,10 @@
-use embedded_graphics_core::prelude::{DrawTarget, Point, RgbColor, Size};
-use embedded_graphics_core::primitives::Rectangle;
-use embedded_graphics_core::{prelude::OriginDimensions, Pixel};
+use embedded_graphics_core::{
+    draw_target::DrawTarget,
+    geometry::{Dimensions, OriginDimensions, Size},
+    pixelcolor::RgbColor,
+    primitives::Rectangle,
+    Pixel,
+};
 use embedded_hal::digital::v2::OutputPin;
 
 use crate::dcs::BitsPerPixel;
@@ -67,12 +71,7 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = M::FRAMEBUFFER_SIZE;
-        let fb_rect = Rectangle::with_corners(
-            Point::new(0, 0),
-            Point::new(fb_size.0 as i32 - 1, fb_size.1 as i32 - 1),
-        );
-        let area = area.intersection(&fb_rect);
+        let area = area.intersection(&self.bounding_box());
 
         if let Some(bottom_right) = area.bottom_right() {
             let mut count = 0u32;
