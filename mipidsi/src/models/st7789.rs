@@ -5,11 +5,11 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 use crate::{
     dcs::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
-        SetDisplayOn, SetInvertMode, SetPixelFormat, SetScrollArea, SoftReset, WriteMemoryStart,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::Error,
     error::InitError,
-    options::{ColorInversion, ModelOptions},
+    options::ModelOptions,
 };
 
 use super::Model;
@@ -24,6 +24,7 @@ pub struct ST7789;
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -49,7 +50,6 @@ impl Model for ST7789 {
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
-        dcs.write_command(SetScrollArea::from(options))?;
         dcs.write_command(madctl)?;
 
         dcs.write_command(SetInvertMode::new(options.invert_colors))?;
@@ -82,9 +82,6 @@ impl Model for ST7789 {
     }
 
     fn default_options() -> ModelOptions {
-        let mut options = ModelOptions::with_sizes((240, 320), (240, 320));
-        options.set_invert_colors(ColorInversion::Normal);
-
-        options
+        ModelOptions::full_size::<Self>()
     }
 }

@@ -95,21 +95,10 @@ where
     }
 
     ///
-    /// Sets the framebuffer size
+    /// Sets the display offset
     ///
-    pub fn with_framebuffer_size(mut self, width: u16, height: u16) -> Self {
-        self.options.framebuffer_size = (width, height);
-        self
-    }
-
-    ///
-    /// Sets the window offset handler
-    ///
-    pub fn with_window_offset_handler(
-        mut self,
-        window_offset_handler: fn(_: &ModelOptions) -> (u16, u16),
-    ) -> Self {
-        self.options.window_offset_handler = window_offset_handler;
+    pub fn with_display_offset(mut self, x: u16, y: u16) -> Self {
+        self.options.display_offset = (x, y);
         self
     }
 

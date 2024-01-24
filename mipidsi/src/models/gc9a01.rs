@@ -20,6 +20,7 @@ pub struct GC9A01;
 
 impl Model for GC9A01 {
     type ColorFormat = Rgb565;
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 240);
 
     fn init<RST, DELAY, DI>(
         &mut self,
@@ -145,7 +146,7 @@ impl Model for GC9A01 {
     }
 
     fn default_options() -> ModelOptions {
-        ModelOptions::with_sizes((240, 240), (240, 240))
+        ModelOptions::full_size::<Self>()
     }
 }
 
