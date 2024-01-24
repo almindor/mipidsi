@@ -92,13 +92,6 @@ where
             Ok(())
         }
     }
-
-    fn clear(&mut self, color: Self::Color) -> Result<(), Self::Error> {
-        let fb_size = M::FRAMEBUFFER_SIZE;
-        let pixel_count = usize::from(fb_size.0) * usize::from(fb_size.1);
-        let colors = core::iter::repeat(color).take(pixel_count); // blank entire HW RAM contents
-        self.set_pixels(0, 0, fb_size.0 - 1, fb_size.1 - 1, colors)
-    }
 }
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
