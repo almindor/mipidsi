@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   [const contexts](https://doc.rust-lang.org/reference/const_eval.html#const-context)
 - replaced `window_offset_handler` function pointer with `offset` field
 - default to disabled color inversion for all generic models
+- renamed `Display::set_scroll_region` and `Display::set_scroll_offset` into `set_vertical_scroll_region` and `set_vertical_scroll_offset`
 
 ### Removed
 

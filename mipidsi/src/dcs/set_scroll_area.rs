@@ -1,7 +1,6 @@
 //! Module for the VSCRDEF visual scroll definition instruction constructors
 
 use crate::error::Error;
-use crate::options::ModelOptions;
 
 use super::DcsCommand;
 
@@ -40,17 +39,6 @@ impl DcsCommand for SetScrollArea {
         buffer[5] = bfa_bytes[1];
 
         Ok(6)
-    }
-}
-
-impl From<&ModelOptions> for SetScrollArea {
-    fn from(options: &ModelOptions) -> Self {
-        Self {
-            tfa: 0,
-            //vsa: options.framebuffer_size_max(),
-            vsa: 0, //TODO: fix
-            bfa: 0,
-        }
     }
 }
 

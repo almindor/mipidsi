@@ -211,26 +211,49 @@ where
         Ok(())
     }
 
+    /// Sets the vertical scroll region.
     ///
-    /// Sets scroll region
-    /// # Arguments
+    /// The `top_fixed_area` and `bottom_fixed_area` arguments can be used to
+    /// define an area on the top and/or bottom of the display which won't be
+    /// affected by scrolling.
     ///
-    /// * `tfa` - Top fixed area
-    /// * `vsa` - Vertical scrolling area
-    /// * `bfa` - Bottom fixed area
+    /// Note that this method is not affected by the current display orientation
+    /// and will always scroll vertically relative to the default display
+    /// orientation.
     ///
-    pub fn set_scroll_region(&mut self, tfa: u16, vsa: u16, bfa: u16) -> Result<(), Error> {
-        let vscrdef = dcs::SetScrollArea::new(tfa, vsa, bfa);
+    /// The combined height of the fixed area must not larger than the
+    /// height of the framebuffer height in the default orientation.
+    ///
+    /// After the scrolling region is defined the [`set_scroll_offset`] can be
+    /// used to scroll the display.
+    pub fn set_vertical_scroll_region(
+        &mut self,
+        top_fixed_area: u16,
+        bottom_fixed_area: u16,
+    ) -> Result<(), Error> {
+        let rows = M::FRAMEBUFFER_SIZE.1;
+
+        let vscrdef = if top_fixed_area + bottom_fixed_area > rows {
+            dcs::SetScrollArea::new(rows, 0, 0)
+        } else {
+            dcs::SetScrollArea::new(
+                top_fixed_area,
+                rows - top_fixed_area - bottom_fixed_area,
+                bottom_fixed_area,
+            )
+        };
+
         self.dcs.write_command(vscrdef)
     }
 
+    /// Sets the vertical scroll offset.
     ///
-    /// Sets scroll offset "shifting" the displayed picture
-    /// # Arguments
+    /// Setting the vertical scroll offset shifts the vertical scroll region
+    /// upwards by `offset` pixels.
     ///
-    /// * `offset` - scroll offset in pixels
-    ///
-    pub fn set_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
+    /// Use [`set_vertical_scroll_region`] to setup the scroll region, before
+    /// using this method.
+    pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
         let vscad = dcs::SetScrollStart::new(offset);
         self.dcs.write_command(vscad)
     }

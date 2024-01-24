@@ -5,7 +5,7 @@ use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
 use crate::{
     dcs::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
-        SetDisplayOn, SetInvertMode, SetPixelFormat, SetScrollArea, SoftReset, WriteMemoryStart,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
     },
     error::Error,
     error::InitError,
@@ -50,7 +50,6 @@ impl Model for ST7789 {
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
-        dcs.write_command(SetScrollArea::from(options))?;
         dcs.write_command(madctl)?;
 
         dcs.write_command(SetInvertMode::new(options.invert_colors))?;
