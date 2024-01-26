@@ -50,24 +50,49 @@ where
     where
         I: IntoIterator<Item = Self::Color>,
     {
-        if let Some(bottom_right) = area.bottom_right() {
-            let mut count = 0u32;
-            let max = area.size.width * area.size.height;
+        let intersection = area.intersection(&self.bounding_box());
+        let mut colors = colors.into_iter();
 
-            let mut colors = colors.into_iter().take_while(|_| {
-                count += 1;
-                count <= max
-            });
-
-            let sx = area.top_left.x as u16;
-            let sy = area.top_left.y as u16;
+        if let Some(bottom_right) = intersection.bottom_right() {
+            let sx = intersection.top_left.x as u16;
+            let sy = intersection.top_left.y as u16;
             let ex = bottom_right.x as u16;
             let ey = bottom_right.y as u16;
-            self.set_pixels(sx, sy, ex, ey, &mut colors)
-        } else {
-            // nothing to draw
-            Ok(())
+
+            let count = (intersection.size.width * intersection.size.height) as usize;
+
+            if &intersection == area {
+                // Draw the original iterator if no edge overlaps the framebuffer
+                self.set_pixels(sx, sy, ex, ey, colors.take(count))?;
+            } else {
+                // Skip pixels above and to the left of the intersection
+                let mut initial_skip = 0;
+                if intersection.top_left.y > area.top_left.y {
+                    initial_skip += (intersection.top_left.y - area.top_left.y) as usize
+                        * area.size.width as usize;
+                }
+                if intersection.top_left.x > area.top_left.x {
+                    initial_skip += (intersection.top_left.x - area.top_left.x) as usize;
+                }
+                if initial_skip > 0 {
+                    colors.nth(initial_skip - 1);
+                }
+
+                // Draw only the pixels which don't overlap the edges of the framebuffer
+
+                let take_per_row = intersection.size.width;
+                let skip_per_row = area.size.width - intersection.size.width;
+                self.set_pixels(
+                    sx,
+                    sy,
+                    ex,
+                    ey,
+                    TakeSkip::new(colors, take_per_row, skip_per_row).take(count),
+                )?;
+            }
         }
+
+        Ok(())
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
@@ -124,10 +149,50 @@ impl BitsPerPixel {
     }
 }
 
+/// An iterator that alternately takes and skips elements of another iterator.
+struct TakeSkip<I> {
+    iter: I,
+    take: u32,
+    take_remaining: u32,
+    skip: u32,
+}
+
+impl<I> TakeSkip<I> {
+    pub fn new(iter: I, take: u32, skip: u32) -> Self {
+        Self {
+            iter,
+            take,
+            take_remaining: take,
+            skip,
+        }
+    }
+}
+
+impl<I: Iterator> Iterator for TakeSkip<I> {
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.take_remaining > 0 {
+            self.take_remaining -= 1;
+            self.iter.next()
+        } else {
+            if self.take > 0 {
+                self.take_remaining = self.take - 1;
+                #[cfg(not(target_pointer_width = "16"))]
+                self.iter.nth(self.skip)
+            } else {
+                None
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::dcs::BitsPerPixel;
     use embedded_graphics_core::pixelcolor::*;
+
+    use super::TakeSkip;
 
     #[test]
     fn bpp_from_rgb_color_works() {
@@ -149,5 +214,28 @@ mod test {
     #[should_panic]
     fn bpp_from_rgb_color_invalid_panics() {
         BitsPerPixel::from_rgb_color::<Rgb555>();
+    }
+
+    #[test]
+    fn take_skip_iter() {
+        let mut iter = TakeSkip::new(0..11, 3, 2);
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        // Skip 3 and 4
+        assert_eq!(iter.next(), Some(5));
+        assert_eq!(iter.next(), Some(6));
+        assert_eq!(iter.next(), Some(7));
+        // Skip 8 and 9
+        assert_eq!(iter.next(), Some(10));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn take_skip_with_take_equals_zero() {
+        // take == 0 should not cause an integer overflow or infinite loop and
+        // just return None
+        let mut iter = TakeSkip::new(0..11, 0, 2);
+        assert_eq!(iter.next(), None);
     }
 }

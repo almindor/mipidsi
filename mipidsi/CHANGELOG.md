@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - updated to `display-interface v0.5.0`
 - removed `Model::default_options`
 - bumped MSRV to `v1.75`
+- fixed `DrawTarget::fill_contiguous` for images that overlap the edge of the framebuffer
 
 ### Removed
 
