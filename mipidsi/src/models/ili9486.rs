@@ -61,10 +61,6 @@ impl Model for ILI9486Rgb565 {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)
     }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
-    }
 }
 
 impl Model for ILI9486Rgb666 {
@@ -109,10 +105,6 @@ impl Model for ILI9486Rgb666 {
 
         let buf = DataFormat::U8Iter(&mut iter);
         dcs.di.send_data(buf)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
     }
 }
 

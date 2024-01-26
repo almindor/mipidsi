@@ -49,10 +49,6 @@ impl Model for ILI9341Rgb565 {
     {
         ili934x::write_pixels_rgb565(dcs, colors)
     }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
-    }
 }
 
 impl Model for ILI9341Rgb666 {
@@ -86,10 +82,6 @@ impl Model for ILI9341Rgb666 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb666(dcs, colors)
-    }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
     }
 }
 

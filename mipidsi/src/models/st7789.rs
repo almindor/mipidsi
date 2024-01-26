@@ -80,8 +80,4 @@ impl Model for ST7789 {
         dcs.di.send_data(buf)?;
         Ok(())
     }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
-    }
 }
