@@ -50,7 +50,7 @@ where
         Self {
             di,
             model,
-            options: MODEL::default_options(),
+            options: ModelOptions::full_size::<MODEL>(),
         }
     }
 

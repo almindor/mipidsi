@@ -92,10 +92,6 @@ impl Model for ST7735s {
         dcs.di.send_data(buf)?;
         Ok(())
     }
-
-    fn default_options() -> ModelOptions {
-        ModelOptions::full_size::<Self>()
-    }
 }
 
 // simplified constructor on Display
