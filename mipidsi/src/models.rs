@@ -8,7 +8,7 @@ use crate::{
 };
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 // existing model implementations
 mod gc9a01;
@@ -45,7 +45,7 @@ pub trait Model {
     ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayNs,
         DI: WriteOnlyDataCommand;
 
     /// Resets the display using a reset pin.
@@ -56,7 +56,7 @@ pub trait Model {
     ) -> Result<(), InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayNs,
     {
         rst.set_low().map_err(InitError::Pin)?;
         delay.delay_us(10);
