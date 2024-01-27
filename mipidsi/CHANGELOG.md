@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - renamed `Display::set_scroll_region` and `Display::set_scroll_offset` into `set_vertical_scroll_region` and `set_vertical_scroll_offset`
 - updated to `embedded-hal v1.0.0`
 - updated to `display-interface v0.5.0`
+- removed `Model::default_options`
 
 ### Removed
 
