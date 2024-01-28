@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - updated to `embedded-hal v1.0.0`
 - updated to `display-interface v0.5.0`
 - removed `Model::default_options`
+- bumped MSRV to `v1.75`
 
 ### Removed
 
