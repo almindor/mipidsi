@@ -301,7 +301,7 @@ where
     ///
     /// Returns `true` if display is currently set to sleep.
     ///
-    pub fn is_sleeping<D: DelayNs>(&self) -> bool {
+    pub fn is_sleeping(&self) -> bool {
         self.sleeping
     }
 
