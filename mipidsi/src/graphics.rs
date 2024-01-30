@@ -51,71 +51,66 @@ where
         I: IntoIterator<Item = Self::Color>,
     {
         let intersection = area.intersection(&self.bounding_box());
+        let Some(bottom_right) = intersection.bottom_right() else {
+            // No intersection -> nothing to draw
+            return Ok(());
+        };
+
+        // Unchecked casting to u16 cannot fail here because the values are
+        // clamped to the display size which always fits in an u16.
+        let sx = intersection.top_left.x as u16;
+        let sy = intersection.top_left.y as u16;
+        let ex = bottom_right.x as u16;
+        let ey = bottom_right.y as u16;
+
+        let count = intersection.size.width * intersection.size.height;
+
         let mut colors = colors.into_iter();
 
-        if let Some(bottom_right) = intersection.bottom_right() {
-            let sx = intersection.top_left.x as u16;
-            let sy = intersection.top_left.y as u16;
-            let ex = bottom_right.x as u16;
-            let ey = bottom_right.y as u16;
-
-            let count = (intersection.size.width * intersection.size.height) as usize;
-
-            if &intersection == area {
-                // Draw the original iterator if no edge overlaps the framebuffer
-                self.set_pixels(sx, sy, ex, ey, colors.take(count))?;
-            } else {
-                // Skip pixels above and to the left of the intersection
-                let mut initial_skip = 0;
-                if intersection.top_left.y > area.top_left.y {
-                    initial_skip += (intersection.top_left.y - area.top_left.y) as usize
-                        * area.size.width as usize;
-                }
-                if intersection.top_left.x > area.top_left.x {
-                    initial_skip += (intersection.top_left.x - area.top_left.x) as usize;
-                }
-                if initial_skip > 0 {
-                    colors.nth(initial_skip - 1);
-                }
-
-                // Draw only the pixels which don't overlap the edges of the framebuffer
-
-                let take_per_row = intersection.size.width;
-                let skip_per_row = area.size.width - intersection.size.width;
-                self.set_pixels(
-                    sx,
-                    sy,
-                    ex,
-                    ey,
-                    TakeSkip::new(colors, take_per_row, skip_per_row).take(count),
-                )?;
+        if &intersection == area {
+            // Draw the original iterator if no edge overlaps the framebuffer
+            self.set_pixels(sx, sy, ex, ey, take_u32(colors, count))
+        } else {
+            // Skip pixels above and to the left of the intersection
+            let mut initial_skip = 0;
+            if intersection.top_left.y > area.top_left.y {
+                initial_skip += intersection.top_left.y.abs_diff(area.top_left.y) * area.size.width;
             }
-        }
+            if intersection.top_left.x > area.top_left.x {
+                initial_skip += intersection.top_left.x.abs_diff(area.top_left.x);
+            }
+            if initial_skip > 0 {
+                nth_u32(&mut colors, initial_skip - 1);
+            }
 
-        Ok(())
+            // Draw only the pixels which don't overlap the edges of the framebuffer
+            let take_per_row = intersection.size.width;
+            let skip_per_row = area.size.width - intersection.size.width;
+            self.set_pixels(
+                sx,
+                sy,
+                ex,
+                ey,
+                take_u32(TakeSkip::new(colors, take_per_row, skip_per_row), count),
+            )
+        }
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
         let area = area.intersection(&self.bounding_box());
+        let Some(bottom_right) = area.bottom_right() else {
+            // No intersection -> nothing to draw
+            return Ok(());
+        };
 
-        if let Some(bottom_right) = area.bottom_right() {
-            let mut count = 0u32;
-            let max = area.size.width * area.size.height;
+        let count = area.size.width * area.size.height;
+        let mut colors = take_u32(core::iter::repeat(color), count);
 
-            let mut colors = core::iter::repeat(color).take_while(|_| {
-                count += 1;
-                count <= max
-            });
-
-            let sx = area.top_left.x as u16;
-            let sy = area.top_left.y as u16;
-            let ex = bottom_right.x as u16;
-            let ey = bottom_right.y as u16;
-            self.set_pixels(sx, sy, ex, ey, &mut colors)
-        } else {
-            // nothing to draw
-            Ok(())
-        }
+        let sx = area.top_left.x as u16;
+        let sy = area.top_left.y as u16;
+        let ex = bottom_right.x as u16;
+        let ey = bottom_right.y as u16;
+        self.set_pixels(sx, sy, ex, ey, &mut colors)
     }
 }
 
@@ -178,13 +173,39 @@ impl<I: Iterator> Iterator for TakeSkip<I> {
         } else {
             if self.take > 0 {
                 self.take_remaining = self.take - 1;
-                #[cfg(not(target_pointer_width = "16"))]
-                self.iter.nth(self.skip)
+                nth_u32(&mut self.iter, self.skip)
             } else {
                 None
             }
         }
     }
+}
+
+#[cfg(not(target_pointer_width = "16"))]
+fn take_u32<I: Iterator>(iter: I, max_count: u32) -> impl Iterator<Item = I::Item> {
+    iter.take(max_count.try_into().unwrap())
+}
+
+#[cfg(target_pointer_width = "16")]
+fn take_u32<I: Iterator>(iter: I, max_count: u32) -> impl Iterator<Item = I::Item> {
+    let mut count = 0;
+    iter.take_while(move |_| {
+        count += 1;
+        count <= max_count
+    })
+}
+
+#[cfg(not(target_pointer_width = "16"))]
+fn nth_u32<I: Iterator>(mut iter: I, n: u32) -> Option<I::Item> {
+    iter.nth(n.try_into().unwrap())
+}
+
+#[cfg(target_pointer_width = "16")]
+fn nth_u32<I: Iterator>(mut iter: I, n: u32) -> Option<I::Item> {
+    for _ in 0..n {
+        iter.next();
+    }
+    iter.next()
 }
 
 #[cfg(test)]
