@@ -3,7 +3,7 @@ use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
-use embedded_hal::{blocking::delay::DelayUs, digital::v2::OutputPin};
+use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
     dcs::{
@@ -37,7 +37,7 @@ impl Model for ILI9486Rgb565 {
     ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
@@ -76,7 +76,7 @@ impl Model for ILI9486Rgb666 {
     ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs<u32>,
+        DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
         match rst {
@@ -156,7 +156,7 @@ fn init_common<DELAY, DI>(
     pixel_format: PixelFormat,
 ) -> Result<SetAddressMode, Error>
 where
-    DELAY: DelayUs<u32>,
+    DELAY: DelayNs,
     DI: WriteOnlyDataCommand,
 {
     let madctl = SetAddressMode::from(options);

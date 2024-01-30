@@ -5,7 +5,7 @@ use embedded_graphics_core::{
     primitives::Rectangle,
     Pixel,
 };
-use embedded_hal::digital::v2::OutputPin;
+use embedded_hal::digital::OutputPin;
 
 use crate::dcs::BitsPerPixel;
 use crate::models::Model;
