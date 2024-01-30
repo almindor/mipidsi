@@ -7,7 +7,7 @@ name: Continuous integration
 
 jobs:
   ci-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       matrix:
@@ -20,14 +20,10 @@ jobs:
             experimental: true
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
-      - name: Install all Rust targets for ${{ matrix.rust }}
-        run: rustup target install --toolchain=${{ matrix.rust }} x86_64-unknown-linux-gnu
       - name: Run CI script for x86_64-unknown-linux-gnu
         run: |
           cargo check
@@ -45,15 +41,23 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build crate for host OS
         run: |
           cargo build
       - name: Test on host OS
         run: |
           cargo test
+
+  build-example-parallel-ili9341-rp-pico:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: thumbv6m-none-eabi
+      - run: cargo install flip-link
+      - name: Build example
+        run: cargo build
+        working-directory: ./mipidsi/examples/parallel_ili9341_rp_pico
