@@ -20,20 +20,24 @@
 //!
 //! ## Examples
 //! **For the ili9486 display, using the SPI interface with no chip select:**
-//! ```rust ignore
-//! use display_interface_spi::SPIInterfaceNoCS;    // Provides the builder for DisplayInterface
-//! use mipidsi::Builder;                           // Provides the builder for Display
-//! use embedded_graphics::pixelcolor::Rgb666;      // Provides the required color type
+//! ```
+//! use display_interface_spi::SPIInterface;                 // Provides the builder for DisplayInterface
+//! use mipidsi::Builder;                                    // Provides the builder for Display
+//! use embedded_graphics::{prelude::*, pixelcolor::Rgb666}; // Provides the required color type
 //!
 //! /* Define the SPI interface as the variable `spi` */
 //! /* Define the DC digital output pin as the variable `dc` */
 //! /* Define the Reset digital output pin as the variable `rst` */
+//!# let spi = mipidsi::_mock::MockSpi;
+//!# let dc = mipidsi::_mock::MockOutputPin;
+//!# let rst = mipidsi::_mock::MockOutputPin;
+//!# let mut delay = mipidsi::_mock::MockDelay;
 //!
 //! // Create a DisplayInterface from SPI and DC pin, with no manual CS control
-//! let di = SPIInterfaceNoCS::new(spi, dc);
+//! let di = SPIInterface::new(spi, dc);
 //!
 //! // Create the ILI9486 display driver from the display interface and optional RST pin
-//! let mut display = Builder::ili9486(di)
+//! let mut display = Builder::ili9486_rgb666(di)
 //!     .init(&mut delay, Some(rst)).unwrap();
 //!
 //! // Clear the display to black
@@ -42,27 +46,39 @@
 //!
 //! **For the ili9341 display, using the Parallel port, with the RGB666 color space and the Bgr
 //! color order:**
-//! ```rust ignore
+//! ```
 //! // Provides the builder for DisplayInterface
 //! use display_interface_parallel_gpio::{Generic8BitBus, PGPIO8BitInterface};
 //! // Provides the builder for Display
 //! use mipidsi::Builder;
 //! // Provides the required color type
-//! use embedded_graphics::pixelcolor::Rgb666;
+//! use embedded_graphics::{prelude::*, pixelcolor::Rgb666};
 //!
 //! /* Define digital output pins d0 - d7 for the parallel port as `lcd_dX` */
 //! /* Define the D/C digital output pin as `dc` */
 //! /* Define the WR and Reset digital output pins with the initial state set as High as `wr` and
 //! `rst` */
+//!# let lcd_d0 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d1 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d2 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d3 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d4 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d5 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d6 = mipidsi::_mock::MockOutputPin;
+//!# let lcd_d7 = mipidsi::_mock::MockOutputPin;
+//!# let wr = mipidsi::_mock::MockOutputPin;
+//!# let dc = mipidsi::_mock::MockOutputPin;
+//!# let rst = mipidsi::_mock::MockOutputPin;
+//!# let mut delay = mipidsi::_mock::MockDelay;
 //!
 //! // Create the DisplayInterface from a Generic8BitBus, which is made from the parallel pins
 //! let bus = Generic8BitBus::new((lcd_d0, lcd_d1, lcd_d2,
-//!     lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7)).unwrap();
+//!     lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7));
 //! let di = PGPIO8BitInterface::new(bus, dc, wr);
 //!
 //! // Create the ILI9341 display driver from the display interface with the RGB666 color space
 //! let mut display = Builder::ili9341_rgb666(di)
-//!      .with_color_order(mipidsi::ColorOrder::Bgr)
+//!      .with_color_order(mipidsi::options::ColorOrder::Bgr)
 //!      .init(&mut delay, Some(rst)).unwrap();
 //!
 //! // Clear the display to black
@@ -143,9 +159,13 @@ where
     ///
     /// Sets display [options::Orientation] with mirror image parameter
     ///
-    /// # Example
-    /// ```rust ignore
-    /// display.orientation(Orientation::Portrait(false)).unwrap();
+    /// # Examples
+    ///
+    /// ```
+    /// use mipidsi::options::{Orientation, Rotation};
+    ///
+    /// # let mut display = mipidsi::_mock::new_mock_display();
+    /// display.set_orientation(Orientation::default().rotate(Rotation::Deg180)).unwrap();
     /// ```
     pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
@@ -163,9 +183,13 @@ where
     /// * `y` - y coordinate
     /// * `color` - the color value in pixel format of the display [Model]
     ///
-    /// # Example
-    /// ```rust ignore
-    /// display.set_pixel(100, 200, Rgb666::new(251, 188, 20)).unwrap();
+    /// # Examples
+    ///
+    /// ```
+    /// use embedded_graphics::pixelcolor::Rgb565;
+    ///
+    /// # let mut display = mipidsi::_mock::new_mock_display();
+    /// display.set_pixel(100, 200, Rgb565::new(251, 188, 20)).unwrap();
     /// ```
     pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
         self.set_address_window(x, y, x, y)?;
@@ -338,5 +362,71 @@ where
     /// operation of this crate.
     pub unsafe fn dcs(&mut self) -> &mut Dcs<DI> {
         &mut self.dcs
+    }
+}
+
+/// Mock implementations of embedded-hal and display-interface traits.
+///
+/// Do not use types in this module outside of doc tests.
+#[doc(hidden)]
+pub mod _mock {
+    use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+    use embedded_hal::{delay::DelayNs, digital, spi};
+
+    use crate::{models::ILI9341Rgb565, Builder, Display};
+
+    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, MockOutputPin> {
+        Builder::ili9341_rgb565(MockDisplayInterface)
+            .init(&mut MockDelay, Some(MockOutputPin))
+            .unwrap()
+    }
+
+    pub struct MockOutputPin;
+
+    impl digital::OutputPin for MockOutputPin {
+        fn set_low(&mut self) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn set_high(&mut self) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
+    impl digital::ErrorType for MockOutputPin {
+        type Error = core::convert::Infallible;
+    }
+
+    pub struct MockSpi;
+
+    impl spi::SpiDevice for MockSpi {
+        fn transaction(
+            &mut self,
+            _operations: &mut [spi::Operation<'_, u8>],
+        ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
+    impl spi::ErrorType for MockSpi {
+        type Error = core::convert::Infallible;
+    }
+
+    pub struct MockDelay;
+
+    impl DelayNs for MockDelay {
+        fn delay_ns(&mut self, _ns: u32) {}
+    }
+
+    pub struct MockDisplayInterface;
+
+    impl WriteOnlyDataCommand for MockDisplayInterface {
+        fn send_commands(&mut self, _cmd: DataFormat<'_>) -> Result<(), DisplayError> {
+            Ok(())
+        }
+
+        fn send_data(&mut self, _buf: DataFormat<'_>) -> Result<(), DisplayError> {
+            Ok(())
+        }
     }
 }

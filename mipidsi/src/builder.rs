@@ -11,12 +11,17 @@ use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, Refr
 ///
 /// Exposes all possible display options.
 ///
+/// # Examples
 ///
-/// ## Example
-/// ```rust ignore
+/// ```
+/// use mipidsi::{Builder, options::ColorOrder};
+///
+/// # let di = mipidsi::_mock::MockDisplayInterface;
+/// # let rst = mipidsi::_mock::MockOutputPin;
+/// # let mut delay = mipidsi::_mock::MockDelay;
 /// let mut display = Builder::ili9342c_rgb565(di)
-///     .with_color_order(ColorOrder::Bgr);
-///     .with_display_size(320, 240);
+///     .with_color_order(ColorOrder::Bgr)
+///     .with_display_size(320, 240)
 ///     .init(&mut delay, Some(rst)).unwrap();
 /// ```
 pub struct Builder<DI, MODEL>
