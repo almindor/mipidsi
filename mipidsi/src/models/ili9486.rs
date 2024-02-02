@@ -10,10 +10,8 @@ use crate::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
     },
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
     options::ModelOptions,
-    Builder,
 };
 
 use super::Model;
@@ -105,46 +103,6 @@ impl Model for ILI9486Rgb666 {
 
         let buf = DataFormat::U8Iter(&mut iter);
         dcs.di.send_data(buf)
-    }
-}
-
-// simplified constructor for Display
-
-impl<DI> Builder<DI, ILI9486Rgb565>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for an ILI9486 display in Rgb565 color mode.
-    ///
-    /// The default framebuffer size and display size is 320x480 pixels.
-    ///
-    /// # Limitations
-    ///
-    /// The Rgb565 color mode is not supported for displays with SPI connection.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9486_rgb565(di: DI) -> Self {
-        Self::with_model(di, ILI9486Rgb565)
-    }
-}
-
-impl<DI> Builder<DI, ILI9486Rgb666>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for ILI9486 displays in Rgb666 color mode.
-    ///
-    /// The default framebuffer size and display size is 320x480 pixels.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9486_rgb666(di: DI) -> Self {
-        Self::with_model(di, ILI9486Rgb666)
     }
 }
 

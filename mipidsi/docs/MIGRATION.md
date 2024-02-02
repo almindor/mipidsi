@@ -1,5 +1,20 @@
 # Migration guide for MIPIDSI driver
 
+## v0.7 -> 0.8
+
+### Users
+
+* The model specific constructors (like `Builder::ili9341_rgb565`) have been removed. Use the generic `Builder::new` constructor instead:
+  ```rust
+  // 0.7
+  use mipidsi::Builder;
+  let display = Builder::ili9341_rgb565(di).init(&mut delay, Some(rst))?;
+
+  // 0.8
+  use mipidsi::{Builder, models::ILI9341Rgb565};
+  let display = Builder::new(ILI9341Rgb565, di).init(&mut delay, Some(rst))?;
+  ```
+
 ## v0.6 -> 0.7
 
 No breaking changes.

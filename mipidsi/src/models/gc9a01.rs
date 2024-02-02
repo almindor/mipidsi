@@ -7,10 +7,8 @@ use crate::{
         BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
         SetPixelFormat, SoftReset, WriteMemoryStart,
     },
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
     options::ModelOptions,
-    Builder,
 };
 
 use super::{Dcs, Model};
@@ -143,24 +141,5 @@ impl Model for GC9A01 {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)?;
         Ok(())
-    }
-}
-
-// simplified constructor on Display
-
-impl<DI> Builder<DI, GC9A01>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for GC9A01 displays in Rgb565 color mode.
-    ///
-    /// The default framebuffer size is 240x240 pixels and display size is 240x240 pixels.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn gc9a01(di: DI) -> Self {
-        Self::with_model(di, GC9A01)
     }
 }

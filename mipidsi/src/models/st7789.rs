@@ -7,15 +7,10 @@ use crate::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
     },
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
+    models::Model,
     options::ModelOptions,
 };
-
-use super::Model;
-
-/// Module containing all ST7789 variants.
-mod variants;
 
 /// ST7789 display in Rgb565 color mode.
 ///

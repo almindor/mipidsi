@@ -22,7 +22,7 @@
 //! **For the ili9486 display, using the SPI interface with no chip select:**
 //! ```
 //! use display_interface_spi::SPIInterface;                 // Provides the builder for DisplayInterface
-//! use mipidsi::Builder;                                    // Provides the builder for Display
+//! use mipidsi::{Builder, models::ILI9486Rgb666};           // Provides the builder for Display
 //! use embedded_graphics::{prelude::*, pixelcolor::Rgb666}; // Provides the required color type
 //!
 //! /* Define the SPI interface as the variable `spi` */
@@ -37,7 +37,7 @@
 //! let di = SPIInterface::new(spi, dc);
 //!
 //! // Create the ILI9486 display driver from the display interface and optional RST pin
-//! let mut display = Builder::ili9486_rgb666(di)
+//! let mut display = Builder::new(ILI9486Rgb666, di)
 //!     .init(&mut delay, Some(rst)).unwrap();
 //!
 //! // Clear the display to black
@@ -50,7 +50,7 @@
 //! // Provides the builder for DisplayInterface
 //! use display_interface_parallel_gpio::{Generic8BitBus, PGPIO8BitInterface};
 //! // Provides the builder for Display
-//! use mipidsi::Builder;
+//! use mipidsi::{Builder, models::ILI9341Rgb666};
 //! // Provides the required color type
 //! use embedded_graphics::{prelude::*, pixelcolor::Rgb666};
 //!
@@ -77,7 +77,7 @@
 //! let di = PGPIO8BitInterface::new(bus, dc, wr);
 //!
 //! // Create the ILI9341 display driver from the display interface with the RGB666 color space
-//! let mut display = Builder::ili9341_rgb666(di)
+//! let mut display = Builder::new(ILI9341Rgb666, di)
 //!      .with_color_order(mipidsi::options::ColorOrder::Bgr)
 //!      .init(&mut delay, Some(rst)).unwrap();
 //!
@@ -376,7 +376,7 @@ pub mod _mock {
     use crate::{models::ILI9341Rgb565, Builder, Display};
 
     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, MockOutputPin> {
-        Builder::ili9341_rgb565(MockDisplayInterface)
+        Builder::new(ILI9341Rgb565, MockDisplayInterface)
             .init(&mut MockDelay, Some(MockOutputPin))
             .unwrap()
     }

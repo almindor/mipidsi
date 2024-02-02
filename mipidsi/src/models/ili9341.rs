@@ -4,11 +4,9 @@ use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
     dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
     models::{ili934x, Model},
     options::ModelOptions,
-    Builder,
 };
 
 /// ILI9341 display in Rgb565 color mode.
@@ -82,45 +80,5 @@ impl Model for ILI9341Rgb666 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb666(dcs, colors)
-    }
-}
-
-// simplified constructor for Display
-
-impl<DI> Builder<DI, ILI9341Rgb565>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for an ILI9341 display in Rgb565 color mode.
-    ///
-    /// The default framebuffer size and display size is 240x320 pixels.
-    ///
-    /// # Limitations
-    ///
-    /// The Rgb565 color mode is not supported for displays with SPI connection.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9341_rgb565(di: DI) -> Self {
-        Self::with_model(di, ILI9341Rgb565)
-    }
-}
-
-impl<DI> Builder<DI, ILI9341Rgb666>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for an ILI9341 display in Rgb565 color mode.
-    ///
-    /// The default framebuffer size and display size is 240x320 pixels.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9341_rgb666(di: DI) -> Self {
-        Self::with_model(di, ILI9341Rgb666)
     }
 }
