@@ -4,16 +4,13 @@ use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
     dcs::{
-        BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
+        BitsPerPixel, Dcs, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
         SetPixelFormat, SoftReset, WriteMemoryStart,
     },
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
+    models::Model,
     options::ModelOptions,
-    Builder,
 };
-
-use super::{Dcs, Model};
 
 /// ST7735s display in Rgb565 color mode.
 pub struct ST7735s;
@@ -91,24 +88,5 @@ impl Model for ST7735s {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)?;
         Ok(())
-    }
-}
-
-// simplified constructor on Display
-
-impl<DI> Builder<DI, ST7735s>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for ST7735s displays in Rgb565 color mode.
-    ///
-    /// The default framebuffer size is 132x162 pixels and display size is 80x160 pixels.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn st7735s(di: DI) -> Self {
-        Self::with_model(di, ST7735s)
     }
 }

@@ -14,12 +14,12 @@ use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, Refr
 /// # Examples
 ///
 /// ```
-/// use mipidsi::{Builder, options::ColorOrder};
+/// use mipidsi::{Builder, options::ColorOrder, models::ILI9342CRgb565};
 ///
 /// # let di = mipidsi::_mock::MockDisplayInterface;
 /// # let rst = mipidsi::_mock::MockOutputPin;
 /// # let mut delay = mipidsi::_mock::MockDelay;
-/// let mut display = Builder::ili9342c_rgb565(di)
+/// let mut display = Builder::new(ILI9342CRgb565, di)
 ///     .with_color_order(ColorOrder::Bgr)
 ///     .with_display_size(320, 240)
 ///     .init(&mut delay, Some(rst)).unwrap();
@@ -40,18 +40,9 @@ where
     MODEL: Model,
 {
     ///
-    /// Constructs a new builder from given [WriteOnlyDataCommand], [Model]
-    /// and [ModelOptions]. For use by [Model] helpers, not public
+    /// Constructs a new builder for given [Model].
     ///
-    pub(crate) fn new(di: DI, model: MODEL, options: ModelOptions) -> Self {
-        Self { di, model, options }
-    }
-
-    ///
-    /// Constructs a new builder for given [Model] using the model's
-    /// `default_options`
-    ///
-    pub fn with_model(di: DI, model: MODEL) -> Self {
+    pub fn new(model: MODEL, di: DI) -> Self {
         Self {
             di,
             model,

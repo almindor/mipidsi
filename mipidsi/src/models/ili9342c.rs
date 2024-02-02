@@ -4,11 +4,9 @@ use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
     dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
     models::{ili934x, Model},
     options::ModelOptions,
-    Builder,
 };
 
 /// ILI9342C display in Rgb565 color mode.
@@ -82,45 +80,5 @@ impl Model for ILI9342CRgb666 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb666(dcs, colors)
-    }
-}
-
-// simplified constructor for Display
-
-impl<DI> Builder<DI, ILI9342CRgb565>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for an ILI9342C display in Rgb565 color mode.
-    ///
-    /// The default framebuffer size and display size is 320x240 pixels.
-    ///
-    /// # Limitations
-    ///
-    /// The Rgb565 color mode is not supported for displays with SPI connection.
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9342c_rgb565(di: DI) -> Self {
-        Self::with_model(di, ILI9342CRgb565)
-    }
-}
-
-impl<DI> Builder<DI, ILI9342CRgb666>
-where
-    DI: WriteOnlyDataCommand,
-{
-    /// Creates a new display builder for an ILI9342C display in Rgb666 color mode.
-    ///
-    /// The default framebuffer size and display size is 320x240
-    ///
-    /// # Arguments
-    ///
-    /// * `di` - a [display interface](WriteOnlyDataCommand) for communicating with the display
-    ///
-    pub fn ili9342c_rgb666(di: DI) -> Self {
-        Self::with_model(di, ILI9342CRgb666)
     }
 }

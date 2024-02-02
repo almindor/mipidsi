@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - removed `Model::default_options`
 - bumped MSRV to `v1.75`
 - fixed `DrawTarget::fill_contiguous` for images that overlap the edge of the framebuffer
+- replaced model specific `Builder` constructors (like `Builder::gc9a01`) with one generic `Builder::new` constructor
 
 ### Removed
 
