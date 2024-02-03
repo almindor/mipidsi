@@ -50,14 +50,34 @@ jobs:
         run: |
           cargo test
 
-  build-example-parallel-ili9341-rp-pico:
+  build-example:
+    name: Build example
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - parallel_ili9341_rp_pico
+          - spi-ili9486-esp32-c3
+          - spi-st7789-rpi-zero-w
+        include:
+          - target: thumbv6m-none-eabi
+            example: parallel_ili9341_rp_pico
+          - target: riscv32imc-unknown-none-elf
+            example: spi-ili9486-esp32-c3
+          - target: arm-unknown-linux-gnueabihf
+            example: spi-st7789-rpi-zero-w
+
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          target: thumbv6m-none-eabi
+          target: ${{ matrix.target }}
+      - if: ${{ startsWith(matrix.target, 'arm') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-linux-gnueabihf
       - run: cargo install flip-link
-      - name: Build example
-        run: cargo build
-        working-directory: ./mipidsi/examples/parallel_ili9341_rp_pico
+      - name: Build ${{ matrix.example }} example
+        run: cargo build --target ${{ matrix.target }}
+        working-directory: ./mipidsi/examples/${{ matrix.example }}
