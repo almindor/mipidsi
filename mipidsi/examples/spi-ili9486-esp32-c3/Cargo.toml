@@ -11,3 +11,5 @@ embedded-graphics = "0.8.0"
 display-interface-spi = "0.4.1"
 mipidsi = "0.7.1"
 fugit = "0.3.7"
+
+[workspace]
