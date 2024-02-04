@@ -38,7 +38,8 @@
 //!
 //! // Create the ILI9486 display driver from the display interface and optional RST pin
 //! let mut display = Builder::new(ILI9486Rgb666, di)
-//!     .init(&mut delay, Some(rst)).unwrap();
+//!     .with_reset_pin(rst)
+//!     .init(&mut delay).unwrap();
 //!
 //! // Clear the display to black
 //! display.clear(Rgb666::BLACK).unwrap();
@@ -78,13 +79,14 @@
 //!
 //! // Create the ILI9341 display driver from the display interface with the RGB666 color space
 //! let mut display = Builder::new(ILI9341Rgb666, di)
+//!      .with_reset_pin(rst)
 //!      .with_color_order(mipidsi::options::ColorOrder::Bgr)
-//!      .init(&mut delay, Some(rst)).unwrap();
+//!      .init(&mut delay).unwrap();
 //!
 //! // Clear the display to black
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
-//! Use the appropiate display interface crate for your needs:
+//! Use the appropriate display interface crate for your needs:
 //! - [`display-interface-spi`](https://docs.rs/display-interface-spi/)
 //! - [`display-interface-parallel-gpio`](https://docs.rs/display-interface-parallel-gpio)
 //! - [`display-interface-i2c`](https://docs.rs/display-interface-i2c/)
@@ -105,7 +107,7 @@ pub mod options;
 use options::MemoryMapping;
 
 mod builder;
-pub use builder::Builder;
+pub use builder::{Builder, NoResetPin};
 
 pub mod dcs;
 
@@ -373,11 +375,11 @@ pub mod _mock {
     use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::{models::ILI9341Rgb565, Builder, Display};
+    use crate::{models::ILI9341Rgb565, Builder, Display, NoResetPin};
 
-    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, MockOutputPin> {
+    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
         Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .init(&mut MockDelay, Some(MockOutputPin))
+            .init(&mut MockDelay)
             .unwrap()
     }
 
