@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - bumped MSRV to `v1.75`
 - fixed `DrawTarget::fill_contiguous` for images that overlap the edge of the framebuffer
 - replaced model specific `Builder` constructors (like `Builder::gc9a01`) with one generic `Builder::new` constructor
+- replaced rest pin parameter in `Builder::init` by `Builder::with_reset_pin` setter
 
 ### Removed
 

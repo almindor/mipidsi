@@ -8,11 +8,21 @@
   ```rust
   // 0.7
   use mipidsi::Builder;
+  let display = Builder::ili9341_rgb565(di).init(&mut delay, None)?;
+
+  // 0.8
+  use mipidsi::{Builder, models::ILI9341Rgb565};
+  let display = Builder::new(ILI9341Rgb565, di).init(&mut delay)?;
+  ```
+* The reset pin parameter from `Builder::init` has been removed. Use the `Builder::with_reset_pin` setter instead:
+  ```rust
+  // 0.7
+  use mipidsi::Builder;
   let display = Builder::ili9341_rgb565(di).init(&mut delay, Some(rst))?;
 
   // 0.8
   use mipidsi::{Builder, models::ILI9341Rgb565};
-  let display = Builder::new(ILI9341Rgb565, di).init(&mut delay, Some(rst))?;
+  let display = Builder::new(ILI9341Rgb565, di).with_reset_pin(rst).init(&mut delay)?;
   ```
 
 ## v0.6 -> 0.7
