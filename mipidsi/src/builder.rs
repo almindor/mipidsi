@@ -21,9 +21,9 @@ use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, Refr
 /// # let rst = mipidsi::_mock::MockOutputPin;
 /// # let mut delay = mipidsi::_mock::MockDelay;
 /// let mut display = Builder::new(ILI9342CRgb565, di)
-///     .with_reset_pin(rst)
-///     .with_color_order(ColorOrder::Bgr)
-///     .with_display_size(320, 240)
+///     .reset_pin(rst)
+///     .color_order(ColorOrder::Bgr)
+///     .display_size(320, 240)
 ///     .init(&mut delay).unwrap();
 /// ```
 pub struct Builder<DI, MODEL, RST>
@@ -64,7 +64,7 @@ where
     ///
     /// Sets the invert color flag
     ///
-    pub fn with_invert_colors(mut self, color_inversion: ColorInversion) -> Self {
+    pub fn invert_colors(mut self, color_inversion: ColorInversion) -> Self {
         self.options.invert_colors = color_inversion;
         self
     }
@@ -72,7 +72,7 @@ where
     ///
     /// Sets the [ColorOrder]
     ///
-    pub fn with_color_order(mut self, color_order: ColorOrder) -> Self {
+    pub fn color_order(mut self, color_order: ColorOrder) -> Self {
         self.options.color_order = color_order;
         self
     }
@@ -80,7 +80,7 @@ where
     ///
     /// Sets the [Orientation]
     ///
-    pub fn with_orientation(mut self, orientation: Orientation) -> Self {
+    pub fn orientation(mut self, orientation: Orientation) -> Self {
         self.options.orientation = orientation;
         self
     }
@@ -88,7 +88,7 @@ where
     ///
     /// Sets refresh order
     ///
-    pub fn with_refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
+    pub fn refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
         self.options.refresh_order = refresh_order;
         self
     }
@@ -96,7 +96,7 @@ where
     ///
     /// Sets the display size
     ///
-    pub fn with_display_size(mut self, width: u16, height: u16) -> Self {
+    pub fn display_size(mut self, width: u16, height: u16) -> Self {
         self.options.display_size = (width, height);
         self
     }
@@ -104,13 +104,13 @@ where
     ///
     /// Sets the display offset
     ///
-    pub fn with_display_offset(mut self, x: u16, y: u16) -> Self {
+    pub fn display_offset(mut self, x: u16, y: u16) -> Self {
         self.options.display_offset = (x, y);
         self
     }
 
     /// Sets the reset pin.
-    pub fn with_reset_pin<RST2: OutputPin>(self, rst: RST2) -> Builder<DI, MODEL, RST2> {
+    pub fn reset_pin<RST2: OutputPin>(self, rst: RST2) -> Builder<DI, MODEL, RST2> {
         Builder {
             di: self.di,
             model: self.model,
@@ -183,9 +183,9 @@ mod tests {
     }
 
     #[test]
-    fn init_with_reset_pin() {
+    fn init_reset_pin() {
         let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .with_reset_pin(MockOutputPin)
+            .reset_pin(MockOutputPin)
             .init(&mut MockDelay)
             .unwrap();
     }

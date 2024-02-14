@@ -55,8 +55,9 @@ See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) document.
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
 let di = SPIInterfaceNoCS::new(spi, dc);
 // create the ILI9486 display driver in rgb666 color mode from the display interface and use a HW reset pin during init
-let mut display = Builder::ili9486_rgb666(di)
-    .init(&mut delay, Some(rst))?; // delay provider from your MCU
+let mut display = Builder::new(ILI9486Rgb666, di)
+    .reset_pin(rst)
+    .init(&mut delay)?; // delay provider from your MCU
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```

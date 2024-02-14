@@ -8,21 +8,44 @@
   ```rust
   // 0.7
   use mipidsi::Builder;
-  let display = Builder::ili9341_rgb565(di).init(&mut delay, None)?;
+  let display = Builder::ili9341_rgb565(di)
+    .init(&mut delay, None)?;
 
   // 0.8
   use mipidsi::{Builder, models::ILI9341Rgb565};
-  let display = Builder::new(ILI9341Rgb565, di).init(&mut delay)?;
+  let display = Builder::new(ILI9341Rgb565, di)
+    .init(&mut delay)?;
   ```
-* The reset pin parameter from `Builder::init` has been removed. Use the `Builder::with_reset_pin` setter instead:
+* The reset pin parameter from `Builder::init` has been removed. Use the `Builder::reset_pin` setter instead:
   ```rust
   // 0.7
   use mipidsi::Builder;
-  let display = Builder::ili9341_rgb565(di).init(&mut delay, Some(rst))?;
+  let display = Builder::new(ili9341_rgb565, di)
+    .init(&mut delay, Some(rst))?;
 
   // 0.8
   use mipidsi::{Builder, models::ILI9341Rgb565};
-  let display = Builder::new(ILI9341Rgb565, di).with_reset_pin(rst).init(&mut delay)?;
+  let display = Builder::new(ILI9341Rgb565, di)
+    .reset_pin(rst)
+    .init(&mut delay)?;
+  ```
+
+* The `Builder::with_*` methods were renamed to versions without the `with_` prefix:
+  ```rust
+  // 0.7
+  use mipidsi::Builder;
+  let display = Builder::new(ili9341_rgb565, di)
+    .with_invert_colors(ColorInversion::Normal)
+    .with_orientation(Orienation::default())
+    .init(&mut delay, Some(rst))?;
+
+  // 0.8
+  use mipidsi::{Builder, models::ILI9341Rgb565};
+  let display = Builder::new(ILI9341Rgb565, di)
+    .invert_colors(ColorInversion::Normal)
+    .orientation(Orienation::default())
+    .reset_pin(rst)
+    .init(&mut delay)?;
   ```
 
 ## v0.6 -> 0.7
