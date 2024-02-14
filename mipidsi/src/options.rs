@@ -6,7 +6,7 @@ mod orientation;
 pub(crate) use orientation::MemoryMapping;
 pub use orientation::{InvalidAngleError, Orientation, Rotation};
 
-/// [ModelOptions] holds the settings for [Model](crate::Model)s.
+/// [ModelOptions] holds the settings for [Model]s.
 ///
 /// `display_size` being set is the minimum requirement.
 #[derive(Clone)]
