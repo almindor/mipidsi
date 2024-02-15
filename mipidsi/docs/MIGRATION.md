@@ -30,7 +30,7 @@
     .init(&mut delay)?;
   ```
 
-* The `Builder::with_*` methods were renamed to versions without the `with_` prefix:
+* The `Builder::with_*` methods were renamed to versions without the `with_` prefix to bring the library in compliance with Rust API guidelines (see [this issue](https://github.com/almindor/mipidsi/issues/113) for more info):
   ```rust
   // 0.7
   use mipidsi::Builder;
