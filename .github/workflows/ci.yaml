@@ -81,3 +81,13 @@ jobs:
       - name: Build ${{ matrix.example }} example
         run: cargo build --target ${{ matrix.target }}
         working-directory: ./mipidsi/examples/${{ matrix.example }}
+
+  build-docs:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build docs
+        run: |
+          RUSTDOCFLAGS=-Dwarnings cargo doc
