@@ -20,18 +20,18 @@ use embedded_graphics_core::{
 /// the test image is drawn.
 ///
 /// - There should be a one pixel white border around the display.  
-///   Modify the [display size](crate::Builder::with_display_size) and [display
-///   offset](crate::Builder::with_display_offset) settings, if at least one
+///   Modify the [display size](crate::Builder::display_size) and [display
+///   offset](crate::Builder::display_offset) settings, if at least one
 ///   edge of the white border isn't drawn or if there is a gap between the
 ///   white border and the edge of the display.
 /// - A white triangle should be drawn in the top left corner and the RGB label text should not be mirrored.  
-///   Modify the [orientation](crate::Builder::with_orientation) setting to
+///   Modify the [orientation](crate::Builder::orientation) setting to
 ///   rotate and mirror the display until the test image is displayed correctly.
 ///   Note that the white triangle might not be visible on displays with rounded
 ///   corners.
 /// - The colored bars should match the labels.  
-///   Use the [color inversion](crate::Builder::with_invert_colors) and [color
-///   order](crate::Builder::with_color_order) settings until the colored bars
+///   Use the [color inversion](crate::Builder::invert_colors) and [color
+///   order](crate::Builder::color_order) settings until the colored bars
 ///   and labels match.
 #[derive(Default)]
 pub struct TestImage<C: RgbColor> {

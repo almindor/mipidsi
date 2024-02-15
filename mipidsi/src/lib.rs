@@ -38,7 +38,7 @@
 //!
 //! // Create the ILI9486 display driver from the display interface and optional RST pin
 //! let mut display = Builder::new(ILI9486Rgb666, di)
-//!     .with_reset_pin(rst)
+//!     .reset_pin(rst)
 //!     .init(&mut delay).unwrap();
 //!
 //! // Clear the display to black
@@ -79,8 +79,8 @@
 //!
 //! // Create the ILI9341 display driver from the display interface with the RGB666 color space
 //! let mut display = Builder::new(ILI9341Rgb666, di)
-//!      .with_reset_pin(rst)
-//!      .with_color_order(mipidsi::options::ColorOrder::Bgr)
+//!      .reset_pin(rst)
+//!      .color_order(mipidsi::options::ColorOrder::Bgr)
 //!      .init(&mut delay).unwrap();
 //!
 //! // Clear the display to black
