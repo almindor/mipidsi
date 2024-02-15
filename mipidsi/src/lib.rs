@@ -250,7 +250,7 @@ where
     /// The combined height of the fixed area must not larger than the
     /// height of the framebuffer height in the default orientation.
     ///
-    /// After the scrolling region is defined the [Self::set_vertical_scroll_offset] can be
+    /// After the scrolling region is defined the [`set_vertical_scroll_offset`](Self::set_vertical_scroll_offset) can be
     /// used to scroll the display.
     pub fn set_vertical_scroll_region(
         &mut self,
