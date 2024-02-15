@@ -277,7 +277,7 @@ where
     /// Setting the vertical scroll offset shifts the vertical scroll region
     /// upwards by `offset` pixels.
     ///
-    /// Use [Self::set_vertical_scroll_region] to setup the scroll region, before
+    /// Use [`set_vertical_scroll_region`](Self::set_vertical_scroll_region) to setup the scroll region, before
     /// using this method.
     pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
         let vscad = dcs::SetScrollStart::new(offset);
