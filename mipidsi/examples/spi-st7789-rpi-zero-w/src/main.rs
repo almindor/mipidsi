@@ -16,17 +16,17 @@ Buttons:
 Read the README.md for more information.
 */
 
-use display_interface_spi::SPIInterfaceNoCS;
+use display_interface_spi::SPIInterface;
 use embedded_graphics::{
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::*,
     text::Text,
 };
-use mipidsi::Builder;
-use rppal::gpio::{Gpio, OutputPin};
+use mipidsi::{options::*, Builder};
 use rppal::hal::Delay;
 use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
+use rppal::{gpio::Gpio, spi::SimpleHalSpiDevice};
 use std::process::ExitCode;
 
 // Pins
@@ -65,16 +65,17 @@ fn main() -> ExitCode {
     let button_y = gpio.get(BUTTON_Y).unwrap().into_input_pullup();
 
     // SPI Display
-    let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
-    let di = SPIInterfaceNoCS::new(spi, dc);
+    let spi_bus = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
+    let spi = SimpleHalSpiDevice::new(spi_bus);
+    let di = SPIInterface::new(spi, dc);
     let mut delay = Delay::new();
-    let mut display = Builder::st7789(di)
+    let mut display = Builder::new(mipidsi::models::ST7789, di)
         // width and height are switched on purpose because of the orientation
-        .with_display_size(H as u16, W as u16)
+        .display_size(H as u16, W as u16)
         // this orientation applies for the Display HAT Mini by Pimoroni
-        .with_orientation(mipidsi::Orientation::LandscapeInverted(true))
-        .with_invert_colors(mipidsi::ColorInversion::Inverted)
-        .init(&mut delay, None::<OutputPin>)
+        .orientation(Orientation::new().rotate(Rotation::Deg90).flip_horizontal())
+        .invert_colors(ColorInversion::Inverted)
+        .init(&mut delay)
         .unwrap();
 
     // Text
