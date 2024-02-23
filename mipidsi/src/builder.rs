@@ -45,6 +45,7 @@ where
     ///
     /// Constructs a new builder for given [Model].
     ///
+    #[must_use]
     pub fn new(model: MODEL, di: DI) -> Self {
         Self {
             di,
@@ -64,6 +65,7 @@ where
     ///
     /// Sets the invert color flag
     ///
+    #[must_use]
     pub fn invert_colors(mut self, color_inversion: ColorInversion) -> Self {
         self.options.invert_colors = color_inversion;
         self
@@ -72,6 +74,7 @@ where
     ///
     /// Sets the [ColorOrder]
     ///
+    #[must_use]
     pub fn color_order(mut self, color_order: ColorOrder) -> Self {
         self.options.color_order = color_order;
         self
@@ -80,6 +83,7 @@ where
     ///
     /// Sets the [Orientation]
     ///
+    #[must_use]
     pub fn orientation(mut self, orientation: Orientation) -> Self {
         self.options.orientation = orientation;
         self
@@ -88,6 +92,7 @@ where
     ///
     /// Sets refresh order
     ///
+    #[must_use]
     pub fn refresh_order(mut self, refresh_order: RefreshOrder) -> Self {
         self.options.refresh_order = refresh_order;
         self
@@ -96,6 +101,7 @@ where
     ///
     /// Sets the display size
     ///
+    #[must_use]
     pub fn display_size(mut self, width: u16, height: u16) -> Self {
         self.options.display_size = (width, height);
         self
@@ -104,12 +110,14 @@ where
     ///
     /// Sets the display offset
     ///
+    #[must_use]
     pub fn display_offset(mut self, x: u16, y: u16) -> Self {
         self.options.display_offset = (x, y);
         self
     }
 
     /// Sets the reset pin.
+    #[must_use]
     pub fn reset_pin<RST2: OutputPin>(self, rst: RST2) -> Builder<DI, MODEL, RST2> {
         Builder {
             di: self.di,
