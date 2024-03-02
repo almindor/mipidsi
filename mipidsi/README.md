@@ -44,11 +44,11 @@ Variants that require different screen sizes and window addressing offsets are n
 
 ## Migration
 
-See [MIGRATION.md](docs/MIGRATION.md) document.
+See [MIGRATION.md](../docs/MIGRATION.md) document.
 
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) document.
+See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) document.
 
 ### Example
 ```rust
