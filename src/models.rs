@@ -7,20 +7,12 @@ use crate::{
 };
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{delay::DelayUs, digital::OutputPin};
+use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 // existing model implementations
-mod ili9341;
-mod ili9342c;
-mod ili934x;
-mod ili9486;
-mod st7735s;
+
 mod st7789;
 
-pub use ili9341::*;
-pub use ili9342c::*;
-pub use ili9486::*;
-pub use st7735s::*;
 pub use st7789::*;
 
 /// Display model.
@@ -39,7 +31,7 @@ pub trait Model {
     ) -> Result<SetAddressMode, InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs,
+        DELAY: DelayNs,
         DI: WriteOnlyDataCommand;
 
     /// Resets the display using a reset pin.
@@ -50,10 +42,10 @@ pub trait Model {
     ) -> Result<(), InitError<RST::Error>>
     where
         RST: OutputPin,
-        DELAY: DelayUs,
+        DELAY: DelayNs,
     {
         rst.set_low().map_err(InitError::Pin)?;
-        delay.delay_us(10);
+        delay.delay_ns(10);
         rst.set_high().map_err(InitError::Pin)?;
 
         Ok(())

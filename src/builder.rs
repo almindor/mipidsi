@@ -1,7 +1,7 @@
 //! [super::Display] builder module
 
 use display_interface::WriteOnlyDataCommand;
-use embedded_hal::{delay::DelayUs, digital::OutputPin};
+use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::{
     dcs::Dcs, error::InitError, models::Model, ColorInversion, ColorOrder, Display, ModelOptions,
@@ -114,7 +114,7 @@ where
     ///
     pub fn init<RST>(
         mut self,
-        delay_source: &mut impl DelayUs,
+        delay_source: &mut impl DelayNs,
         mut rst: Option<RST>,
     ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>>
     where
