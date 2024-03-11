@@ -45,7 +45,7 @@ pub trait Model {
         DELAY: DelayNs,
     {
         rst.set_low().map_err(InitError::Pin)?;
-        delay.delay_ns(10);
+        delay.delay_us(10);
         rst.set_high().map_err(InitError::Pin)?;
 
         Ok(())
