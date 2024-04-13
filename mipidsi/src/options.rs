@@ -6,23 +6,23 @@ mod orientation;
 pub(crate) use orientation::MemoryMapping;
 pub use orientation::{InvalidAngleError, Orientation, Rotation};
 
-/// [ModelOptions] holds the settings for [Model]s.
-///
-/// `display_size` being set is the minimum requirement.
+/// [ModelOptions] are passed to the [`init`](Model::init) method of [Model]
+/// implementations.
 #[derive(Clone)]
+#[non_exhaustive]
 pub struct ModelOptions {
-    /// Specify display color ordering
-    pub(crate) color_order: ColorOrder,
-    /// Initial display orientation (without inverts)
-    pub(crate) orientation: Orientation,
+    /// Subpixel order.
+    pub color_order: ColorOrder,
+    /// Initial display orientation.
+    pub orientation: Orientation,
     /// Whether to invert colors for this display/model (INVON)
-    pub(crate) invert_colors: ColorInversion,
-    /// Display refresh order
-    pub(crate) refresh_order: RefreshOrder,
-    /// Display size (w, h) for given display/model
-    pub(crate) display_size: (u16, u16),
-    /// Display offset (x, y) for given display/model
-    pub(crate) display_offset: (u16, u16),
+    pub invert_colors: ColorInversion,
+    /// Display refresh order.
+    pub refresh_order: RefreshOrder,
+    /// Display size (w, h) for given display.
+    pub display_size: (u16, u16),
+    /// Display offset (x, y) for given display.
+    pub display_offset: (u16, u16),
 }
 
 impl ModelOptions {
@@ -50,11 +50,6 @@ impl ModelOptions {
         }
     }
 
-    /// Sets the color inversion setting.
-    pub fn set_invert_colors(&mut self, color_inversion: ColorInversion) {
-        self.invert_colors = color_inversion;
-    }
-
     /// Returns the display size based on current orientation and display options.
     ///
     /// Used by models.
@@ -64,16 +59,6 @@ impl ModelOptions {
         } else {
             (self.display_size.1, self.display_size.0)
         }
-    }
-
-    /// Returns the current orientation.
-    pub fn orientation(&self) -> Orientation {
-        self.orientation
-    }
-
-    /// Sets the orientation.
-    pub fn set_orientation(&mut self, orientation: Orientation) {
-        self.orientation = orientation;
     }
 }
 

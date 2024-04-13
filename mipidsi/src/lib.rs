@@ -155,7 +155,7 @@ where
     /// Returns currently set [options::Orientation]
     ///
     pub fn orientation(&self) -> options::Orientation {
-        self.options.orientation()
+        self.options.orientation
     }
 
     ///
