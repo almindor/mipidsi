@@ -12,11 +12,13 @@
 //!
 //! ### List of supported models
 //!
-//! * ST7789
-//! * ST7735
-//! * ILI9486
+//! * GC9A01
 //! * ILI9341
 //! * ILI9342C
+//! * ILI9486
+//! * ST7735
+//! * ST7789
+//! * ST7796
 //!
 //! ## Examples
 //! **For the ili9486 display, using the SPI interface with no chip select:**
