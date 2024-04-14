@@ -18,6 +18,7 @@ mod ili934x;
 mod ili9486;
 mod st7735s;
 mod st7789;
+mod st7796;
 
 pub use gc9a01::*;
 pub use ili9341::*;
@@ -25,6 +26,7 @@ pub use ili9342c::*;
 pub use ili9486::*;
 pub use st7735s::*;
 pub use st7789::*;
+pub use st7796::*;
 
 /// Display model.
 pub trait Model {

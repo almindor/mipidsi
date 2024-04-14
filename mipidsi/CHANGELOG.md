@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `Display::is_sleeping` method
 - added `Display::dcs` method to allow sending custom DCS commands to the device
 - added `TestImage::default`
+- added `ST7796` model support (#125)
 
 ### Changed
 
