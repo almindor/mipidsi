@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - replaced rest pin parameter in `Builder::init` by `Builder::with_reset_pin` setter
 - removed setters and getters from `ModelOptions` and instead made the fields public
 - added `non_exhaustive` attribute to `ModelOptions`
+- added checks to `Builder::init` to ensure that the display size and display offset are valid
 
 ### Removed
 

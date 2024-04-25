@@ -98,11 +98,15 @@ where
         self
     }
 
+    /// Sets the display size.
     ///
-    /// Sets the display size
+    /// # Panics
     ///
+    /// Panics if `width` or `height` is 0.
     #[must_use]
     pub fn display_size(mut self, width: u16, height: u16) -> Self {
+        assert!(width != 0 && height != 0);
+
         self.options.display_size = (width, height);
         self
     }
@@ -135,10 +139,23 @@ where
     /// ### WARNING
     /// The reset pin needs to be in *high* state in order for the display to operate.
     /// If it wasn't provided the user needs to ensure this is the case.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the area defined by the [`display_size`](Self::display_size)
+    /// and [`display_offset`](Self::display_offset) settings is (partially)
+    /// outside the framebuffer.
     pub fn init(
         mut self,
         delay_source: &mut impl DelayNs,
     ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>> {
+        let to_u32 = |(a, b)| (u32::from(a), u32::from(b));
+        let (width, height) = to_u32(self.options.display_size);
+        let (offset_x, offset_y) = to_u32(self.options.display_offset);
+        let (max_width, max_height) = to_u32(MODEL::FRAMEBUFFER_SIZE);
+        assert!(width + offset_x <= max_width);
+        assert!(height + offset_y <= max_height);
+
         let mut dcs = Dcs::write_only(self.di);
         let madctl = self
             .model
@@ -194,6 +211,58 @@ mod tests {
     fn init_reset_pin() {
         let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
             .reset_pin(MockOutputPin)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: width + offset_x <= max_width")]
+    fn panic_too_wide() {
+        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
+            .reset_pin(MockOutputPin)
+            .display_size(241, 320)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: height + offset_y <= max_height")]
+    fn panic_too_high() {
+        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
+            .reset_pin(MockOutputPin)
+            .display_size(240, 321)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: width + offset_x <= max_width")]
+    fn panic_offset_invalid_x() {
+        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
+            .reset_pin(MockOutputPin)
+            .display_size(240, 320)
+            .display_offset(1, 0)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: height + offset_y <= max_height")]
+    fn panic_offset_invalid_y() {
+        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
+            .reset_pin(MockOutputPin)
+            .display_size(240, 310)
+            .display_offset(0, 11)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed: width != 0 && height != 0")]
+    fn panic_zero_size() {
+        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
+            .reset_pin(MockOutputPin)
+            .display_size(0, 0)
             .init(&mut MockDelay)
             .unwrap();
     }
