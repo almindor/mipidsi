@@ -1,52 +1,47 @@
 #![no_std]
 #![no_main]
 
+use embedded_hal_bus::spi::ExclusiveDevice;
 /* --- Needed by ESP32-c3 --- */
 use esp_backtrace as _;
 use hal::{
     clock::ClockControl,
+    delay::Delay,
+    gpio::{IO, NO_PIN},
     peripherals::Peripherals,
     prelude::*,
-    spi::{Spi, SpiMode},
+    rtc_cntl::Rtc,
+    spi::{master::Spi, SpiMode},
     timer::TimerGroup,
-    Delay, Rtc, IO,
 };
 /* -------------------------- */
 
 use embedded_graphics::{
     pixelcolor::Rgb565,
     prelude::*,
-    primitives::{Circle, Primitive, PrimitiveStyle, Rectangle, Triangle},
+    primitives::{Circle, Primitive, PrimitiveStyle, Triangle},
 };
 
 // Provides the parallel port and display interface builders
-use display_interface_spi::SPIInterfaceNoCS;
+use display_interface_spi::SPIInterface;
 
 // Provides the Display builder
-use mipidsi::Builder;
+use mipidsi::{models::ILI9486Rgb565, Builder};
 
 use fugit::RateExtU32;
 
 #[entry]
 fn main() -> ! {
     let peripherals = Peripherals::take();
-    let mut system = peripherals.SYSTEM.split();
+    let system = peripherals.SYSTEM.split();
     let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
     let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
 
     // Disable the RTC and TIMG watchdog timers
-    let mut rtc = Rtc::new(peripherals.RTC_CNTL);
-    let timer_group0 = TimerGroup::new(
-        peripherals.TIMG0,
-        &clocks,
-        &mut system.peripheral_clock_control,
-    );
+    let mut rtc = Rtc::new(peripherals.LPWR, None);
+    let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks, None);
     let mut wdt0 = timer_group0.wdt;
-    let timer_group1 = TimerGroup::new(
-        peripherals.TIMG1,
-        &clocks,
-        &mut system.peripheral_clock_control,
-    );
+    let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks, None);
     let mut wdt1 = timer_group1.wdt;
     rtc.swd.disable();
     rtc.rwdt.disable();
@@ -60,31 +55,29 @@ fn main() -> ! {
     let dc = io.pins.gpio7.into_push_pull_output();
     // Define the reset pin as digital outputs and make it high
     let mut rst = io.pins.gpio8.into_push_pull_output();
-    rst.set_high().unwrap();
+    rst.set_high();
 
     // Define the SPI pins and create the SPI interface
     let sck = io.pins.gpio12;
     let miso = io.pins.gpio11;
     let mosi = io.pins.gpio13;
     let cs = io.pins.gpio10;
-    let spi = Spi::new(
-        peripherals.SPI2,
-        sck,
-        mosi,
-        miso,
-        cs,
-        100_u32.kHz(),
-        SpiMode::Mode0,
-        &mut system.peripheral_clock_control,
-        &clocks,
+    let spi = Spi::new(peripherals.SPI2, 100_u32.kHz(), SpiMode::Mode0, &clocks).with_pins(
+        Some(sck),
+        Some(mosi),
+        Some(miso),
+        NO_PIN,
     );
 
+    let spi_device = ExclusiveDevice::new_no_delay(spi, cs.into_push_pull_output()).unwrap();
+
     // Define the display interface with no chip select
-    let di = SPIInterfaceNoCS::new(spi, dc);
+    let di = SPIInterface::new(spi_device, dc);
 
     // Define the display from the display interface and initialize it
-    let mut display = Builder::ili9486_rgb565(di)
-        .init(&mut delay, Some(rst))
+    let mut display = Builder::new(ILI9486Rgb565, di)
+        .reset_pin(rst)
+        .init(&mut delay)
         .unwrap();
 
     // Make the display all black
