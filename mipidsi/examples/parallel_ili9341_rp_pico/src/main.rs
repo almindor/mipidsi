@@ -13,6 +13,8 @@ use bsp::hal::{
     watchdog::Watchdog,
 };
 use defmt_rtt as _;
+use mipidsi::models::ILI9341Rgb666;
+use mipidsi::options::ColorOrder;
 use panic_probe as _;
 use rp_pico as bsp;
 /* -------------------------- */
@@ -54,7 +56,10 @@ fn main() -> ! {
     .unwrap();
 
     // Define the delay struct, needed for the display driver
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    let mut delay = DelayCompat(cortex_m::delay::Delay::new(
+        core.SYST,
+        clocks.system_clock.freq().to_Hz(),
+    ));
 
     // Define the pins, needed to define the display interface
     let pins = bsp::Pins::new(
@@ -88,17 +93,17 @@ fn main() -> ! {
     // Define the parallel bus with the previously defined parallel port pins
     let bus = Generic8BitBus::new((
         lcd_d0, lcd_d1, lcd_d2, lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7,
-    ))
-    .unwrap();
+    ));
 
     // Define the display interface from a generic 8 bit bus, a Data/Command select pin and a write enable pin
     let di = PGPIO8BitInterface::new(bus, dc, wr);
 
     // Define the display from the display bus, set the color order as Bgr and initialize it with
     // the delay struct and the reset pin
-    let mut display = Builder::ili9341_rgb666(di)
-        .with_color_order(mipidsi::ColorOrder::Bgr)
-        .init(&mut delay, Some(rst))
+    let mut display = Builder::new(ILI9341Rgb666, di)
+        .reset_pin(rst)
+        .color_order(ColorOrder::Bgr)
+        .init(&mut delay)
         .unwrap();
 
     // Set the display all red
@@ -106,5 +111,23 @@ fn main() -> ! {
 
     loop {
         // Do nothing
+    }
+}
+
+/// Wrapper around `Delay` to implement the embedded-hal 1.0 delay.
+///
+/// This can be removed when a new version of the `cortex_m` crate is released.
+struct DelayCompat(cortex_m::delay::Delay);
+
+impl embedded_hal::delay::DelayNs for DelayCompat {
+    fn delay_ns(&mut self, mut ns: u32) {
+        while ns > 1000 {
+            self.0.delay_us(1);
+            ns = ns.saturating_sub(1000);
+        }
+    }
+
+    fn delay_us(&mut self, us: u32) {
+        self.0.delay_us(us);
     }
 }

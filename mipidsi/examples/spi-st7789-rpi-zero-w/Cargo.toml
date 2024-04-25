@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-display-interface-spi = "0.4.1"
+mipidsi = { path = "../../" }
+display-interface-spi = "0.5.0"
 embedded-graphics = "0.8.0"
-mipidsi = "0.7.1"
-rppal = { version = "0.14.1", features = ["hal"] }
+rppal = { version = "0.17.1", features = ["hal"] }
+embedded-hal-bus = "0.2.0"
+embedded-hal = "1.0.0"
 
 [workspace]
