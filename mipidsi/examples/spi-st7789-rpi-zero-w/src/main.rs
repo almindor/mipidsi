@@ -16,15 +16,16 @@ Buttons:
 Read the README.md for more information.
 */
 
-use display_interface_spi::SPIInterfaceNoCS;
+use display_interface_spi::SPIInterface;
 use embedded_graphics::{
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::*,
     text::Text,
 };
-use mipidsi::Builder;
-use rppal::gpio::{Gpio, OutputPin};
+use embedded_hal_bus::spi::ExclusiveDevice;
+use mipidsi::{models::ST7789, options::ColorInversion, Builder};
+use rppal::gpio::Gpio;
 use rppal::hal::Delay;
 use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 use std::process::ExitCode;
@@ -66,15 +67,13 @@ fn main() -> ExitCode {
 
     // SPI Display
     let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
-    let di = SPIInterfaceNoCS::new(spi, dc);
+    let spi_device = ExclusiveDevice::new_no_delay(spi, NoCs).unwrap();
+    let di = SPIInterface::new(spi_device, dc);
     let mut delay = Delay::new();
-    let mut display = Builder::st7789(di)
-        // width and height are switched on purpose because of the orientation
-        .with_display_size(H as u16, W as u16)
-        // this orientation applies for the Display HAT Mini by Pimoroni
-        .with_orientation(mipidsi::Orientation::LandscapeInverted(true))
-        .with_invert_colors(mipidsi::ColorInversion::Inverted)
-        .init(&mut delay, None::<OutputPin>)
+    let mut display = Builder::new(ST7789, di)
+        .display_size(W as u16, H as u16)
+        .invert_colors(ColorInversion::Inverted)
+        .init(&mut delay)
         .unwrap();
 
     // Text
@@ -155,4 +154,24 @@ fn main() -> ExitCode {
     display.clear(Rgb565::BLACK).unwrap();
 
     ExitCode::SUCCESS
+}
+
+/// Noop `OutputPin` implementation.
+///
+/// This is passed to `ExclusiveDevice`, because the CS pin is handle in
+/// hardware.
+struct NoCs;
+
+impl embedded_hal::digital::OutputPin for NoCs {
+    fn set_low(&mut self) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    fn set_high(&mut self) -> Result<(), Self::Error> {
+        Ok(())
+    }
+}
+
+impl embedded_hal::digital::ErrorType for NoCs {
+    type Error = core::convert::Infallible;
 }
