@@ -2,6 +2,10 @@
 
 ## Display stays black/blank
 
+### Reset pin
+
+If using the reset pin it needs to be in *high* state in order for the display to operate. If it wasn't provided to the builder the user needs to ensure this is the case.
+
 ### Backlight pin
 
 This driver does **NOT** handle the backlight pin to keep the code simpler. Users must control the backlight manually. First thing to try is to see if setting the backlight pin to high fixes the issue.
