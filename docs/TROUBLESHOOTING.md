@@ -2,6 +2,10 @@
 
 ## Display stays black/blank
 
+### Reset pin
+
+The reset pin on all supported display controllers is active low, requiring it to be driven **high** in order for the display to operate. It is recommended to connect the reset pin to a GPIO pin and let this crate control the pin by passing it to the builder via the `reset_pin` method. If this isn't possible in the target application the user must make sure that the reset pin on the display controller is kept in the high state before `init` is called.
+
 ### Backlight pin
 
 This driver does **NOT** handle the backlight pin to keep the code simpler. Users must control the backlight manually. First thing to try is to see if setting the backlight pin to high fixes the issue.
