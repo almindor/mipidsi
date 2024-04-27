@@ -4,7 +4,7 @@
 
 ### Reset pin
 
-If using the reset pin it needs to be in *high* state in order for the display to operate. If it wasn't provided to the builder the user needs to ensure this is the case.
+The reset pin on all supported display controllers is active low, requiring it to be driven **high** in order for the display to operate. It is recommended to connect the reset pin to a GPIO pin and let this crate control the pin by passing it to the builder via the `reset_pin` method. If this isn't possible in the target application the user must make sure that the reset pin on the display controller is kept in the high state before `init` is called.
 
 ### Backlight pin
 
