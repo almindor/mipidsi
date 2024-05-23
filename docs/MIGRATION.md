@@ -1,8 +1,10 @@
-# Migration guide for MIPIDSI driver
+# Migration guide for `mipidsi` crate
 
 ## v0.7 -> 0.8
 
 ### Users
+
+* The dependencies for the `embedded-hal` and `display-interface` crates have been updated to make `mipidsi` compatible with the 1.0 release of `embedded-hal`.
 
 * The model specific constructors (like `Builder::ili9341_rgb565`) have been removed. Use the generic `Builder::new` constructor instead:
   ```rust
@@ -47,6 +49,14 @@
     .reset_pin(rst)
     .init(&mut delay)?;
   ```
+
+* The default values for the `invert_colors` and `color_order` settings were inconsistent between different models in `mipidsi` 0.7. In 0.8 all models use the same default values with no color inversion and RGB subpixel order. Take a look at the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md#incorrect-colors) if your display shows incorrect colors after the update.
+
+### Model writers
+
+* The `default_options` function has been removed from the `Model` trait to make the default options consistent between the models. The maximum framebuffer size is now defined by the added `FRAMEBUFFER_SIZE` constant.
+
+* The type of the `DELAY` parameter in the `init` method has been changed to the `embedded-hal` 1.0 type `DelayNs`.
 
 ## v0.6 -> 0.7
 
