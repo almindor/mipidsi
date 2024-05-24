@@ -170,13 +170,11 @@ impl<I: Iterator> Iterator for TakeSkip<I> {
         if self.take_remaining > 0 {
             self.take_remaining -= 1;
             self.iter.next()
+        } else if self.take > 0 {
+            self.take_remaining = self.take - 1;
+            nth_u32(&mut self.iter, self.skip)
         } else {
-            if self.take > 0 {
-                self.take_remaining = self.take - 1;
-                nth_u32(&mut self.iter, self.skip)
-            } else {
-                None
-            }
+            None
         }
     }
 }
