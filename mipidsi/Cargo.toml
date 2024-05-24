@@ -19,7 +19,7 @@ nb = "1.0.0"
 
 [dependencies.heapless]
 optional = true
-version = "0.7.16"
+version = "0.8.0"
 
 [dev-dependencies]
 embedded-graphics = "0.8.0"
