@@ -13,7 +13,7 @@ use embedded_graphics_core::{
 ///
 /// # Expected output
 ///
-#[doc = include_str!("../../docs/test_image.svg")]
+#[doc = include_str!("../assets/test_image.svg")]
 ///
 /// Note that the gray border around the image above is only added to make the
 /// white border visible on the light rustdoc theme and will not be visible when
