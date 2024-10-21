@@ -1,12 +1,11 @@
 //! Display models.
 
 use crate::{
-    dcs::{Dcs, SetAddressMode},
-    error::Error,
-    error::InitError,
+    dcs::{Dcs, SetAddressMode, WriteMemoryStart},
+    error::{Error, InitError},
     options::ModelOptions,
 };
-use display_interface::WriteOnlyDataCommand;
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
@@ -74,4 +73,18 @@ pub trait Model {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
+
+    /// Writes raw &[u8] buffer to the display IC via the given display interface.
+    ///
+    /// No pixel color format conversion, raw data is passed on directly.
+    fn write_pixels_raw_u8<DI>(&mut self, dcs: &mut Dcs<DI>, raw_buf: &[u8]) -> Result<(), Error>
+    where
+        DI: WriteOnlyDataCommand,
+    {
+        dcs.write_command(WriteMemoryStart)?;
+
+        let buf = DataFormat::U8(raw_buf);
+        dcs.di.send_data(buf)?;
+        Ok(())
+    }
 }
