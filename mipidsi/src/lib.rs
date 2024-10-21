@@ -239,6 +239,39 @@ where
         Ok(())
     }
 
+    ///
+    /// Sets pixel colors in a rectangular region.
+    ///
+    /// The color values from the `raw_buf` slice will be drawn to the given region starting
+    /// at the top left corner and continuing, row first, to the bottom right corner. No bounds
+    /// checking is performed on the `raw_buf` slice and drawing will wrap around if the
+    /// slice has more color values than the number of pixels in the given region.
+    ///
+    /// This is a low level function, which isn't intended to be used in regular user code.
+    /// Consider using the [`draw_image`](https://TODO)
+    /// function from the `embedded-graphics` crate as an alternative instead (TODO)
+    ///
+    /// # Arguments
+    ///
+    /// * `sx` - x coordinate start
+    /// * `sy` - y coordinate start
+    /// * `ex` - x coordinate end
+    /// * `ey` - y coordinate end
+    /// * `raw_buf` - &[u8] buffer of raw pixel data in the format expected by the display.
+    pub fn set_pixels_raw_u8(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        raw_buf: &[u8],
+    ) -> Result<(), Error> {
+        self.set_address_window(sx, sy, ex, ey)?;
+        self.model.write_pixels_raw_u8(&mut self.dcs, raw_buf)?;
+
+        Ok(())
+    }
+
     /// Sets the vertical scroll region.
     ///
     /// The `top_fixed_area` and `bottom_fixed_area` arguments can be used to
