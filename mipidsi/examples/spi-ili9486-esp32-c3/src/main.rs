@@ -5,7 +5,15 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 /* --- Needed by ESP32-c3 --- */
 use esp_backtrace as _;
 use hal::{
-    clock::ClockControl, delay::Delay, gpio::{Io, Level, Output, NO_PIN}, peripherals::Peripherals, prelude::*, rtc_cntl::Rtc, spi::{master::Spi, SpiMode}, system::SystemControl, timer::timg::TimerGroup
+    clock::ClockControl,
+    delay::Delay,
+    gpio::{Io, Level, Output, NO_PIN},
+    peripherals::Peripherals,
+    prelude::*,
+    rtc_cntl::Rtc,
+    spi::{master::Spi, SpiMode},
+    system::SystemControl,
+    timer::timg::TimerGroup,
 };
 /* -------------------------- */
 
@@ -31,10 +39,10 @@ fn main() -> ! {
     let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
     // Disable the RTC and TIMG watchdog timers
-    let mut rtc = Rtc::new(peripherals.LPWR, None);
-    let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks, None);
+    let mut rtc = Rtc::new(peripherals.LPWR);
+    let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
     let mut wdt0 = timer_group0.wdt;
-    let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks, None);
+    let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks);
     let mut wdt1 = timer_group1.wdt;
     rtc.swd.disable();
     rtc.rwdt.disable();
