@@ -222,6 +222,10 @@ where
     /// * `ex` - x coordinate end
     /// * `ey` - y coordinate end
     /// * `colors` - anything that can provide `IntoIterator<Item = u16>` to iterate over pixel data
+    /// <div class="warning">
+    /// The `ex`and `ey` coordinates are inclusive. For example when using a rectangle
+    /// of size `320x240`, one would use `319` an `239` as `ex` and `ey` values.
+    /// </div>
     pub fn set_pixels<T>(
         &mut self,
         sx: u16,
@@ -235,6 +239,49 @@ where
     {
         self.set_address_window(sx, sy, ex, ey)?;
         self.model.write_pixels(&mut self.dcs, colors)?;
+
+        Ok(())
+    }
+
+    ///
+    /// Sets pixel colors in a rectangular region.
+    ///
+    /// The color values from the `raw_buf` slice will be drawn to the given region starting
+    /// at the top left corner and continuing, row first, to the bottom right corner. No bounds
+    /// checking is performed on the `raw_buf` slice and drawing will wrap around if the
+    /// slice has more color values than the number of pixels in the given region.
+    ///
+    /// This is a low level function, which isn't intended to be used in regular user code.
+    ///
+    /// # Arguments
+    ///
+    /// * `sx` - x coordinate start
+    /// * `sy` - y coordinate start
+    /// * `ex` - x coordinate end
+    /// * `ey` - y coordinate end
+    /// * `raw_buf` - `&[u8]` buffer of raw pixel data in the format expected by the display.
+    /// <div class="warning">
+    /// This method requires the <b>raw_buf</b> data to be in the correct endianness
+    /// and format expected by the display.
+    ///
+    /// The method won't <b>work with a 16bit display-interface-gpio</b>, because it
+    /// pads the each byte to a u16 instead of converting each two byte chunk
+    /// into a u16. [See here for more info](https://github.com/therealprof/display-interface/blob/8fca041b0288740678f16c1d05cce21bd3867ee5/parallel-gpio/src/lib.rs#L267)
+    /// </div>
+    /// <div class="warning">
+    /// The <b>ex</b> and <b>ey</b> coordinates are inclusive. For example when using a rectangle
+    /// of size <b>320x240</b>, one would use <b>319</b> an <b>239</b> as <b>ex</b> and <b>ey</b> values.
+    /// </div>
+    pub fn set_pixels_raw_u8(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        raw_buf: &[u8],
+    ) -> Result<(), Error> {
+        self.set_address_window(sx, sy, ex, ey)?;
+        self.model.write_pixels_raw_u8(&mut self.dcs, raw_buf)?;
 
         Ok(())
     }
