@@ -5,14 +5,7 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 /* --- Needed by ESP32-c3 --- */
 use esp_backtrace as _;
 use hal::{
-    clock::ClockControl,
-    delay::Delay,
-    gpio::{IO, NO_PIN},
-    peripherals::Peripherals,
-    prelude::*,
-    rtc_cntl::Rtc,
-    spi::{master::Spi, SpiMode},
-    timer::TimerGroup,
+    clock::ClockControl, delay::Delay, gpio::{Io, Level, Output, NO_PIN}, peripherals::Peripherals, prelude::*, rtc_cntl::Rtc, spi::{master::Spi, SpiMode}, system::SystemControl, timer::timg::TimerGroup
 };
 /* -------------------------- */
 
@@ -33,9 +26,9 @@ use fugit::RateExtU32;
 #[entry]
 fn main() -> ! {
     let peripherals = Peripherals::take();
-    let system = peripherals.SYSTEM.split();
+    let system = SystemControl::new(peripherals.SYSTEM);
     let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
-    let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
+    let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
     // Disable the RTC and TIMG watchdog timers
     let mut rtc = Rtc::new(peripherals.LPWR, None);
@@ -52,9 +45,9 @@ fn main() -> ! {
     let mut delay = Delay::new(&clocks);
 
     // Define the Data/Command select pin as a digital output
-    let dc = io.pins.gpio7.into_push_pull_output();
+    let dc = Output::new(io.pins.gpio7, Level::Low);
     // Define the reset pin as digital outputs and make it high
-    let mut rst = io.pins.gpio8.into_push_pull_output();
+    let mut rst = Output::new(io.pins.gpio8, Level::Low);
     rst.set_high();
 
     // Define the SPI pins and create the SPI interface
@@ -69,7 +62,8 @@ fn main() -> ! {
         NO_PIN,
     );
 
-    let spi_device = ExclusiveDevice::new_no_delay(spi, cs.into_push_pull_output()).unwrap();
+    let cs_output = Output::new(cs, Level::High);
+    let spi_device = ExclusiveDevice::new_no_delay(spi, cs_output).unwrap();
 
     // Define the display interface with no chip select
     let di = SPIInterface::new(spi_device, dc);
