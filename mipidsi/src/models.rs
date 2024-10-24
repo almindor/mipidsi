@@ -74,9 +74,17 @@ pub trait Model {
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
 
-    /// Writes raw &[u8] buffer to the display IC via the given display interface.
+    /// Writes raw `&[u8]` buffer to the display IC via the given display interface.
     ///
     /// No pixel color format conversion, raw data is passed on directly.
+    /// <div class="warning">
+    /// This method requires the `raw_buf` data to be in the correct endianness
+    /// and format expected by the display.
+    ///
+    /// The method <b>won't work with a 16bit display-interface-gpio</b>, because it
+    /// pads the each byte to a u16 instead of converting each two byte chunk
+    /// into a u16. [See here for more info](https://github.com/therealprof/display-interface/blob/8fca041b0288740678f16c1d05cce21bd3867ee5/parallel-gpio/src/lib.rs#L267)
+    /// </div>
     fn write_pixels_raw_u8<DI>(&mut self, dcs: &mut Dcs<DI>, raw_buf: &[u8]) -> Result<(), Error>
     where
         DI: WriteOnlyDataCommand,
