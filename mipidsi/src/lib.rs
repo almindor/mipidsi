@@ -248,8 +248,6 @@ where
     /// slice has more color values than the number of pixels in the given region.
     ///
     /// This is a low level function, which isn't intended to be used in regular user code.
-    /// Consider using the [`draw_image`](https://TODO)
-    /// function from the `embedded-graphics` crate as an alternative instead (TODO)
     ///
     /// # Arguments
     ///
