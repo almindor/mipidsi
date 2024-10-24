@@ -5,14 +5,11 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 /* --- Needed by ESP32-c3 --- */
 use esp_backtrace as _;
 use hal::{
-    clock::ClockControl,
     delay::Delay,
-    gpio::{Io, Level, Output, NO_PIN},
-    peripherals::Peripherals,
+    gpio::{Io, Level, Output},
     prelude::*,
     rtc_cntl::Rtc,
     spi::{master::Spi, SpiMode},
-    system::SystemControl,
     timer::timg::TimerGroup,
 };
 /* -------------------------- */
@@ -33,16 +30,17 @@ use fugit::RateExtU32;
 
 #[entry]
 fn main() -> ! {
-    let peripherals = Peripherals::take();
-    let system = SystemControl::new(peripherals.SYSTEM);
-    let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
+    let peripherals = hal::init(hal::Config::default());
+    // let peripherals = Peripherals::take();
+    // let system = SystemControl::new(peripherals.SYSTEM);
+    // let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
     let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
 
     // Disable the RTC and TIMG watchdog timers
     let mut rtc = Rtc::new(peripherals.LPWR);
-    let timer_group0 = TimerGroup::new(peripherals.TIMG0, &clocks);
+    let timer_group0 = TimerGroup::new(peripherals.TIMG0);
     let mut wdt0 = timer_group0.wdt;
-    let timer_group1 = TimerGroup::new(peripherals.TIMG1, &clocks);
+    let timer_group1 = TimerGroup::new(peripherals.TIMG1);
     let mut wdt1 = timer_group1.wdt;
     rtc.swd.disable();
     rtc.rwdt.disable();
@@ -50,7 +48,7 @@ fn main() -> ! {
     wdt1.disable();
 
     // Define the delay struct, needed for the display driver
-    let mut delay = Delay::new(&clocks);
+    let mut delay = Delay::new();
 
     // Define the Data/Command select pin as a digital output
     let dc = Output::new(io.pins.gpio7, Level::Low);
@@ -63,11 +61,11 @@ fn main() -> ! {
     let miso = io.pins.gpio11;
     let mosi = io.pins.gpio13;
     let cs = io.pins.gpio10;
-    let spi = Spi::new(peripherals.SPI2, 100_u32.kHz(), SpiMode::Mode0, &clocks).with_pins(
-        Some(sck),
-        Some(mosi),
-        Some(miso),
-        NO_PIN,
+    let spi = Spi::new(peripherals.SPI2, 100_u32.kHz(), SpiMode::Mode0).with_pins(
+        sck,
+        mosi,
+        miso,
+        hal::gpio::NoPin,
     );
 
     let cs_output = Output::new(cs, Level::High);
