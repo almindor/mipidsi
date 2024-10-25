@@ -223,8 +223,12 @@ where
     /// * `ey` - y coordinate end
     /// * `colors` - anything that can provide `IntoIterator<Item = u16>` to iterate over pixel data
     /// <div class="warning">
-    /// The `ex`and `ey` coordinates are inclusive. For example when using a rectangle
-    /// of size `320x240`, one would use `319` an `239` as `ex` and `ey` values.
+    ///
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
     /// </div>
     pub fn set_pixels<T>(
         &mut self,
