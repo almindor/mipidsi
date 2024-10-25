@@ -96,8 +96,8 @@
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
-use dcs::Dcs;
-use display_interface::WriteOnlyDataCommand;
+use dcs::{Dcs, WriteMemoryStart};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 
 pub mod error;
 use error::Error;
@@ -243,36 +243,53 @@ where
         Ok(())
     }
 
+    /// Copies raw pixel data to a rectangular region of the framebuffer.
     ///
-    /// Sets pixel colors in a rectangular region.
+    /// This method writes the pixel data stored in the `raw_buf` slice to the
+    /// specified rectangular region within the display controller's
+    /// framebuffer.  If `raw_buf` contains more data than required to fill the
+    /// region, writing will wrap around to the top left corner after reaching
+    /// the bottom right corner.
     ///
-    /// The color values from the `raw_buf` slice will be drawn to the given region starting
-    /// at the top left corner and continuing, row first, to the bottom right corner. No bounds
-    /// checking is performed on the `raw_buf` slice and drawing will wrap around if the
-    /// slice has more color values than the number of pixels in the given region.
+    /// <div class="warning">
+    ///    
+    /// This method is intended for advanced use cases where low level access to
+    /// the displays framebuffer is required for performance reasons.  The
+    /// caller must ensure the raw pixel data in `raw_buf` has the correct
+    /// format and endianness.
     ///
-    /// This is a low level function, which isn't intended to be used in regular user code.
+    /// For all other use cases it is recommended to instead use
+    /// [`embedded-graphics`](https://docs.rs/embedded-graphics/latest/embedded_graphics/)
+    /// to draw to the display.
+    ///
+    /// </div>
+    ///
+    /// <div class="warning">
+    ///
+    /// The method might not work the same for all `display-interface`s and is
+    /// known to not work as expected when used with a
+    /// [`PGPIO16BitInterface`](https://docs.rs/display-interface-parallel-gpio/latest/display_interface_parallel_gpio/struct.PGPIO16BitInterface.html)
+    /// from the `display-interface-gpio` crate.
+    ///
+    /// </div>
     ///
     /// # Arguments
     ///
     /// * `sx` - x coordinate start
     /// * `sy` - y coordinate start
-    /// * `ex` - x coordinate end
-    /// * `ey` - y coordinate end
-    /// * `raw_buf` - `&[u8]` buffer of raw pixel data in the format expected by the display.
-    /// <div class="warning">
-    /// This method requires the <b>raw_buf</b> data to be in the correct endianness
-    /// and format expected by the display.
+    /// * `ex` - x coordinate end (inclusive)
+    /// * `ey` - y coordinate end (inclusive)
+    /// * `raw_buf` - `&[u8]` buffer of raw pixel data in the format expected by the display
     ///
-    /// The method won't <b>work with a 16bit display-interface-gpio</b>, because it
-    /// pads the each byte to a u16 instead of converting each two byte chunk
-    /// into a u16. [See here for more info](https://github.com/therealprof/display-interface/blob/8fca041b0288740678f16c1d05cce21bd3867ee5/parallel-gpio/src/lib.rs#L267)
-    /// </div>
     /// <div class="warning">
-    /// The <b>ex</b> and <b>ey</b> coordinates are inclusive. For example when using a rectangle
-    /// of size <b>320x240</b>, one would use <b>319</b> an <b>239</b> as <b>ex</b> and <b>ey</b> values.
+    ///
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
     /// </div>
-    pub fn set_pixels_raw_u8(
+    pub fn set_pixels_from_buffer(
         &mut self,
         sx: u16,
         sy: u16,
@@ -281,7 +298,10 @@ where
         raw_buf: &[u8],
     ) -> Result<(), Error> {
         self.set_address_window(sx, sy, ex, ey)?;
-        self.model.write_pixels_raw_u8(&mut self.dcs, raw_buf)?;
+
+        self.dcs.write_command(WriteMemoryStart)?;
+
+        self.dcs.di.send_data(DataFormat::U8(raw_buf))?;
 
         Ok(())
     }
