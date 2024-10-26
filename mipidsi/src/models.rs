@@ -2,8 +2,7 @@
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
-    error::Error,
-    error::InitError,
+    error::{Error, InitError},
     options::ModelOptions,
 };
 use display_interface::WriteOnlyDataCommand;

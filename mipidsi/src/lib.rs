@@ -96,8 +96,8 @@
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
-use dcs::Dcs;
-use display_interface::WriteOnlyDataCommand;
+use dcs::{Dcs, WriteMemoryStart};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 
 pub mod error;
 use error::Error;
@@ -222,6 +222,14 @@ where
     /// * `ex` - x coordinate end
     /// * `ey` - y coordinate end
     /// * `colors` - anything that can provide `IntoIterator<Item = u16>` to iterate over pixel data
+    /// <div class="warning">
+    ///
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
+    /// </div>
     pub fn set_pixels<T>(
         &mut self,
         sx: u16,
@@ -235,6 +243,69 @@ where
     {
         self.set_address_window(sx, sy, ex, ey)?;
         self.model.write_pixels(&mut self.dcs, colors)?;
+
+        Ok(())
+    }
+
+    /// Copies raw pixel data to a rectangular region of the framebuffer.
+    ///
+    /// This method writes the pixel data stored in the `raw_buf` slice to the
+    /// specified rectangular region within the display controller's
+    /// framebuffer.  If `raw_buf` contains more data than required to fill the
+    /// region, writing will wrap around to the top left corner after reaching
+    /// the bottom right corner.
+    ///
+    /// <div class="warning">
+    ///    
+    /// This method is intended for advanced use cases where low level access to
+    /// the displays framebuffer is required for performance reasons.  The
+    /// caller must ensure the raw pixel data in `raw_buf` has the correct
+    /// format and endianness.
+    ///
+    /// For all other use cases it is recommended to instead use
+    /// [`embedded-graphics`](https://docs.rs/embedded-graphics/latest/embedded_graphics/)
+    /// to draw to the display.
+    ///
+    /// </div>
+    ///
+    /// <div class="warning">
+    ///
+    /// The method might not work the same for all `display-interface`s and is
+    /// known to not work as expected when used with a
+    /// [`PGPIO16BitInterface`](https://docs.rs/display-interface-parallel-gpio/latest/display_interface_parallel_gpio/struct.PGPIO16BitInterface.html)
+    /// from the `display-interface-gpio` crate.
+    ///
+    /// </div>
+    ///
+    /// # Arguments
+    ///
+    /// * `sx` - x coordinate start
+    /// * `sy` - y coordinate start
+    /// * `ex` - x coordinate end (inclusive)
+    /// * `ey` - y coordinate end (inclusive)
+    /// * `raw_buf` - `&[u8]` buffer of raw pixel data in the format expected by the display
+    ///
+    /// <div class="warning">
+    ///
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
+    /// </div>
+    pub fn set_pixels_from_buffer(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        raw_buf: &[u8],
+    ) -> Result<(), Error> {
+        self.set_address_window(sx, sy, ex, ey)?;
+
+        self.dcs.write_command(WriteMemoryStart)?;
+
+        self.dcs.di.send_data(DataFormat::U8(raw_buf))?;
 
         Ok(())
     }

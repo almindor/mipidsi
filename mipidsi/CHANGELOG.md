@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- added `Display::set_pixels_from_buffer` to allow high performance display writes
+
 ## [v0.8.0] - 2024-05-24
 
 ### Added
