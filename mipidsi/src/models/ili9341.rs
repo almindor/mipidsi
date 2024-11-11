@@ -40,6 +40,10 @@ impl Model for ILI9341Rgb565 {
     {
         ili934x::write_pixels_rgb565(dcs, colors)
     }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb565(color, buf)
+    }
 }
 
 impl Model for ILI9341Rgb666 {
@@ -66,5 +70,9 @@ impl Model for ILI9341Rgb666 {
         I: IntoIterator<Item = Self::ColorFormat>,
     {
         ili934x::write_pixels_rgb666(dcs, colors)
+    }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb666(color, buf)
     }
 }

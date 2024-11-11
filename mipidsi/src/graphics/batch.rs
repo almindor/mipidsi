@@ -3,9 +3,8 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
-use super::take_u32;
-use crate::{batch::DrawBatch, error::Error, models::Model, Display};
-use display_interface::WriteOnlyDataCommand;
+use crate::{batch::DrawBatch, dcs::WriteMemoryStart, error::Error, models::Model, Display};
+use display_interface::{DataFormat, WriteOnlyDataCommand};
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
@@ -32,8 +31,28 @@ where
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
         if let Some(ii) = super::calculate_intersection(area, &self.bounding_box())? {
-            let mut colors = take_u32(core::iter::repeat(color), ii.count);
-            self.set_pixels(ii.sx, ii.sy, ii.ex, ii.ey, &mut colors)
+            const BUFFER_SIZE: usize = 512;
+            let mut raw_buf = [34u8; BUFFER_SIZE];
+            let bytes_per_pixel = M::repeat_pixel_to_buffer(color, &mut raw_buf)?;
+
+            // model does not support this yet
+            if bytes_per_pixel == 0 {
+                let mut colors = super::take_u32(core::iter::repeat(color), ii.count);
+                return self.set_pixels(ii.sx, ii.sy, ii.ex, ii.ey, &mut colors);
+            }
+
+            self.set_address_window(ii.sx, ii.sy, ii.ex, ii.ey)?;
+
+            self.dcs.write_command(WriteMemoryStart)?;
+
+            let mut i = (ii.count as usize) * bytes_per_pixel;
+            while i > 0 {
+                let l = core::cmp::min(i, BUFFER_SIZE);
+                self.dcs.di.send_data(DataFormat::U8(&raw_buf[0..l]))?;
+                i -= l;
+            }
+
+            Ok(())
         } else {
             Ok(())
         }

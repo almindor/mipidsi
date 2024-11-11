@@ -53,6 +53,10 @@ impl Model for ILI9486Rgb565 {
         let buf = DataFormat::U16BEIter(&mut iter);
         dcs.di.send_data(buf)
     }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb565(color, buf)
+    }
 }
 
 impl Model for ILI9486Rgb666 {
@@ -90,6 +94,10 @@ impl Model for ILI9486Rgb666 {
 
         let buf = DataFormat::U8Iter(&mut iter);
         dcs.di.send_data(buf)
+    }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb666(color, buf)
     }
 }
 

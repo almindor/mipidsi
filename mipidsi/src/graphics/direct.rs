@@ -39,6 +39,7 @@ where
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
         if let Some(ii) = super::calculate_intersection(area, &self.bounding_box())? {
+            // we don't have buffer allowance so we have to use an iterator here
             let mut colors = take_u32(core::iter::repeat(color), ii.count);
             self.set_pixels(ii.sx, ii.sy, ii.ex, ii.ey, &mut colors)
         } else {

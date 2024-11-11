@@ -67,4 +67,8 @@ impl Model for ILI9342CRgb666 {
     {
         ili934x::write_pixels_rgb666(dcs, colors)
     }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb666(color, buf)
+    }
 }
