@@ -35,12 +35,6 @@ where
             let mut raw_buf = [34u8; BUFFER_SIZE];
             let bytes_per_pixel = M::repeat_pixel_to_buffer(color, &mut raw_buf)?;
 
-            // model does not support this yet
-            if bytes_per_pixel == 0 {
-                let mut colors = super::take_u32(core::iter::repeat(color), ii.count);
-                return self.set_pixels(ii.sx, ii.sy, ii.ex, ii.ey, &mut colors);
-            }
-
             self.set_address_window(ii.sx, ii.sy, ii.ex, ii.ey)?;
 
             self.dcs.write_command(WriteMemoryStart)?;
