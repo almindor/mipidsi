@@ -6,6 +6,7 @@ use crate::{
     options::ModelOptions,
 };
 use display_interface::WriteOnlyDataCommand;
+use embedded_graphics_core::pixelcolor::{raw::ToBytes, Rgb565, Rgb666};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
@@ -73,4 +74,38 @@ pub trait Model {
     where
         DI: WriteOnlyDataCommand,
         I: IntoIterator<Item = Self::ColorFormat>;
+
+    /// Writes the same pixel to the given [u8] buffer. Returns byte size of the raw pixel
+    /// data or 0 if not implemented yet.
+    fn repeat_pixel_to_buffer(_color: Self::ColorFormat, _buf: &mut [u8]) -> Result<usize, Error> {
+        Ok(0)
+    }
+}
+
+// optimization helpers
+
+fn repeat_pixel_to_buffer_rgb565(color: Rgb565, buf: &mut [u8]) -> Result<usize, Error> {
+    let bytes = color.to_be_bytes();
+
+    repeat_pixel_to_buffer_bytes(&bytes, buf)
+}
+
+fn repeat_pixel_to_buffer_rgb666(color: Rgb666, buf: &mut [u8]) -> Result<usize, Error> {
+    let bytes = color.to_be_bytes();
+
+    repeat_pixel_to_buffer_bytes(&bytes, buf)
+}
+
+fn repeat_pixel_to_buffer_bytes(bytes: &[u8], buf: &mut [u8]) -> Result<usize, Error> {
+    let mut j = 0;
+    for val in buf {
+        *val = bytes[j];
+
+        j += 1;
+        if j >= bytes.len() {
+            j = 0;
+        }
+    }
+
+    Ok(bytes.len())
 }

@@ -142,4 +142,8 @@ impl Model for GC9A01 {
         dcs.di.send_data(buf)?;
         Ok(())
     }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        super::repeat_pixel_to_buffer_rgb565(color, buf)
+    }
 }
