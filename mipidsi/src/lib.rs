@@ -116,7 +116,10 @@ pub mod dcs;
 pub mod models;
 use models::Model;
 
-mod graphics;
+///
+/// Embedded-graphics helpers and implementations
+///
+pub mod graphics;
 
 mod test_image;
 pub use test_image::TestImage;

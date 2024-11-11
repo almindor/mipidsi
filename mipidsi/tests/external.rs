@@ -67,4 +67,8 @@ impl Model for ExternalST7789 {
         dcs.di.send_data(buf)?;
         Ok(())
     }
+
+    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
+        mipidsi::graphics::repeat_pixel_to_buffer_rgb565(color, buf)
+    }
 }

@@ -71,6 +71,6 @@ impl Model for ST7789 {
     }
 
     fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
-        super::repeat_pixel_to_buffer_rgb565(color, buf)
+        crate::graphics::repeat_pixel_to_buffer_rgb565(color, buf)
     }
 }
