@@ -1,18 +1,113 @@
 use embedded_graphics_core::{
-    geometry::{OriginDimensions, Size},
+    geometry::{Dimensions, OriginDimensions, Size},
     pixelcolor::RgbColor,
 };
+
+use embedded_graphics_core::primitives::Rectangle;
 use embedded_hal::digital::OutputPin;
 
-use crate::dcs::BitsPerPixel;
 use crate::models::Model;
 use crate::Display;
+use crate::{dcs::BitsPerPixel, error::Error};
 use display_interface::WriteOnlyDataCommand;
 
 #[cfg(feature = "batch")]
 mod batch;
 #[cfg(not(feature = "batch"))]
 mod direct;
+
+fn fill_contiguous<DI, M, RST, I>(
+    display: &mut Display<DI, M, RST>,
+    area: &Rectangle,
+    colors: I,
+) -> Result<(), Error>
+where
+    DI: WriteOnlyDataCommand,
+    M: Model,
+    RST: OutputPin,
+    I: IntoIterator<Item = M::ColorFormat>,
+{
+    let intersection = area.intersection(&display.bounding_box());
+    let Some(bottom_right) = intersection.bottom_right() else {
+        // No intersection -> nothing to draw
+        return Ok(());
+    };
+
+    // Unchecked casting to u16 cannot fail here because the values are
+    // clamped to the display size which always fits in an u16.
+    let sx = intersection.top_left.x as u16;
+    let sy = intersection.top_left.y as u16;
+    let ex = bottom_right.x as u16;
+    let ey = bottom_right.y as u16;
+
+    let count = intersection.size.width * intersection.size.height;
+
+    let mut colors = colors.into_iter();
+
+    if &intersection == area {
+        // Draw the original iterator if no edge overlaps the framebuffer
+        display.set_pixels(sx, sy, ex, ey, take_u32(colors, count))
+    } else {
+        // Skip pixels above and to the left of the intersection
+        let mut initial_skip = 0;
+        if intersection.top_left.y > area.top_left.y {
+            initial_skip += intersection.top_left.y.abs_diff(area.top_left.y) * area.size.width;
+        }
+        if intersection.top_left.x > area.top_left.x {
+            initial_skip += intersection.top_left.x.abs_diff(area.top_left.x);
+        }
+        if initial_skip > 0 {
+            nth_u32(&mut colors, initial_skip - 1);
+        }
+
+        // Draw only the pixels which don't overlap the edges of the framebuffer
+        let take_per_row = intersection.size.width;
+        let skip_per_row = area.size.width - intersection.size.width;
+        display.set_pixels(
+            sx,
+            sy,
+            ex,
+            ey,
+            take_u32(TakeSkip::new(colors, take_per_row, skip_per_row), count),
+        )
+    }
+}
+
+// used for fill_solid calls
+struct IntersectionInfo {
+    count: u32, // pixel count
+    sx: u16,
+    sy: u16,
+    ex: u16,
+    ey: u16,
+}
+
+// calculate pixel area for fill_solid calls
+fn calculate_intersection(
+    area: &Rectangle,
+    bounding_box: &Rectangle,
+) -> Result<Option<IntersectionInfo>, Error> {
+    let area = area.intersection(bounding_box);
+    let Some(bottom_right) = area.bottom_right() else {
+        // No intersection -> nothing to draw
+        return Ok(None);
+    };
+
+    let count = area.size.width * area.size.height;
+
+    let sx = area.top_left.x as u16;
+    let sy = area.top_left.y as u16;
+    let ex = bottom_right.x as u16;
+    let ey = bottom_right.y as u16;
+
+    Ok(Some(IntersectionInfo {
+        count,
+        sx,
+        sy,
+        ex,
+        ey,
+    }))
+}
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
