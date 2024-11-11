@@ -49,7 +49,7 @@ impl Model for ILI9341Rgb565 {
     }
 
     fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
-        super::repeat_pixel_to_buffer_rgb565(color, buf)
+        crate::graphics::repeat_pixel_to_buffer_rgb565(color, buf)
     }
 }
 
@@ -87,6 +87,6 @@ impl Model for ILI9341Rgb666 {
     }
 
     fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
-        super::repeat_pixel_to_buffer_rgb666(color, buf)
+        crate::graphics::repeat_pixel_to_buffer_rgb666(color, buf)
     }
 }

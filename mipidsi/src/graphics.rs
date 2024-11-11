@@ -1,6 +1,7 @@
 use embedded_graphics_core::{
     geometry::{Dimensions, OriginDimensions, Size},
     pixelcolor::RgbColor,
+    pixelcolor::{raw::ToBytes, Rgb565, Rgb666},
 };
 
 use embedded_graphics_core::primitives::Rectangle;
@@ -71,6 +72,36 @@ where
             take_u32(TakeSkip::new(colors, take_per_row, skip_per_row), count),
         )
     }
+}
+
+// optimization helpers
+
+/// Populate the provided buffer with [Rgb565] bytes. Used for optimized `fill_solid` paths.
+pub fn repeat_pixel_to_buffer_rgb565(color: Rgb565, buf: &mut [u8]) -> Result<usize, Error> {
+    let bytes = color.to_be_bytes();
+
+    repeat_pixel_to_buffer_bytes(&bytes, buf)
+}
+
+/// Populate the provided buffer with [Rgb666] bytes. Used for optimized `fill_solid` paths.
+pub fn repeat_pixel_to_buffer_rgb666(color: Rgb666, buf: &mut [u8]) -> Result<usize, Error> {
+    let bytes = color.to_be_bytes();
+
+    repeat_pixel_to_buffer_bytes(&bytes, buf)
+}
+
+fn repeat_pixel_to_buffer_bytes(bytes: &[u8], buf: &mut [u8]) -> Result<usize, Error> {
+    let mut j = 0;
+    for val in buf {
+        *val = bytes[j];
+
+        j += 1;
+        if j >= bytes.len() {
+            j = 0;
+        }
+    }
+
+    Ok(bytes.len())
 }
 
 // used for fill_solid calls
