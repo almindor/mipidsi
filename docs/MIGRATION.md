@@ -1,5 +1,15 @@
 # Migration guide for `mipidsi` crate
 
+## v0.8 -> 0.9
+
+### Users
+
+* No changes
+
+### Model writers
+
+* `Model::repeat_pixel_to_buffer` requires implementation now. The easiest way to provide one is to use `mipidsi::graphics::repeat_pixel_to_buffer_rgbXXX` helpers.
+
 ## v0.7 -> 0.8
 
 ### Users

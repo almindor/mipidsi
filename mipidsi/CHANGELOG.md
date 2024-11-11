@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - added `Display::set_pixels_from_buffer` to allow high performance display writes
+- added `Model::repeat_pixel_to_buffer` and implementations to allow optimized path for `fill_solid` calls
 
 ## [v0.8.0] - 2024-05-24
 
