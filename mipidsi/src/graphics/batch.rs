@@ -17,6 +17,8 @@ use crate::{
 };
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
+const BUFFER_SIZE: usize = 512;
+
 // used to get "specialization hack" going for PixelColor
 trait DrawTargetHelper<C: PixelColor> {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: C) -> Result<(), Error>;
@@ -29,7 +31,6 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb555) -> Result<(), Error> {
-        const BUFFER_SIZE: usize = 512;
         let mut raw_buf = [0u8; BUFFER_SIZE];
 
         fill_solid_specific_color(self, area, || {
@@ -49,7 +50,6 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb565) -> Result<(), Error> {
-        const BUFFER_SIZE: usize = 512;
         let mut raw_buf = [0u8; BUFFER_SIZE];
 
         fill_solid_specific_color(self, area, || {
@@ -69,7 +69,6 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb666) -> Result<(), Error> {
-        const BUFFER_SIZE: usize = 512;
         let mut raw_buf = [0u8; BUFFER_SIZE];
 
         fill_solid_specific_color(self, area, || {
@@ -89,7 +88,6 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb888) -> Result<(), Error> {
-        const BUFFER_SIZE: usize = 512;
         let mut raw_buf = [0u8; BUFFER_SIZE];
 
         fill_solid_specific_color(self, area, || {
