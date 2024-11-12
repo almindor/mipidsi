@@ -8,7 +8,7 @@
 
 ### Model writers
 
-* `Model::repeat_pixel_to_buffer` requires implementation now. The easiest way to provide one is to use `mipidsi::graphics::repeat_pixel_to_buffer_rgbXXX` helpers.
+* The `Model::ENDIANNESS` associated constant was added. It defaults to `BigEndian`, only change required is if you're adding a Model that is LittleEndian.
 
 ## v0.7 -> 0.8
 

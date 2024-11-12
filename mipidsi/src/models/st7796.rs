@@ -38,8 +38,4 @@ impl Model for ST7796 {
     {
         super::ST7789.write_pixels(dcs, colors)
     }
-
-    fn repeat_pixel_to_buffer(color: Self::ColorFormat, buf: &mut [u8]) -> Result<usize, Error> {
-        crate::graphics::repeat_pixel_to_buffer_rgb565(color, buf)
-    }
 }

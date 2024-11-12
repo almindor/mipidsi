@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- added `Display::set_pixels_from_buffer` to allow high performance display writes
-- added `Model::repeat_pixel_to_buffer` and implementations to allow optimized path for `fill_solid` calls
+- added `Display::set_pixels_from_buffer` to allow high performance display writes using raw preprocessed data
+- added `Model::ENDIANNESS` to express the data endianness expected by the specific display Model, defaults to `BigEndian`
 
 ## [v0.8.0] - 2024-05-24
 
