@@ -14,6 +14,16 @@ where
     type Error = Error;
     type Color = M::ColorFormat;
 
+    #[cfg(feature = "batch")]
+    fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
+    where
+        I: IntoIterator<Item = Pixel<Self::Color>>,
+    {
+        use crate::batch::DrawBatch;
+        self.draw_batch(pixels)
+    }
+
+    #[cfg(not(feature = "batch"))]
     fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
     where
         I: IntoIterator<Item = Pixel<Self::Color>>,
