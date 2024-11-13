@@ -4,7 +4,7 @@
 
 ### Users
 
-* No changes
+* Disable `buffered` feature if a 512 byte buffer is too big for your use case, otherwise no changes.
 
 ### Model writers
 

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - added `Display::set_pixels_from_buffer` to allow high performance display writes using raw preprocessed data
 - added `Model::ENDIANNESS` to express the data endianness expected by the specific display Model, defaults to `BigEndian`
+- added `buffered` default feature to allow optimizing some draw operations at the cost of extra buffers (512 bytes) being used
 
 ## [v0.8.0] - 2024-05-24
 
