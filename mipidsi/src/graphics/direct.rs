@@ -1,6 +1,4 @@
-use embedded_graphics_core::{
-    draw_target::DrawTarget, geometry::Dimensions, primitives::Rectangle, Pixel,
-};
+use embedded_graphics_core::{draw_target::DrawTarget, primitives::Rectangle, Pixel};
 use embedded_hal::digital::OutputPin;
 
 use super::take_u32;
@@ -38,7 +36,7 @@ where
     }
 
     fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
-        let Some(ii) = super::calculate_intersection(area, &self.bounding_box())? else {
+        let Some(ii) = self.calculate_fill_area(area) else {
             return Ok(());
         };
 

@@ -29,4 +29,4 @@ display-interface-parallel-gpio = "0.7.0"
 [features]
 default = ["batch", "buffered"]
 batch = ["heapless"]
-buffered = []
+buffered = ["batch"]
