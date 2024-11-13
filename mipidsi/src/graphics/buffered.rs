@@ -1,6 +1,5 @@
 use embedded_graphics_core::{
     draw_target::DrawTarget,
-    geometry::Dimensions,
     pixelcolor::PixelColor,
     pixelcolor::{raw::ToBytes, Rgb555, Rgb565, Rgb666, Rgb888},
     primitives::Rectangle,
@@ -31,15 +30,11 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb555) -> Result<(), Error> {
-        let mut raw_buf = [0u8; BUFFER_SIZE];
-
-        fill_solid_specific_color(self, area, || {
-            let bytes = match M::ENDIANNESS {
-                Endianness::BigEndian => color.to_be_bytes(),
-                Endianness::LittleEndian => color.to_le_bytes(),
-            };
-            (repeat_pixel_to_buffer_bytes(&bytes, &mut raw_buf), &raw_buf)
-        })
+        let raw_color = match M::ENDIANNESS {
+            Endianness::BigEndian => color.to_be_bytes(),
+            Endianness::LittleEndian => color.to_le_bytes(),
+        };
+        fill_solid_specific_color(self, area, raw_color)
     }
 }
 
@@ -50,15 +45,11 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb565) -> Result<(), Error> {
-        let mut raw_buf = [0u8; BUFFER_SIZE];
-
-        fill_solid_specific_color(self, area, || {
-            let bytes = match M::ENDIANNESS {
-                Endianness::BigEndian => color.to_be_bytes(),
-                Endianness::LittleEndian => color.to_le_bytes(),
-            };
-            (repeat_pixel_to_buffer_bytes(&bytes, &mut raw_buf), &raw_buf)
-        })
+        let raw_color = match M::ENDIANNESS {
+            Endianness::BigEndian => color.to_be_bytes(),
+            Endianness::LittleEndian => color.to_le_bytes(),
+        };
+        fill_solid_specific_color(self, area, raw_color)
     }
 }
 
@@ -69,15 +60,11 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb666) -> Result<(), Error> {
-        let mut raw_buf = [0u8; BUFFER_SIZE];
-
-        fill_solid_specific_color(self, area, || {
-            let bytes = match M::ENDIANNESS {
-                Endianness::BigEndian => color.to_be_bytes(),
-                Endianness::LittleEndian => color.to_le_bytes(),
-            };
-            (repeat_pixel_to_buffer_bytes(&bytes, &mut raw_buf), &raw_buf)
-        })
+        let raw_color = match M::ENDIANNESS {
+            Endianness::BigEndian => color.to_be_bytes(),
+            Endianness::LittleEndian => color.to_le_bytes(),
+        };
+        fill_solid_specific_color(self, area, raw_color)
     }
 }
 
@@ -88,15 +75,11 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb888) -> Result<(), Error> {
-        let mut raw_buf = [0u8; BUFFER_SIZE];
-
-        fill_solid_specific_color(self, area, || {
-            let bytes = match M::ENDIANNESS {
-                Endianness::BigEndian => color.to_be_bytes(),
-                Endianness::LittleEndian => color.to_le_bytes(),
-            };
-            (repeat_pixel_to_buffer_bytes(&bytes, &mut raw_buf), &raw_buf)
-        })
+        let raw_color = match M::ENDIANNESS {
+            Endianness::BigEndian => color.to_be_bytes(),
+            Endianness::LittleEndian => color.to_le_bytes(),
+        };
+        fill_solid_specific_color(self, area, raw_color)
     }
 }
 
@@ -131,47 +114,40 @@ where
 
 // optimization helpers
 
-fn fill_solid_specific_color<'d, DI, M, RST, F>(
-    display: &'d mut Display<DI, M, RST>,
+fn fill_solid_specific_color<DI, M, RST, const N: usize>(
+    display: &mut Display<DI, M, RST>,
     area: &Rectangle,
-    make_buffer: F,
+    raw_color: [u8; N],
 ) -> Result<(), Error>
 where
     DI: WriteOnlyDataCommand,
     M: Model,
     RST: OutputPin,
-    F: FnOnce() -> (usize, &'d [u8]),
 {
-    if let Some(ii) = super::calculate_intersection(area, &display.bounding_box())? {
-        let (bytes_per_pixel, raw_buf) = make_buffer();
-
-        display.set_address_window(ii.sx, ii.sy, ii.ex, ii.ey)?;
-
-        display.dcs.write_command(WriteMemoryStart)?;
-
-        let mut i = (ii.count as usize) * bytes_per_pixel;
-        while i > 0 {
-            let l = core::cmp::min(i, raw_buf.len());
-            display.dcs.di.send_data(DataFormat::U8(&raw_buf[0..l]))?;
-            i -= l;
-        }
-
-        Ok(())
-    } else {
-        Ok(())
+    let Some(ii) = display.calculate_fill_area(area) else {
+        return Ok(());
+    };
+    let mut raw_buf = [0u8; BUFFER_SIZE];
+    let pixels_per_buffer = fill_buffer(&mut raw_buf, raw_color);
+    display.set_address_window(ii.sx, ii.sy, ii.ex, ii.ey)?;
+    display.dcs.write_command(WriteMemoryStart)?;
+    let mut pixel_count = usize::try_from(ii.count).unwrap();
+    while pixel_count > pixels_per_buffer {
+        display.dcs.di.send_data(DataFormat::U8(&raw_buf))?;
+        pixel_count -= pixels_per_buffer;
     }
+    if pixel_count > 0 {
+        display
+            .dcs
+            .di
+            .send_data(DataFormat::U8(&raw_buf[0..pixel_count]))?;
+    }
+    Ok(())
 }
 
-fn repeat_pixel_to_buffer_bytes(bytes: &[u8], buf: &mut [u8]) -> usize {
-    let mut j = 0;
-    for val in buf {
-        *val = bytes[j];
-
-        j += 1;
-        if j >= bytes.len() {
-            j = 0;
-        }
+fn fill_buffer<const N: usize>(buffer: &mut [u8], data: [u8; N]) -> usize {
+    for chunk in buffer.chunks_exact_mut(N) {
+        chunk.copy_from_slice(&data);
     }
-
-    bytes.len()
+    buffer.len() / N
 }
