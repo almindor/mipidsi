@@ -4,7 +4,7 @@
 
 ### Users
 
-* Disable `buffered` feature if a 512 byte buffer is too big for your use case, otherwise no changes.
+* The performance of drawing rectangular areas has been improved through the use of a 512 byte buffer. This can be disabled by disabling the `buffered` default feature, which will lower memory consumption but also reduce performance.
 
 ### Model writers
 
