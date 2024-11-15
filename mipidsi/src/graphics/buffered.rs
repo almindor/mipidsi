@@ -8,7 +8,6 @@ use embedded_graphics_core::{
 use embedded_hal::digital::OutputPin;
 
 use crate::{
-    batch::DrawBatch,
     dcs::WriteMemoryStart,
     error::Error,
     models::{Endianness, Model},
@@ -93,10 +92,28 @@ where
     type Error = Error;
     type Color = M::ColorFormat;
 
+    #[cfg(not(feature = "batch"))]
     fn draw_iter<T>(&mut self, item: T) -> Result<(), Self::Error>
     where
         T: IntoIterator<Item = Pixel<Self::Color>>,
     {
+        for pixel in item {
+            let x = pixel.0.x as u16;
+            let y = pixel.0.y as u16;
+
+            self.set_pixel(x, y, pixel.1)?;
+        }
+
+        Ok(())
+    }
+
+    #[cfg(feature = "batch")]
+    fn draw_iter<T>(&mut self, item: T) -> Result<(), Self::Error>
+    where
+        T: IntoIterator<Item = Pixel<Self::Color>>,
+    {
+        use crate::batch::DrawBatch;
+
         self.draw_batch(item)
     }
 

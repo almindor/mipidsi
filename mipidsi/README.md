@@ -13,8 +13,7 @@ Uses [display_interface](https://crates.io/crates/display-interface) to talk to 
 
 An optional batching of draws is supported via the `batch` feature (default on).
 
-An optional `buffered` feature enabled buffering to improve performance for operations such as `fill_solid`. It allocates stack buffers of size `512` bytes during some draw operations.
-This is default turned on and it also depends on the `batch` feature.
+An optional `buffered` feature enabled buffering to improve performance for operations such as `fill_solid`. It allocates stack buffers of size `512` bytes during some draw operations. This is default turned on.
 
 *NOTES*:
 
