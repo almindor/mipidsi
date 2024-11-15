@@ -1,12 +1,12 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 use mipidsi::{
     dcs::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
-        SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, WriteMemoryStart,
     },
-    error::{Error, InitError},
+    error::Error,
     models::Model,
     options::ModelOptions,
 };
@@ -19,24 +19,18 @@ impl Model for ExternalST7789 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
         let madctl = SetAddressMode::from(options);
 
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        }
         delay.delay_us(150_000);
 
         dcs.write_command(ExitSleepMode)?;

@@ -3,14 +3,14 @@ use embedded_graphics_core::{
     pixelcolor::{Rgb565, Rgb666},
     prelude::{IntoStorage, RgbColor},
 };
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
         BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
-        SetDisplayOn, SetInvertMode, SetPixelFormat, SoftReset, WriteMemoryStart,
+        SetDisplayOn, SetInvertMode, SetPixelFormat, WriteMemoryStart,
     },
-    error::{Error, InitError},
+    error::Error,
     options::ModelOptions,
 };
 
@@ -26,26 +26,20 @@ impl Model for ILI9486Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 480);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        }
         delay.delay_us(120_000);
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        Ok(init_common(dcs, delay, options, pf)?)
+        init_common(dcs, delay, options, pf)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
@@ -65,27 +59,20 @@ impl Model for ILI9486Rgb666 {
     type ColorFormat = Rgb666;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 480);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        };
-
         delay.delay_us(120_000);
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        Ok(init_common(dcs, delay, options, pf)?)
+        init_common(dcs, delay, options, pf)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
