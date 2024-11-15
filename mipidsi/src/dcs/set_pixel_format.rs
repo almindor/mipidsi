@@ -1,7 +1,5 @@
 //! Module for the COLMOD instruction constructors
 
-use crate::error::Error;
-
 use super::DcsCommand;
 
 /// Set Pixel Format
@@ -20,9 +18,9 @@ impl DcsCommand for SetPixelFormat {
         0x3A
     }
 
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> usize {
         buffer[0] = self.0.as_u8();
-        Ok(1)
+        1
     }
 }
 
@@ -85,45 +83,39 @@ mod tests {
     use super::*;
 
     #[test]
-    fn colmod_rgb565_is_16bit() -> Result<(), Error> {
+    fn colmod_rgb565_is_16bit() {
         let colmod = SetPixelFormat::new(PixelFormat::new(
             BitsPerPixel::Sixteen,
             BitsPerPixel::Sixteen,
         ));
 
         let mut bytes = [0u8];
-        assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(colmod.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0101_0101u8]);
-
-        Ok(())
     }
 
     #[test]
-    fn colmod_rgb666_is_18bit() -> Result<(), Error> {
+    fn colmod_rgb666_is_18bit() {
         let colmod = SetPixelFormat::new(PixelFormat::new(
             BitsPerPixel::Eighteen,
             BitsPerPixel::Eighteen,
         ));
 
         let mut bytes = [0u8];
-        assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(colmod.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0110_0110u8]);
-
-        Ok(())
     }
 
     #[test]
-    fn colmod_rgb888_is_24bit() -> Result<(), Error> {
+    fn colmod_rgb888_is_24bit() {
         let colmod = SetPixelFormat::new(PixelFormat::new(
             BitsPerPixel::Eighteen,
             BitsPerPixel::TwentyFour,
         ));
 
         let mut bytes = [0u8];
-        assert_eq!(colmod.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(colmod.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0110_0111u8]);
-
-        Ok(())
     }
 
     #[test]

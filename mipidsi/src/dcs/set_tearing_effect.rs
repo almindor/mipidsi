@@ -1,4 +1,3 @@
-use crate::error::Error;
 use crate::options::TearingEffect;
 
 use super::DcsCommand;
@@ -23,16 +22,16 @@ impl DcsCommand for SetTearingEffect {
         }
     }
 
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> usize {
         match self.0 {
-            TearingEffect::Off => Ok(0),
+            TearingEffect::Off => 0,
             TearingEffect::Vertical => {
                 buffer[0] = 0x0;
-                Ok(1)
+                1
             }
             TearingEffect::HorizontalAndVertical => {
                 buffer[0] = 0x1;
-                Ok(1)
+                1
             }
         }
     }
@@ -43,25 +42,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn set_tearing_effect_both_fills_param_properly() -> Result<(), Error> {
+    fn set_tearing_effect_both_fills_param_properly() {
         let ste = SetTearingEffect(TearingEffect::HorizontalAndVertical);
 
         let mut buffer = [0u8; 1];
         assert_eq!(ste.instruction(), 0x35);
-        assert_eq!(ste.fill_params_buf(&mut buffer)?, 1);
+        assert_eq!(ste.fill_params_buf(&mut buffer), 1);
         assert_eq!(buffer, [0x1]);
-
-        Ok(())
     }
 
     #[test]
-    fn set_tearing_effect_off_fills_param_properly() -> Result<(), Error> {
+    fn set_tearing_effect_off_fills_param_properly() {
         let ste = SetTearingEffect(TearingEffect::Off);
 
         let mut buffer = [0u8; 0];
         assert_eq!(ste.instruction(), 0x34);
-        assert_eq!(ste.fill_params_buf(&mut buffer)?, 0);
-
-        Ok(())
+        assert_eq!(ste.fill_params_buf(&mut buffer), 0);
     }
 }

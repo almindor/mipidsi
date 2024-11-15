@@ -12,8 +12,8 @@ macro_rules! dcs_basic_command {
                 $instr
             }
 
-            fn fill_params_buf(&self, _buffer: &mut [u8]) -> Result<usize, Error> {
-                Ok(0)
+            fn fill_params_buf(&self, _buffer: &mut [u8]) -> usize {
+                0
             }
         }
     };

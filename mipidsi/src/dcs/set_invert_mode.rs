@@ -1,4 +1,3 @@
-use crate::error::Error;
 use crate::options::ColorInversion;
 
 use super::DcsCommand;
@@ -22,8 +21,8 @@ impl DcsCommand for SetInvertMode {
         }
     }
 
-    fn fill_params_buf(&self, _buffer: &mut [u8]) -> Result<usize, Error> {
-        Ok(0)
+    fn fill_params_buf(&self, _buffer: &mut [u8]) -> usize {
+        0
     }
 }
 
@@ -32,13 +31,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn set_invert_mode_chooses_correct_instruction() -> Result<(), Error> {
+    fn set_invert_mode_chooses_correct_instruction() {
         let ste = SetInvertMode(ColorInversion::Inverted);
 
         let mut buffer = [0u8; 0];
         assert_eq!(ste.instruction(), 0x21);
-        assert_eq!(ste.fill_params_buf(&mut buffer)?, 0);
-
-        Ok(())
+        assert_eq!(ste.fill_params_buf(&mut buffer), 0);
     }
 }
