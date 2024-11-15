@@ -1,13 +1,12 @@
-use display_interface::{DataFormat, WriteOnlyDataCommand};
-use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
+use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
         BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat, WriteMemoryStart,
+        SetPixelFormat,
     },
-    error::Error,
+    interface::CommandInterface,
     options::ModelOptions,
 };
 
@@ -25,10 +24,10 @@ impl Model for GC9A01 {
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, Error>
+    ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: WriteOnlyDataCommand,
+        DI: CommandInterface,
     {
         let madctl = SetAddressMode::from(options);
 
@@ -122,18 +121,5 @@ impl Model for GC9A01 {
         dcs.write_command(SetDisplayOn)?; // turn on display
 
         Ok(madctl)
-    }
-
-    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
-    where
-        DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::ColorFormat>,
-    {
-        dcs.write_command(WriteMemoryStart)?;
-        let mut iter = colors.into_iter().map(|c| c.into_storage());
-
-        let buf = DataFormat::U16BEIter(&mut iter);
-        dcs.di.send_data(buf)?;
-        Ok(())
     }
 }

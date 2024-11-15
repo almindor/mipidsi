@@ -2,10 +2,9 @@
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
-    error::Error,
+    interface::CommandInterface,
     options::ModelOptions,
 };
-use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
@@ -42,16 +41,8 @@ pub trait Model {
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, Error>
+    ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: WriteOnlyDataCommand;
-
-    /// Writes pixels to the display IC via the given display interface.
-    ///
-    /// Any pixel color format conversion is done here.
-    fn write_pixels<DI, I>(&mut self, di: &mut Dcs<DI>, colors: I) -> Result<(), Error>
-    where
-        DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::ColorFormat>;
+        DI: CommandInterface;
 }

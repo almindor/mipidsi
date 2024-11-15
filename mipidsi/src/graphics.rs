@@ -7,18 +7,17 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
-use crate::dcs::BitsPerPixel;
-use crate::models::Model;
-use crate::{error::Error, Display};
-use display_interface::WriteOnlyDataCommand;
+use crate::Display;
+use crate::{dcs::BitsPerPixel, interface::PixelInterface};
+use crate::{dcs::WriteMemoryStart, models::Model};
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<M::ColorFormat>,
     M: Model,
     RST: OutputPin,
 {
-    type Error = Error;
+    type Error = DI::Error;
     type Color = M::ColorFormat;
 
     #[cfg(not(feature = "batch"))]
@@ -104,19 +103,22 @@ where
         };
 
         let count = area.size.width * area.size.height;
-        let mut colors = take_u32(core::iter::repeat(color), count);
 
         let sx = area.top_left.x as u16;
         let sy = area.top_left.y as u16;
         let ex = bottom_right.x as u16;
         let ey = bottom_right.y as u16;
-        self.set_pixels(sx, sy, ex, ey, &mut colors)
+
+        self.set_address_window(sx, sy, ex, ey)?;
+        self.dcs.write_command(WriteMemoryStart)?;
+        self.dcs.di.send_repeated_pixel(color, count)?;
+        self.dcs.di.flush()
     }
 }
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<MODEL::ColorFormat>,
     MODEL: Model,
     RST: OutputPin,
 {

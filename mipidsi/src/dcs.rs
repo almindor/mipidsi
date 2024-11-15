@@ -1,8 +1,6 @@
 //! MIPI DCS commands.
 
-use display_interface::{DataFormat, WriteOnlyDataCommand};
-
-use crate::error::Error;
+use crate::interface::CommandInterface;
 
 #[macro_use]
 mod macros;
@@ -35,7 +33,7 @@ pub trait DcsCommand {
     fn fill_params_buf(&self, buffer: &mut [u8]) -> usize;
 }
 
-/// Wrapper around [`WriteOnlyDataCommand`] with support for writing DCS commands.
+/// Wrapper around [`CommandInterface`] with support for writing DCS commands.
 ///
 /// Commands which are part of the manufacturer independent user command set can be sent to the
 /// display by using the [`write_command`](Self::write_command) method with one of the command types
@@ -51,7 +49,7 @@ pub struct Dcs<DI> {
 
 impl<DI> Dcs<DI>
 where
-    DI: WriteOnlyDataCommand,
+    DI: CommandInterface,
 {
     /// Creates a new [Dcs] instance from a display interface.
     pub fn write_only(di: DI) -> Self {
@@ -64,7 +62,7 @@ where
     }
 
     /// Sends a DCS command to the display interface.
-    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
+    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), DI::Error> {
         let mut param_bytes: [u8; 16] = [0; 16];
         let n = command.fill_params_buf(&mut param_bytes);
         self.write_raw(command.instruction(), &param_bytes[..n])
@@ -79,13 +77,9 @@ where
     /// This method is intended to be used for sending commands which are not part of the MIPI DCS
     /// user command set. Use [`write_command`](Self::write_command) for commands in the user
     /// command set.
-    pub fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Error> {
-        self.di.send_commands(DataFormat::U8(&[instruction]))?;
-
-        if !param_bytes.is_empty() {
-            self.di.send_data(DataFormat::U8(param_bytes))?; // TODO: empty guard?
-        }
-        Ok(())
+    pub fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), DI::Error> {
+        self.di.send_command(instruction, param_bytes)?;
+        self.di.flush()
     }
 }
 

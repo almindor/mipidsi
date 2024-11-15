@@ -1,24 +1,10 @@
-//! [Error] module for [super::Display]
-
-use display_interface::DisplayError;
+//! Error module for [super::Display]
 
 /// Error returned by [`Builder::init`](crate::Builder).
 #[derive(Debug)]
-pub enum InitError<PE> {
+pub enum InitError<DI, P> {
     /// Error caused by the display interface.
-    DisplayError,
+    DisplayError(DI),
     /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::OutputPin) implementation.
-    Pin(PE),
-}
-
-///
-/// Alias of [DisplayError] for out-of-init use cases
-/// since the pin error is only possible during [super::Builder] use
-///
-pub type Error = DisplayError;
-
-impl<PE> From<DisplayError> for InitError<PE> {
-    fn from(_: DisplayError) -> Self {
-        InitError::DisplayError
-    }
+    Pin(P),
 }

@@ -96,11 +96,11 @@
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
-use dcs::{Dcs, WriteMemoryStart};
-use display_interface::{DataFormat, WriteOnlyDataCommand};
+use dcs::Dcs;
+
+pub mod interface;
 
 pub mod error;
-use error::Error;
 
 use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::OutputPin;
@@ -129,7 +129,7 @@ mod batch;
 ///
 pub struct Display<DI, MODEL, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: interface::PixelInterface<MODEL::ColorFormat>,
     MODEL: Model,
     RST: OutputPin,
 {
@@ -149,7 +149,7 @@ where
 
 impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: interface::PixelInterface<M::ColorFormat>,
     M: Model,
     RST: OutputPin,
 {
@@ -171,7 +171,7 @@ where
     /// # let mut display = mipidsi::_mock::new_mock_display();
     /// display.set_orientation(Orientation::default().rotate(Rotation::Deg180)).unwrap();
     /// ```
-    pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), Error> {
+    pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), DI::Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
         self.dcs.write_command(self.madctl)?;
 
@@ -195,12 +195,8 @@ where
     /// # let mut display = mipidsi::_mock::new_mock_display();
     /// display.set_pixel(100, 200, Rgb565::new(251, 188, 20)).unwrap();
     /// ```
-    pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), Error> {
-        self.set_address_window(x, y, x, y)?;
-        self.model
-            .write_pixels(&mut self.dcs, core::iter::once(color))?;
-
-        Ok(())
+    pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), DI::Error> {
+        self.set_pixels(x, y, x, y, core::iter::once(color))
     }
 
     ///
@@ -237,77 +233,19 @@ where
         ex: u16,
         ey: u16,
         colors: T,
-    ) -> Result<(), Error>
+    ) -> Result<(), DI::Error>
     where
         T: IntoIterator<Item = M::ColorFormat>,
     {
         self.set_address_window(sx, sy, ex, ey)?;
-        self.model.write_pixels(&mut self.dcs, colors)?;
 
-        Ok(())
-    }
+        self.dcs.write_command(dcs::WriteMemoryStart)?;
 
-    /// Copies raw pixel data to a rectangular region of the framebuffer.
-    ///
-    /// This method writes the pixel data stored in the `raw_buf` slice to the
-    /// specified rectangular region within the display controller's
-    /// framebuffer.  If `raw_buf` contains more data than required to fill the
-    /// region, writing will wrap around to the top left corner after reaching
-    /// the bottom right corner.
-    ///
-    /// <div class="warning">
-    ///    
-    /// This method is intended for advanced use cases where low level access to
-    /// the displays framebuffer is required for performance reasons.  The
-    /// caller must ensure the raw pixel data in `raw_buf` has the correct
-    /// format and endianness.
-    ///
-    /// For all other use cases it is recommended to instead use
-    /// [`embedded-graphics`](https://docs.rs/embedded-graphics/latest/embedded_graphics/)
-    /// to draw to the display.
-    ///
-    /// </div>
-    ///
-    /// <div class="warning">
-    ///
-    /// The method might not work the same for all `display-interface`s and is
-    /// known to not work as expected when used with a
-    /// [`PGPIO16BitInterface`](https://docs.rs/display-interface-parallel-gpio/latest/display_interface_parallel_gpio/struct.PGPIO16BitInterface.html)
-    /// from the `display-interface-gpio` crate.
-    ///
-    /// </div>
-    ///
-    /// # Arguments
-    ///
-    /// * `sx` - x coordinate start
-    /// * `sy` - y coordinate start
-    /// * `ex` - x coordinate end (inclusive)
-    /// * `ey` - y coordinate end (inclusive)
-    /// * `raw_buf` - `&[u8]` buffer of raw pixel data in the format expected by the display
-    ///
-    /// <div class="warning">
-    ///
-    /// The end values of the X and Y coordinate ranges are inclusive, and no
-    /// bounds checking is performed on these values. Using out of range values
-    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
-    /// result in undefined behavior.
-    ///
-    /// </div>
-    pub fn set_pixels_from_buffer(
-        &mut self,
-        sx: u16,
-        sy: u16,
-        ex: u16,
-        ey: u16,
-        raw_buf: &[u8],
-    ) -> Result<(), Error> {
-        self.set_address_window(sx, sy, ex, ey)?;
+        for color in colors {
+            self.dcs.di.send_pixel(color)?;
+        }
 
-        self.dcs.write_command(WriteMemoryStart)?;
-
-        self.dcs.di.send_data(DataFormat::U8(raw_buf))?;
-
-        Ok(())
+        self.dcs.di.flush()
     }
 
     /// Sets the vertical scroll region.
@@ -329,7 +267,7 @@ where
         &mut self,
         top_fixed_area: u16,
         bottom_fixed_area: u16,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DI::Error> {
         let rows = M::FRAMEBUFFER_SIZE.1;
 
         let vscrdef = if top_fixed_area + bottom_fixed_area > rows {
@@ -352,7 +290,7 @@ where
     ///
     /// Use [`set_vertical_scroll_region`](Self::set_vertical_scroll_region) to setup the scroll region, before
     /// using this method.
-    pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), Error> {
+    pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), DI::Error> {
         let vscad = dcs::SetScrollStart::new(offset);
         self.dcs.write_command(vscad)
     }
@@ -366,7 +304,7 @@ where
     }
 
     // Sets the address window for the display.
-    fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), Error> {
+    fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), DI::Error> {
         // add clipping offsets if present
         let mut offset = self.options.display_offset;
         let mapping = MemoryMapping::from(self.options.orientation);
@@ -392,7 +330,7 @@ where
     pub fn set_tearing_effect(
         &mut self,
         tearing_effect: options::TearingEffect,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DI::Error> {
         self.dcs
             .write_command(dcs::SetTearingEffect::new(tearing_effect))
     }
@@ -408,7 +346,7 @@ where
     /// Puts the display to sleep, reducing power consumption.
     /// Need to call [Self::wake] before issuing other commands
     ///
-    pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), Error> {
+    pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
         self.dcs.write_command(dcs::EnterSleepMode)?;
         // All supported models requires a 120ms delay before issuing other commands
         delay.delay_us(120_000);
@@ -419,7 +357,7 @@ where
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
-    pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), Error> {
+    pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
         self.dcs.write_command(dcs::ExitSleepMode)?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);
@@ -445,10 +383,15 @@ where
 /// Do not use types in this module outside of doc tests.
 #[doc(hidden)]
 pub mod _mock {
-    use display_interface::{DataFormat, DisplayError, WriteOnlyDataCommand};
+    use core::convert::Infallible;
+
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::{models::ILI9341Rgb565, Builder, Display, NoResetPin};
+    use crate::{
+        interface::{CommandInterface, PixelInterface},
+        models::ILI9341Rgb565,
+        Builder, Display, NoResetPin,
+    };
 
     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
         Builder::new(ILI9341Rgb565, MockDisplayInterface)
@@ -495,12 +438,24 @@ pub mod _mock {
 
     pub struct MockDisplayInterface;
 
-    impl WriteOnlyDataCommand for MockDisplayInterface {
-        fn send_commands(&mut self, _cmd: DataFormat<'_>) -> Result<(), DisplayError> {
+    impl CommandInterface for MockDisplayInterface {
+        type Error = Infallible;
+
+        fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        fn send_data(&mut self, _buf: DataFormat<'_>) -> Result<(), DisplayError> {
+        fn flush(&mut self) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
+    impl<P: Copy> PixelInterface<P> for MockDisplayInterface {
+        fn send_pixel(&mut self, _pixel: P) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn send_repeated_pixel(&mut self, _pixel: P, _count: u32) -> Result<(), Self::Error> {
             Ok(())
         }
     }

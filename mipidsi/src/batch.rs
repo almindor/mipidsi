@@ -1,28 +1,27 @@
 //! Original code from: [this repo](https://github.com/lupyuen/piet-embedded/blob/master/piet-embedded-graphics/src/batch.rs)
 //! Batch the pixels to be rendered into Pixel Rows and Pixel Blocks (contiguous Pixel Rows).
 //! This enables the pixels to be rendered efficiently as Pixel Blocks, which may be transmitted in a single Non-Blocking SPI request.
-use crate::{error::Error, models::Model, Display};
-use display_interface::WriteOnlyDataCommand;
+use crate::{interface::PixelInterface, models::Model, Display};
 use embedded_graphics_core::prelude::*;
 use embedded_hal::digital::OutputPin;
 
 pub trait DrawBatch<DI, M, I>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<M::ColorFormat>,
     M: Model,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error>;
+    fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error>;
 }
 
 impl<DI, M, RST, I> DrawBatch<DI, M, I> for Display<DI, M, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<M::ColorFormat>,
     M: Model,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
     RST: OutputPin,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), Error> {
+    fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error> {
         //  Get the pixels for the item to be rendered.
         let pixels = item_pixels.into_iter();
         //  Batch the pixels into Pixel Rows.

@@ -1,13 +1,11 @@
-use display_interface::{DataFormat, WriteOnlyDataCommand};
-use embedded_graphics_core::pixelcolor::{IntoStorage, Rgb565, Rgb666, RgbColor};
 use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
         Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn,
-        SetInvertMode, SetPixelFormat, WriteMemoryStart,
+        SetInvertMode, SetPixelFormat,
     },
-    error::Error,
+    interface::CommandInterface,
     options::ModelOptions,
 };
 
@@ -17,10 +15,10 @@ pub fn init_common<DELAY, DI>(
     delay: &mut DELAY,
     options: &ModelOptions,
     pixel_format: PixelFormat,
-) -> Result<SetAddressMode, Error>
+) -> Result<SetAddressMode, DI::Error>
 where
     DELAY: DelayNs,
-    DI: WriteOnlyDataCommand,
+    DI: CommandInterface,
 {
     let madctl = SetAddressMode::from(options);
 
@@ -49,33 +47,4 @@ where
     dcs.write_command(SetDisplayOn)?;
 
     Ok(madctl)
-}
-
-pub fn write_pixels_rgb565<DI, I>(dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
-where
-    DI: WriteOnlyDataCommand,
-    I: IntoIterator<Item = Rgb565>,
-{
-    dcs.write_command(WriteMemoryStart)?;
-    let mut iter = colors.into_iter().map(|c| c.into_storage());
-
-    let buf = DataFormat::U16BEIter(&mut iter);
-    dcs.di.send_data(buf)
-}
-
-pub fn write_pixels_rgb666<DI, I>(dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
-where
-    DI: WriteOnlyDataCommand,
-    I: IntoIterator<Item = Rgb666>,
-{
-    dcs.write_command(WriteMemoryStart)?;
-    let mut iter = colors.into_iter().flat_map(|c| {
-        let red = c.r() << 2;
-        let green = c.g() << 2;
-        let blue = c.b() << 2;
-        [red, green, blue]
-    });
-
-    let buf = DataFormat::U8Iter(&mut iter);
-    dcs.di.send_data(buf)
 }

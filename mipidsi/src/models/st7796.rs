@@ -1,10 +1,9 @@
-use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
-    error::Error,
+    interface::CommandInterface,
     models::Model,
     options::ModelOptions,
 };
@@ -23,19 +22,11 @@ impl Model for ST7796 {
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, Error>
+    ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: WriteOnlyDataCommand,
+        DI: CommandInterface,
     {
         super::ST7789.init(dcs, delay, options)
-    }
-
-    fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>
-    where
-        DI: WriteOnlyDataCommand,
-        I: IntoIterator<Item = Self::ColorFormat>,
-    {
-        super::ST7789.write_pixels(dcs, colors)
     }
 }

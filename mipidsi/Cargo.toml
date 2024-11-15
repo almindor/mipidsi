@@ -12,7 +12,6 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.75"
 
 [dependencies]
-display-interface = "0.5.0"
 embedded-graphics-core = "0.4.0"
 embedded-hal = "1.0.0"
 nb = "1.0.0"
@@ -23,8 +22,6 @@ version = "0.8.0"
 
 [dev-dependencies]
 embedded-graphics = "0.8.0"
-display-interface-spi = "0.5.0"
-display-interface-parallel-gpio = "0.7.0"
 
 [features]
 default = ["batch"]

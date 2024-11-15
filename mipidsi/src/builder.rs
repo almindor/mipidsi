@@ -1,9 +1,9 @@
 //! [super::Display] builder module
 
-use display_interface::WriteOnlyDataCommand;
 use embedded_hal::digital;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
+use crate::interface::PixelInterface;
 use crate::{dcs::Dcs, error::InitError, models::Model, Display};
 
 use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
@@ -28,7 +28,7 @@ use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, Refr
 /// ```
 pub struct Builder<DI, MODEL, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<MODEL::ColorFormat>,
     MODEL: Model,
 {
     di: DI,
@@ -39,7 +39,7 @@ where
 
 impl<DI, MODEL> Builder<DI, MODEL, NoResetPin>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<MODEL::ColorFormat>,
     MODEL: Model,
 {
     ///
@@ -58,7 +58,7 @@ where
 
 impl<DI, MODEL, RST> Builder<DI, MODEL, RST>
 where
-    DI: WriteOnlyDataCommand,
+    DI: PixelInterface<MODEL::ColorFormat>,
     MODEL: Model,
     RST: OutputPin,
 {
@@ -149,7 +149,7 @@ where
     pub fn init(
         mut self,
         delay_source: &mut impl DelayNs,
-    ) -> Result<Display<DI, MODEL, RST>, InitError<RST::Error>> {
+    ) -> Result<Display<DI, MODEL, RST>, InitError<DI::Error, RST::Error>> {
         let to_u32 = |(a, b)| (u32::from(a), u32::from(b));
         let (width, height) = to_u32(self.options.display_size);
         let (offset_x, offset_y) = to_u32(self.options.display_offset);
@@ -165,10 +165,15 @@ where
                 delay_source.delay_us(10);
                 rst.set_high().map_err(InitError::Pin)?;
             }
-            None => dcs.write_command(crate::dcs::SoftReset)?,
+            None => dcs
+                .write_command(crate::dcs::SoftReset)
+                .map_err(InitError::DisplayError)?,
         }
 
-        let madctl = self.model.init(&mut dcs, delay_source, &self.options)?;
+        let madctl = self
+            .model
+            .init(&mut dcs, delay_source, &self.options)
+            .map_err(InitError::DisplayError)?;
 
         let display = Display {
             dcs,
