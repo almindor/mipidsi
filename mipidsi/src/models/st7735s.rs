@@ -1,13 +1,13 @@
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 use embedded_graphics_core::{pixelcolor::Rgb565, prelude::IntoStorage};
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
         BitsPerPixel, Dcs, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat, SoftReset, WriteMemoryStart,
+        SetPixelFormat, WriteMemoryStart,
     },
-    error::{Error, InitError},
+    error::Error,
     models::Model,
     options::ModelOptions,
 };
@@ -19,24 +19,18 @@ impl Model for ST7735s {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (132, 162);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
         let madctl = SetAddressMode::from(options);
 
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        }
         delay.delay_us(200_000);
 
         dcs.write_command(ExitSleepMode)?; // turn off sleep

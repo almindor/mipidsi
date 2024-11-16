@@ -1,10 +1,10 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 
 use crate::{
-    dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode, SoftReset},
-    error::{Error, InitError},
+    dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode},
+    error::Error,
     models::{ili934x, Model},
     options::ModelOptions,
 };
@@ -19,23 +19,16 @@ impl Model for ILI9342CRgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 240);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        }
-
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }
@@ -53,23 +46,16 @@ impl Model for ILI9342CRgb666 {
     type ColorFormat = Rgb666;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 240);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
-        match rst {
-            Some(ref mut rst) => self.hard_reset(rst, delay)?,
-            None => dcs.write_command(SoftReset)?,
-        }
-
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
     }

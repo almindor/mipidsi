@@ -1,10 +1,10 @@
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::pixelcolor::Rgb565;
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
-    error::{Error, InitError},
+    error::Error,
     models::Model,
     options::ModelOptions,
 };
@@ -18,19 +18,17 @@ impl Model for ST7796 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 480);
 
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand,
     {
-        super::ST7789.init(dcs, delay, options, rst)
+        super::ST7789.init(dcs, delay, options)
     }
 
     fn write_pixels<DI, I>(&mut self, dcs: &mut Dcs<DI>, colors: I) -> Result<(), Error>

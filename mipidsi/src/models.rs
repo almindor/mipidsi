@@ -2,12 +2,12 @@
 
 use crate::{
     dcs::{Dcs, SetAddressMode},
-    error::{Error, InitError},
+    error::Error,
     options::ModelOptions,
 };
 use display_interface::WriteOnlyDataCommand;
 use embedded_graphics_core::prelude::RgbColor;
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::delay::DelayNs;
 
 // existing model implementations
 mod gc9a01;
@@ -37,34 +37,15 @@ pub trait Model {
 
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
-    fn init<RST, DELAY, DI>(
+    fn init<DELAY, DI>(
         &mut self,
         dcs: &mut Dcs<DI>,
         delay: &mut DELAY,
         options: &ModelOptions,
-        rst: &mut Option<RST>,
-    ) -> Result<SetAddressMode, InitError<RST::Error>>
+    ) -> Result<SetAddressMode, Error>
     where
-        RST: OutputPin,
         DELAY: DelayNs,
         DI: WriteOnlyDataCommand;
-
-    /// Resets the display using a reset pin.
-    fn hard_reset<RST, DELAY>(
-        &mut self,
-        rst: &mut RST,
-        delay: &mut DELAY,
-    ) -> Result<(), InitError<RST::Error>>
-    where
-        RST: OutputPin,
-        DELAY: DelayNs,
-    {
-        rst.set_low().map_err(InitError::Pin)?;
-        delay.delay_us(10);
-        rst.set_high().map_err(InitError::Pin)?;
-
-        Ok(())
-    }
 
     /// Writes pixels to the display IC via the given display interface.
     ///

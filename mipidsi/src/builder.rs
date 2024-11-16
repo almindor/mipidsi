@@ -158,9 +158,17 @@ where
         assert!(height + offset_y <= max_height);
 
         let mut dcs = Dcs::write_only(self.di);
-        let madctl = self
-            .model
-            .init(&mut dcs, delay_source, &self.options, &mut self.rst)?;
+
+        match self.rst {
+            Some(ref mut rst) => {
+                rst.set_low().map_err(InitError::Pin)?;
+                delay_source.delay_us(10);
+                rst.set_high().map_err(InitError::Pin)?;
+            }
+            None => dcs.write_command(crate::dcs::SoftReset)?,
+        }
+
+        let madctl = self.model.init(&mut dcs, delay_source, &self.options)?;
 
         let display = Display {
             dcs,
