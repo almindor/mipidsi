@@ -1,7 +1,5 @@
 //! Module for the VSCRDEF visual scroll definition instruction constructors
 
-use crate::error::Error;
-
 use super::DcsCommand;
 
 /// Set Scroll Area
@@ -26,7 +24,7 @@ impl DcsCommand for SetScrollArea {
         0x33
     }
 
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> usize {
         let tfa_bytes = self.tfa.to_be_bytes();
         let vsa_bytes = self.vsa.to_be_bytes();
         let bfa_bytes = self.bfa.to_be_bytes();
@@ -38,7 +36,7 @@ impl DcsCommand for SetScrollArea {
         buffer[4] = bfa_bytes[0];
         buffer[5] = bfa_bytes[1];
 
-        Ok(6)
+        6
     }
 }
 
@@ -47,13 +45,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn vscrdef_fills_buffer_properly() -> Result<(), Error> {
+    fn vscrdef_fills_buffer_properly() {
         let vscrdef = SetScrollArea::new(0, 320, 0);
 
         let mut buffer = [0u8; 6];
-        assert_eq!(vscrdef.fill_params_buf(&mut buffer)?, 6);
+        assert_eq!(vscrdef.fill_params_buf(&mut buffer), 6);
         assert_eq!(buffer, [0, 0, 0x1, 0x40, 0, 0]);
-
-        Ok(())
     }
 }

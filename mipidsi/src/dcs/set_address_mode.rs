@@ -1,6 +1,5 @@
 //! Module for the MADCTL instruction constructors
 
-use crate::error::Error;
 use crate::options::{
     ColorOrder, HorizontalRefreshOrder, MemoryMapping, ModelOptions, Orientation, RefreshOrder,
     VerticalRefreshOrder,
@@ -79,9 +78,9 @@ impl DcsCommand for SetAddressMode {
         0x36
     }
 
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error> {
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> usize {
         buffer[0] = self.0;
-        Ok(1)
+        1
     }
 }
 
@@ -101,7 +100,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn madctl_bit_operations() -> Result<(), Error> {
+    fn madctl_bit_operations() {
         let madctl = SetAddressMode::default()
             .with_color_order(ColorOrder::Bgr)
             .with_refresh_order(RefreshOrder::new(
@@ -111,21 +110,19 @@ mod tests {
             .with_orientation(Orientation::default().rotate(Rotation::Deg270));
 
         let mut bytes = [0u8];
-        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(madctl.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b1011_1100u8]);
 
         let madctl = madctl.with_orientation(Orientation::default());
-        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(madctl.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0001_1100u8]);
 
         let madctl = madctl.with_color_order(ColorOrder::Rgb);
-        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(madctl.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0001_0100u8]);
 
         let madctl = madctl.with_refresh_order(RefreshOrder::default());
-        assert_eq!(madctl.fill_params_buf(&mut bytes)?, 1);
+        assert_eq!(madctl.fill_params_buf(&mut bytes), 1);
         assert_eq!(bytes, [0b0000_0000u8]);
-
-        Ok(())
     }
 }

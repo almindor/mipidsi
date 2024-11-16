@@ -32,7 +32,7 @@ pub trait DcsCommand {
     fn instruction(&self) -> u8;
 
     /// Fills the given buffer with the command parameters.
-    fn fill_params_buf(&self, buffer: &mut [u8]) -> Result<usize, Error>;
+    fn fill_params_buf(&self, buffer: &mut [u8]) -> usize;
 }
 
 /// Wrapper around [`WriteOnlyDataCommand`] with support for writing DCS commands.
@@ -66,7 +66,7 @@ where
     /// Sends a DCS command to the display interface.
     pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Error> {
         let mut param_bytes: [u8; 16] = [0; 16];
-        let n = command.fill_params_buf(&mut param_bytes)?;
+        let n = command.fill_params_buf(&mut param_bytes);
         self.write_raw(command.instruction(), &param_bytes[..n])
     }
 
