@@ -1,5 +1,15 @@
 # Migration guide for `mipidsi` crate
 
+## v0.8 -> 0.9
+
+### Users
+
+* The performance of drawing rectangular areas has been improved through the use of a 512 byte buffer. This can be disabled by disabling the `buffered` default feature, which will lower memory consumption but also reduce performance.
+
+### Model writers
+
+* No changes
+
 ## v0.7 -> 0.8
 
 ### Users

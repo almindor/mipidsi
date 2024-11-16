@@ -11,7 +11,9 @@ that implement the [MIPI Display Command Set](https://www.mipi.org/specification
 
 Uses [display_interface](https://crates.io/crates/display-interface) to talk to the hardware via transports (currently SPI, I2C and Parallel GPIO).
 
-An optional batching of draws is supported via the `batch` feature (default on)
+An optional batching of draws is supported via the `batch` feature (default on).
+
+An optional `buffered` feature enabled buffering to improve performance for operations such as `fill_solid`. It allocates stack buffers of size `512` bytes during some draw operations. This is default turned on.
 
 *NOTES*:
 
