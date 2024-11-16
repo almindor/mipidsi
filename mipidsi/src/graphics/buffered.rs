@@ -7,12 +7,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
-use crate::{
-    dcs::WriteMemoryStart,
-    error::Error,
-    models::{Endianness, Model},
-    Display,
-};
+use crate::{dcs::WriteMemoryStart, error::Error, models::Model, Display};
 use display_interface::{DataFormat, WriteOnlyDataCommand};
 
 const BUFFER_SIZE: usize = 512;
@@ -29,10 +24,7 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb555) -> Result<(), Error> {
-        let raw_color = match M::ENDIANNESS {
-            Endianness::BigEndian => color.to_be_bytes(),
-            Endianness::LittleEndian => color.to_le_bytes(),
-        };
+        let raw_color = color.to_be_bytes();
         fill_solid_specific_color(self, area, raw_color)
     }
 }
@@ -44,10 +36,7 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb565) -> Result<(), Error> {
-        let raw_color = match M::ENDIANNESS {
-            Endianness::BigEndian => color.to_be_bytes(),
-            Endianness::LittleEndian => color.to_le_bytes(),
-        };
+        let raw_color = color.to_be_bytes();
         fill_solid_specific_color(self, area, raw_color)
     }
 }
@@ -59,10 +48,7 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb666) -> Result<(), Error> {
-        let raw_color = match M::ENDIANNESS {
-            Endianness::BigEndian => color.to_be_bytes(),
-            Endianness::LittleEndian => color.to_le_bytes(),
-        };
+        let raw_color = color.to_be_bytes();
         fill_solid_specific_color(self, area, raw_color)
     }
 }
@@ -74,10 +60,7 @@ where
     RST: OutputPin,
 {
     fn fill_solid_specific_color(&mut self, area: &Rectangle, color: Rgb888) -> Result<(), Error> {
-        let raw_color = match M::ENDIANNESS {
-            Endianness::BigEndian => color.to_be_bytes(),
-            Endianness::LittleEndian => color.to_le_bytes(),
-        };
+        let raw_color = color.to_be_bytes();
         fill_solid_specific_color(self, area, raw_color)
     }
 }

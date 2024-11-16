@@ -8,7 +8,7 @@
 
 ### Model writers
 
-* The `Model::ENDIANNESS` associated constant was added. It defaults to `BigEndian`, only change required is if you're adding a Model that is LittleEndian.
+* No changes
 
 ## v0.7 -> 0.8
 

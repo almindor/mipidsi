@@ -27,18 +27,6 @@ pub use st7735s::*;
 pub use st7789::*;
 pub use st7796::*;
 
-///
-/// Endianness indicator enum for use with [Model] as an associated constant.
-/// This allows us to know what format of data the display expects.
-///
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Endianness {
-    /// Big endian
-    BigEndian,
-    /// Little endian
-    LittleEndian,
-}
-
 /// Display model.
 pub trait Model {
     /// The color format.
@@ -46,9 +34,6 @@ pub trait Model {
 
     /// The framebuffer size in pixels.
     const FRAMEBUFFER_SIZE: (u16, u16);
-
-    /// Endianness expectation of the display Model's data, defaults to big endian
-    const ENDIANNESS: Endianness = Endianness::BigEndian;
 
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
