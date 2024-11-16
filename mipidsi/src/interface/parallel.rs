@@ -235,8 +235,8 @@ where
         if byte1 == byte2 {
             self.send_byte(byte1)?;
             for _ in 1..(count * 2) {
-                self.dc.set_low().map_err(ParallelError::Dc)?;
-                self.dc.set_high().map_err(ParallelError::Dc)?;
+                self.wr.set_low().map_err(ParallelError::Wr)?;
+                self.wr.set_high().map_err(ParallelError::Wr)?;
             }
             Ok(())
         } else {
