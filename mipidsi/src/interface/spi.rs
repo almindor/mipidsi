@@ -123,7 +123,7 @@ impl<'a> Buffer<'a> {
         mut on_full: impl FnMut(&[u8]) -> Result<(), E>,
     ) -> Result<(), E> {
         if let Ok(count_bytes) = usize::try_from(count * N as u32) {
-            if count_bytes >= self.bytes.len() - self.index {
+            if count_bytes <= self.bytes.len() - self.index {
                 // There is enough remaining space in the buffer for all the new data
                 for i in 0..count as usize {
                     self.bytes[(self.index + (i * N))..][..N].copy_from_slice(&pixel);
