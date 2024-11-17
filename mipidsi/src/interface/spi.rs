@@ -1,3 +1,4 @@
+use embedded_graphics_core::pixelcolor::raw::ToBytes;
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
 
@@ -64,6 +65,22 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<
         self.buffer
             .push_repeated_bytes(rgb565_to_bytes(pixel), count, |buf| self.spi.write(buf))
             .map_err(SpiError::Spi)
+    }
+
+    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
+        let mut pixels = pixels.into_iter();
+        'all_pixels: loop {
+            let remaining = &mut self.buffer.bytes[self.buffer.index..];
+            for chunk in remaining.as_chunks_mut().0 {
+                let Some(pixel) = pixels.next() else {
+                    break 'all_pixels;
+                };
+                *chunk = pixel.to_be_bytes();
+                self.buffer.index += 2;
+            }
+            self.flush()?;
+        }
+        Ok(())
     }
 }
 

@@ -23,6 +23,13 @@ pub trait PixelInterface<P: Copy>: CommandInterface {
     /// [`CommandInterface::flush`] must be called to ensure the data is actually sent
     fn send_pixel(&mut self, pixel: P) -> Result<(), Self::Error>;
 
+    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = P>) -> Result<(), Self::Error> {
+        for pixel in pixels {
+            self.send_pixel(pixel)?;
+        }
+        Ok(())
+    }
+
     /// Send the same pixel value multiple times
     ///
     /// `WriteMemoryStart` must be sent before calling this function

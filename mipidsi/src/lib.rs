@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(slice_as_chunks)]
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
 #![warn(missing_docs)]
@@ -241,9 +242,7 @@ where
 
         self.dcs.write_command(dcs::WriteMemoryStart)?;
 
-        for color in colors {
-            self.dcs.di.send_pixel(color)?;
-        }
+        self.dcs.di.send_pixels(colors)?;
 
         self.dcs.di.flush()
     }
