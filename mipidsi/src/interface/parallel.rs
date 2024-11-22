@@ -220,9 +220,11 @@ where
     DC: OutputPin,
     WR: OutputPin,
 {
-    fn send_pixel(&mut self, pixel: Rgb565) -> Result<(), Self::Error> {
-        for byte in pixel.to_be_bytes() {
-            self.send_byte(byte)?;
+    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
+        for pixel in pixels {
+            for byte in pixel.to_be_bytes() {
+                self.send_byte(byte)?;
+            }
         }
         Ok(())
     }
@@ -240,10 +242,7 @@ where
             }
             Ok(())
         } else {
-            for _ in 0..count {
-                self.send_pixel(pixel)?;
-            }
-            Ok(())
+            self.send_pixels((0..count).map(|_| pixel))
         }
     }
 }
@@ -321,8 +320,11 @@ where
     DC: OutputPin,
     WR: OutputPin,
 {
-    fn send_pixel(&mut self, pixel: Rgb565) -> Result<(), Self::Error> {
-        self.send_word(u16::from_ne_bytes(pixel.to_ne_bytes()))
+    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
+        for pixel in pixels {
+            self.send_word(u16::from_ne_bytes(pixel.to_ne_bytes()))?;
+        }
+        Ok(())
     }
 
     fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
@@ -330,7 +332,7 @@ where
             return Ok(());
         }
 
-        self.send_pixel(pixel)?;
+        self.send_word(u16::from_ne_bytes(pixel.to_ne_bytes()))?;
 
         for _ in 1..count {
             self.wr.set_low().map_err(ParallelError::Wr)?;

@@ -450,7 +450,7 @@ pub mod _mock {
     }
 
     impl<P: Copy> PixelInterface<P> for MockDisplayInterface {
-        fn send_pixel(&mut self, _pixel: P) -> Result<(), Self::Error> {
+        fn send_pixels(&mut self, _pixels: impl IntoIterator<Item = P>) -> Result<(), Self::Error> {
             Ok(())
         }
 

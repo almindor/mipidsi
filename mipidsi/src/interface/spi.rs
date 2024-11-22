@@ -59,12 +59,6 @@ fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
 }
 
 impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<SPI, DC> {
-    fn send_pixel(&mut self, pixel: Rgb565) -> Result<(), Self::Error> {
-        self.spi
-            .push_bytes(&rgb565_to_bytes(pixel))
-            .map_err(SpiError::Spi)
-    }
-
     fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
         self.spi
             .push_bytes_repeated(&rgb565_to_bytes(pixel), count)
@@ -79,12 +73,6 @@ impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<SP
 }
 
 impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb666> for SpiInterface<SPI, DC> {
-    fn send_pixel(&mut self, pixel: Rgb666) -> Result<(), Self::Error> {
-        self.spi
-            .push_bytes(&rgb666_to_bytes(pixel))
-            .map_err(SpiError::Spi)
-    }
-
     fn send_repeated_pixel(&mut self, pixel: Rgb666, count: u32) -> Result<(), Self::Error> {
         self.spi
             .push_bytes_repeated(&rgb666_to_bytes(pixel), count)
