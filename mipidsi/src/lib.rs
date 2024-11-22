@@ -1,5 +1,4 @@
 #![no_std]
-#![feature(slice_as_chunks)]
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
 #![warn(missing_docs)]

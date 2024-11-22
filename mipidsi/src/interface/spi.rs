@@ -122,12 +122,12 @@ pub trait BufferedSpi {
         loop {
             let mut i = 0;
             self.fill_buffer(|buffer| {
-                for chunk in buffer.as_chunks_mut().0 {
+                for chunk in buffer.chunks_exact_mut(N) {
                     let Some(array) = arrays.next() else {
                         break;
                     };
-                    *chunk = array;
-                    i += 2;
+                    chunk.copy_from_slice(&array);
+                    i += N;
                 }
                 i
             })?;
