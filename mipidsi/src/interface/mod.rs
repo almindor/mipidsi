@@ -1,5 +1,4 @@
 //! Interface traits and implementations
-#![allow(missing_docs)]
 
 /// Command interface
 pub trait CommandInterface {

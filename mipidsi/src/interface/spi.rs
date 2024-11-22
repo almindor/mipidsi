@@ -13,12 +13,12 @@ pub enum SpiError<SPI, DC> {
 }
 
 /// Spi interface
-pub struct SpiInterface<SPI, DC> {
-    spi: SPI,
+pub struct SpiInterface<'a, SPI, DC> {
+    spi: BufferedSpiAdapter<'a, SPI>,
     dc: DC,
 }
 
-impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<BufferedSpiAdapter<'a, SPI>, DC> {
+impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
     /// Create new interface
     pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
         let spi = BufferedSpiAdapter::new(spi, buffer);
@@ -26,14 +26,7 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<BufferedSpiAdapter<'a, SPI>
     }
 }
 
-impl<SPI: BufferedSpi, DC: OutputPin> SpiInterface<SPI, DC> {
-    /// Create new interface
-    pub fn new_custom(spi: SPI, dc: DC) -> Self {
-        Self { spi, dc }
-    }
-}
-
-impl<SPI: BufferedSpi, DC: OutputPin> CommandInterface for SpiInterface<SPI, DC> {
+impl<SPI: SpiDevice, DC: OutputPin> CommandInterface for SpiInterface<'_, SPI, DC> {
     type Error = SpiError<SPI::Error, DC::Error>;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
@@ -58,7 +51,7 @@ fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
     embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel).map(|x| x << 2)
 }
 
-impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<SPI, DC> {
+impl<SPI: SpiDevice, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<'_, SPI, DC> {
     fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
         self.spi
             .push_bytes_repeated(&rgb565_to_bytes(pixel), count)
@@ -72,7 +65,7 @@ impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<SP
     }
 }
 
-impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb666> for SpiInterface<SPI, DC> {
+impl<SPI: SpiDevice, DC: OutputPin> PixelInterface<Rgb666> for SpiInterface<'_, SPI, DC> {
     fn send_repeated_pixel(&mut self, pixel: Rgb666, count: u32) -> Result<(), Self::Error> {
         self.spi
             .push_bytes_repeated(&rgb666_to_bytes(pixel), count)
@@ -86,61 +79,7 @@ impl<SPI: BufferedSpi, DC: OutputPin> PixelInterface<Rgb666> for SpiInterface<SP
     }
 }
 
-pub trait BufferedSpi {
-    type Error: core::fmt::Debug;
-
-    fn fill_buffer(&mut self, filler: impl FnOnce(&mut [u8]) -> usize) -> Result<(), Self::Error>;
-
-    fn flush(&mut self) -> Result<(), Self::Error>;
-
-    fn push_bytes(&mut self, mut bytes: &[u8]) -> Result<(), Self::Error> {
-        while !bytes.is_empty() {
-            self.fill_buffer(|buffer| {
-                let len = core::cmp::min(buffer.len(), bytes.len());
-                let (to_send, rest) = bytes.split_at(len);
-                bytes = rest;
-                buffer[0..len].copy_from_slice(to_send);
-                len
-            })?;
-        }
-        Ok(())
-    }
-
-    fn push_bytes_repeated(&mut self, bytes: &[u8], count: u32) -> Result<(), Self::Error> {
-        for _ in 0..count {
-            self.push_bytes(bytes)?;
-        }
-        Ok(())
-    }
-
-    fn push_array_iter<const N: usize>(
-        &mut self,
-        arrays: impl IntoIterator<Item = [u8; N]>,
-    ) -> Result<(), Self::Error> {
-        let mut arrays = arrays.into_iter();
-
-        let mut done = false;
-        while !done {
-            self.fill_buffer(|buffer| {
-                let mut i = 0;
-                // TODO: make sure buffer will hold at least one chunk
-                for chunk in buffer.chunks_exact_mut(N) {
-                    if let Some(array) = arrays.next() {
-                        chunk.copy_from_slice(&array);
-                        i += N;
-                    } else {
-                        done = true;
-                        break;
-                    };
-                }
-                i
-            })?;
-        }
-        Ok(())
-    }
-}
-
-pub struct BufferedSpiAdapter<'a, SPI: SpiDevice> {
+struct BufferedSpiAdapter<'a, SPI> {
     spi: SPI,
     buffer: &'a mut [u8],
     index: usize,
@@ -155,21 +94,7 @@ impl<'a, SPI: SpiDevice> BufferedSpiAdapter<'a, SPI> {
         }
     }
 
-    // fn push_bytes<const N: usize>(&mut self, pixel: [u8; N]) -> Result<(), SPI::Error> {
-    //     if self.buffer.len() - self.index < N {
-    //         self.flush()?;
-    //     }
-
-    //     self.buffer[self.index..][..N].copy_from_slice(&pixel);
-    //     self.index += N;
-    //     Ok(())
-    // }
-}
-
-impl<SPI: SpiDevice> BufferedSpi for BufferedSpiAdapter<'_, SPI> {
-    type Error = SPI::Error;
-
-    fn fill_buffer(&mut self, filler: impl FnOnce(&mut [u8]) -> usize) -> Result<(), Self::Error> {
+    fn fill_buffer(&mut self, filler: impl FnOnce(&mut [u8]) -> usize) -> Result<(), SPI::Error> {
         if self.index == self.buffer.len() {
             self.flush()?;
         }
@@ -179,7 +104,7 @@ impl<SPI: SpiDevice> BufferedSpi for BufferedSpiAdapter<'_, SPI> {
         Ok(())
     }
 
-    fn flush(&mut self) -> Result<(), Self::Error> {
+    fn flush(&mut self) -> Result<(), SPI::Error> {
         let index = core::mem::replace(&mut self.index, 0);
         if index != 0 {
             self.spi.write(&self.buffer[0..index])?;
@@ -187,7 +112,7 @@ impl<SPI: SpiDevice> BufferedSpi for BufferedSpiAdapter<'_, SPI> {
         Ok(())
     }
 
-    fn push_bytes_repeated(&mut self, bytes: &[u8], count: u32) -> Result<(), Self::Error> {
+    fn push_bytes_repeated(&mut self, bytes: &[u8], count: u32) -> Result<(), SPI::Error> {
         {
             let this = &mut *self;
             let mut count = count;
@@ -224,5 +149,44 @@ impl<SPI: SpiDevice> BufferedSpi for BufferedSpiAdapter<'_, SPI> {
 
             Ok(())
         }
+    }
+
+    fn push_bytes(&mut self, mut bytes: &[u8]) -> Result<(), SPI::Error> {
+        while !bytes.is_empty() {
+            self.fill_buffer(|buffer| {
+                let len = core::cmp::min(buffer.len(), bytes.len());
+                let (to_send, remainder) = bytes.split_at(len);
+                bytes = remainder;
+                buffer[0..len].copy_from_slice(to_send);
+                len
+            })?;
+        }
+        Ok(())
+    }
+
+    fn push_array_iter<const N: usize>(
+        &mut self,
+        arrays: impl IntoIterator<Item = [u8; N]>,
+    ) -> Result<(), SPI::Error> {
+        let mut arrays = arrays.into_iter();
+
+        let mut done = false;
+        while !done {
+            self.fill_buffer(|buffer| {
+                let mut i = 0;
+                // TODO: make sure buffer will hold at least one chunk
+                for chunk in buffer.chunks_exact_mut(N) {
+                    if let Some(array) = arrays.next() {
+                        chunk.copy_from_slice(&array);
+                        i += N;
+                    } else {
+                        done = true;
+                        break;
+                    };
+                }
+                i
+            })?;
+        }
+        Ok(())
     }
 }
