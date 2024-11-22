@@ -119,21 +119,22 @@ pub trait BufferedSpi {
     ) -> Result<(), Self::Error> {
         let mut arrays = arrays.into_iter();
 
-        loop {
-            let mut i = 0;
+        let mut done = false;
+        while !done {
             self.fill_buffer(|buffer| {
+                let mut i = 0;
+                // TODO: make sure buffer will hold at least one chunk
                 for chunk in buffer.chunks_exact_mut(N) {
-                    let Some(array) = arrays.next() else {
+                    if let Some(array) = arrays.next() {
+                        chunk.copy_from_slice(&array);
+                        i += N;
+                    } else {
+                        done = true;
                         break;
                     };
-                    chunk.copy_from_slice(&array);
-                    i += N;
                 }
                 i
             })?;
-            if i == 0 {
-                break;
-            }
         }
         Ok(())
     }
