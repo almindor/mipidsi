@@ -7,14 +7,15 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
-use crate::Display;
 use crate::{dcs::BitsPerPixel, interface::PixelInterface};
 use crate::{dcs::WriteMemoryStart, models::Model};
+use crate::{interface::PixelFormat, Display};
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
-    DI: PixelInterface<M::ColorFormat>,
+    DI: PixelInterface,
     M: Model,
+    M::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
 {
     type Error = DI::Error;
@@ -111,15 +112,16 @@ where
 
         self.set_address_window(sx, sy, ex, ey)?;
         self.dcs.write_command(WriteMemoryStart)?;
-        self.dcs.di.send_repeated_pixel(color, count)?;
+        M::ColorFormat::send_repeated_pixel(&mut self.dcs.di, color, count)?;
         self.dcs.di.flush()
     }
 }
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
-    DI: PixelInterface<MODEL::ColorFormat>,
+    DI: PixelInterface,
     MODEL: Model,
+    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
 {
     fn size(&self) -> Size {

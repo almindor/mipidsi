@@ -3,7 +3,7 @@
 use embedded_hal::digital;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
-use crate::interface::PixelInterface;
+use crate::interface::{PixelFormat, PixelInterface};
 use crate::{dcs::Dcs, error::InitError, models::Model, Display};
 
 use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
@@ -28,8 +28,9 @@ use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, Refr
 /// ```
 pub struct Builder<DI, MODEL, RST>
 where
-    DI: PixelInterface<MODEL::ColorFormat>,
+    DI: PixelInterface,
     MODEL: Model,
+    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
 {
     di: DI,
     model: MODEL,
@@ -39,8 +40,9 @@ where
 
 impl<DI, MODEL> Builder<DI, MODEL, NoResetPin>
 where
-    DI: PixelInterface<MODEL::ColorFormat>,
+    DI: PixelInterface,
     MODEL: Model,
+    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
 {
     ///
     /// Constructs a new builder for given [Model].
@@ -58,8 +60,9 @@ where
 
 impl<DI, MODEL, RST> Builder<DI, MODEL, RST>
 where
-    DI: PixelInterface<MODEL::ColorFormat>,
+    DI: PixelInterface,
     MODEL: Model,
+    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
 {
     ///

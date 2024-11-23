@@ -1,4 +1,3 @@
-use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
 
 use super::{CommandInterface, PixelInterface};
@@ -92,33 +91,22 @@ impl<SPI: SpiDevice, DC: OutputPin> CommandInterface for SpiInterface<'_, SPI, D
     }
 }
 
-fn rgb565_to_bytes(pixel: Rgb565) -> [u8; 2] {
-    embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel)
-}
-fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
-    embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel).map(|x| x << 2)
-}
+impl<SPI: SpiDevice, DC: OutputPin> PixelInterface for SpiInterface<'_, SPI, DC> {
+    type PixelWord = u8;
 
-impl<SPI: SpiDevice, DC: OutputPin> PixelInterface<Rgb565> for SpiInterface<'_, SPI, DC> {
-    fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
-        self.push_bytes_repeated(rgb565_to_bytes(pixel), count)
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [Self::PixelWord; N],
+        count: u32,
+    ) -> Result<(), Self::Error> {
+        self.push_bytes_repeated(pixel, count)
             .map_err(SpiError::Spi)
     }
 
-    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
-        self.push_array_iter(pixels.into_iter().map(rgb565_to_bytes))
-            .map_err(SpiError::Spi)
-    }
-}
-
-impl<SPI: SpiDevice, DC: OutputPin> PixelInterface<Rgb666> for SpiInterface<'_, SPI, DC> {
-    fn send_repeated_pixel(&mut self, pixel: Rgb666, count: u32) -> Result<(), Self::Error> {
-        self.push_bytes_repeated(rgb666_to_bytes(pixel), count)
-            .map_err(SpiError::Spi)
-    }
-
-    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb666>) -> Result<(), Self::Error> {
-        self.push_array_iter(pixels.into_iter().map(rgb666_to_bytes))
-            .map_err(SpiError::Spi)
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+    ) -> Result<(), Self::Error> {
+        self.push_array_iter(pixels).map_err(SpiError::Spi)
     }
 }

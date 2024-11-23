@@ -106,6 +106,7 @@ use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::OutputPin;
 
 pub mod options;
+use interface::PixelFormat;
 use options::MemoryMapping;
 
 mod builder;
@@ -129,8 +130,9 @@ mod batch;
 ///
 pub struct Display<DI, MODEL, RST>
 where
-    DI: interface::PixelInterface<MODEL::ColorFormat>,
+    DI: interface::PixelInterface,
     MODEL: Model,
+    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
 {
     // DCS provider
@@ -149,8 +151,9 @@ where
 
 impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: interface::PixelInterface<M::ColorFormat>,
+    DI: interface::PixelInterface,
     M: Model,
+    M::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
 {
     ///
@@ -241,7 +244,7 @@ where
 
         self.dcs.write_command(dcs::WriteMemoryStart)?;
 
-        self.dcs.di.send_pixels(colors)?;
+        M::ColorFormat::send_pixels(&mut self.dcs.di, colors.into_iter())?;
 
         self.dcs.di.flush()
     }
@@ -448,12 +451,21 @@ pub mod _mock {
         }
     }
 
-    impl<P: Copy> PixelInterface<P> for MockDisplayInterface {
-        fn send_pixels(&mut self, _pixels: impl IntoIterator<Item = P>) -> Result<(), Self::Error> {
+    impl PixelInterface for MockDisplayInterface {
+        type PixelWord = u8;
+
+        fn send_pixels<const N: usize>(
+            &mut self,
+            _pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+        ) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        fn send_repeated_pixel(&mut self, _pixel: P, _count: u32) -> Result<(), Self::Error> {
+        fn send_repeated_pixel<const N: usize>(
+            &mut self,
+            _pixel: [Self::PixelWord; N],
+            _count: u32,
+        ) -> Result<(), Self::Error> {
             Ok(())
         }
     }

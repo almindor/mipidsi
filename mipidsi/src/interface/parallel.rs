@@ -1,4 +1,3 @@
-use embedded_graphics_core::pixelcolor::{raw::ToBytes, Rgb565};
 use embedded_hal::digital::OutputPin;
 
 use super::{CommandInterface, PixelInterface};
@@ -214,29 +213,38 @@ where
     }
 }
 
-impl<BUS, DC, WR> PixelInterface<Rgb565> for PGpio8BitInterface<BUS, DC, WR>
+impl<BUS, DC, WR> PixelInterface for PGpio8BitInterface<BUS, DC, WR>
 where
     BUS: OutputBus<Word = u8>,
     DC: OutputPin,
     WR: OutputPin,
 {
-    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
+    type PixelWord = u8;
+
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+    ) -> Result<(), Self::Error> {
         for pixel in pixels {
-            for byte in pixel.to_be_bytes() {
+            for byte in pixel {
                 self.send_byte(byte)?;
             }
         }
         Ok(())
     }
 
-    fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [Self::PixelWord; N],
+        count: u32,
+    ) -> Result<(), Self::Error> {
         if count == 0 {
             return Ok(());
         }
-        let [byte1, byte2] = pixel.to_be_bytes();
-        if byte1 == byte2 {
-            self.send_byte(byte1)?;
-            for _ in 1..(count * 2) {
+
+        if let Some(word) = is_same(pixel) {
+            self.send_byte(word)?;
+            for _ in 1..(count * N as u32) {
                 self.wr.set_low().map_err(ParallelError::Wr)?;
                 self.wr.set_high().map_err(ParallelError::Wr)?;
             }
@@ -314,30 +322,54 @@ where
     }
 }
 
-impl<BUS, DC, WR> PixelInterface<Rgb565> for PGpio16BitInterface<BUS, DC, WR>
+impl<BUS, DC, WR> PixelInterface for PGpio16BitInterface<BUS, DC, WR>
 where
     BUS: OutputBus<Word = u16>,
     DC: OutputPin,
     WR: OutputPin,
 {
-    fn send_pixels(&mut self, pixels: impl IntoIterator<Item = Rgb565>) -> Result<(), Self::Error> {
+    type PixelWord = u16;
+
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+    ) -> Result<(), Self::Error> {
         for pixel in pixels {
-            self.send_word(u16::from_ne_bytes(pixel.to_ne_bytes()))?;
+            for word in pixel {
+                self.send_word(word)?;
+            }
         }
         Ok(())
     }
 
-    fn send_repeated_pixel(&mut self, pixel: Rgb565, count: u32) -> Result<(), Self::Error> {
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [Self::PixelWord; N],
+        count: u32,
+    ) -> Result<(), Self::Error> {
         if count == 0 {
             return Ok(());
         }
 
-        self.send_word(u16::from_ne_bytes(pixel.to_ne_bytes()))?;
-
-        for _ in 1..count {
-            self.wr.set_low().map_err(ParallelError::Wr)?;
-            self.wr.set_high().map_err(ParallelError::Wr)?;
+        if let Some(word) = is_same(pixel) {
+            self.send_word(word)?;
+            for _ in 1..(count * N as u32) {
+                self.wr.set_low().map_err(ParallelError::Wr)?;
+                self.wr.set_high().map_err(ParallelError::Wr)?;
+            }
+            Ok(())
+        } else {
+            self.send_pixels((0..count).map(|_| pixel))
         }
-        Ok(())
     }
+}
+
+fn is_same<const N: usize, T: Copy + Eq>(array: [T; N]) -> Option<T> {
+    let (&first, rest) = array.split_first()?;
+    for &x in rest {
+        if x != first {
+            return None;
+        }
+    }
+    Some(first)
 }
