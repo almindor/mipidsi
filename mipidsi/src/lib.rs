@@ -23,7 +23,7 @@
 //! ## Examples
 //! **For the ili9486 display, using the SPI interface with no chip select:**
 //! ```
-//! use display_interface_spi::SPIInterface;                 // Provides the builder for DisplayInterface
+//! use mipidsi::interface::SpiInterface;                    // Provides the builder for DisplayInterface
 //! use mipidsi::{Builder, models::ILI9486Rgb666};           // Provides the builder for Display
 //! use embedded_graphics::{prelude::*, pixelcolor::Rgb666}; // Provides the required color type
 //!
@@ -35,8 +35,11 @@
 //!# let rst = mipidsi::_mock::MockOutputPin;
 //!# let mut delay = mipidsi::_mock::MockDelay;
 //!
+//! // Create a buffer
+//! let mut buffer = [0_u8; 512];
+//!
 //! // Create a DisplayInterface from SPI and DC pin, with no manual CS control
-//! let di = SPIInterface::new(spi, dc);
+//! let di = SpiInterface::new(spi, dc, &mut buffer);
 //!
 //! // Create the ILI9486 display driver from the display interface and optional RST pin
 //! let mut display = Builder::new(ILI9486Rgb666, di)
@@ -51,7 +54,7 @@
 //! color order:**
 //! ```
 //! // Provides the builder for DisplayInterface
-//! use display_interface_parallel_gpio::{Generic8BitBus, PGPIO8BitInterface};
+//! use mipidsi::interface::{Generic8BitBus, ParallelInterface};
 //! // Provides the builder for Display
 //! use mipidsi::{Builder, models::ILI9341Rgb666};
 //! // Provides the required color type
@@ -77,7 +80,7 @@
 //! // Create the DisplayInterface from a Generic8BitBus, which is made from the parallel pins
 //! let bus = Generic8BitBus::new((lcd_d0, lcd_d1, lcd_d2,
 //!     lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7));
-//! let di = PGPIO8BitInterface::new(bus, dc, wr);
+//! let di = ParallelInterface::new(bus, dc, wr);
 //!
 //! // Create the ILI9341 display driver from the display interface with the RGB666 color space
 //! let mut display = Builder::new(ILI9341Rgb666, di)

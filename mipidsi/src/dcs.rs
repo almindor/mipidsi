@@ -40,8 +40,7 @@ pub trait DcsCommand {
 /// in this module.
 ///
 /// All other commands, which do not have an associated type in this module, can be sent using
-/// the [`write_raw`](Self::write_raw) method. The underlying display interface is also accessible
-/// using the public [`di`](Self::di) field.
+/// the [`write_raw`](Self::write_raw) method.
 pub trait InterfaceExt: CommandInterface {
     /// Sends a DCS command to the display interface.
     fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Self::Error> {
