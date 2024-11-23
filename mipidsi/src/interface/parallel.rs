@@ -146,133 +146,25 @@ pub enum ParallelError<BUS, DC, WR> {
     Wr(WR),
 }
 
-/// Parallel 8 Bit communication interface
+/// Parallel communication interface
 ///
-/// This interface implements an 8-Bit "8080" style write-only display interface using any
-/// 8-bit [OutputBus] implementation as well as one
+/// This interface implements a "8080" style write-only display interface using any
+/// [OutputBus] implementation as well as one
 /// `OutputPin` for the data/command selection and one `OutputPin` for the write-enable flag.
 ///
 /// All pins are supposed to be high-active, high for the D/C pin meaning "data" and the
 /// write-enable being pulled low before the setting of the bits and supposed to be sampled at a
 /// low to high edge.
-pub struct PGpio8BitInterface<BUS, DC, WR> {
+pub struct ParallelInterface<BUS, DC, WR> {
     bus: BUS,
     dc: DC,
     wr: WR,
 }
 
-impl<BUS, DC, WR> PGpio8BitInterface<BUS, DC, WR>
+impl<BUS, DC, WR> ParallelInterface<BUS, DC, WR>
 where
-    BUS: OutputBus<Word = u8>,
-    DC: OutputPin,
-    WR: OutputPin,
-{
-    /// Create new parallel GPIO interface for communication with a display driver
-    pub fn new(bus: BUS, dc: DC, wr: WR) -> Self {
-        Self { bus, dc, wr }
-    }
-
-    /// Consume the display interface and return
-    /// the bus and GPIO pins used by it
-    pub fn release(self) -> (BUS, DC, WR) {
-        (self.bus, self.dc, self.wr)
-    }
-
-    fn send_byte(
-        &mut self,
-        byte: u8,
-    ) -> Result<(), ParallelError<BUS::Error, DC::Error, WR::Error>> {
-        self.wr.set_low().map_err(ParallelError::Wr)?;
-        self.bus.set_value(byte).map_err(ParallelError::Bus)?;
-        self.wr.set_high().map_err(ParallelError::Wr)
-    }
-}
-
-impl<BUS, DC, WR> CommandInterface for PGpio8BitInterface<BUS, DC, WR>
-where
-    BUS: OutputBus<Word = u8>,
-    DC: OutputPin,
-    WR: OutputPin,
-{
-    type Error = ParallelError<BUS::Error, DC::Error, WR::Error>;
-
-    fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
-        self.dc.set_low().map_err(ParallelError::Dc)?;
-        self.send_byte(command)?;
-        self.dc.set_high().map_err(ParallelError::Dc)?;
-
-        for arg in args {
-            self.send_byte(*arg)?;
-        }
-
-        Ok(())
-    }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-impl<BUS, DC, WR> PixelInterface for PGpio8BitInterface<BUS, DC, WR>
-where
-    BUS: OutputBus<Word = u8>,
-    DC: OutputPin,
-    WR: OutputPin,
-{
-    type PixelWord = u8;
-
-    fn send_pixels<const N: usize>(
-        &mut self,
-        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
-    ) -> Result<(), Self::Error> {
-        for pixel in pixels {
-            for byte in pixel {
-                self.send_byte(byte)?;
-            }
-        }
-        Ok(())
-    }
-
-    fn send_repeated_pixel<const N: usize>(
-        &mut self,
-        pixel: [Self::PixelWord; N],
-        count: u32,
-    ) -> Result<(), Self::Error> {
-        if count == 0 || N == 0 {
-            return Ok(());
-        }
-
-        if let Some(word) = is_same(pixel) {
-            self.send_byte(word)?;
-            for _ in 1..(count * N as u32) {
-                self.wr.set_low().map_err(ParallelError::Wr)?;
-                self.wr.set_high().map_err(ParallelError::Wr)?;
-            }
-            Ok(())
-        } else {
-            self.send_pixels((0..count).map(|_| pixel))
-        }
-    }
-}
-
-/// Parallel 16 Bit communication interface
-///
-/// This interface implements a 16-Bit "8080" style write-only display interface using any
-/// 16-bit [OutputBus] implementation as well as one
-/// `OutputPin` for the data/command selection and one `OutputPin` for the write-enable flag.
-///
-/// All pins are supposed to be high-active, high for the D/C pin meaning "data" and the
-/// write-enable being pulled low before the setting of the bits and supposed to be sampled at a
-/// low to high edge.
-pub struct PGpio16BitInterface<BUS, DC, WR> {
-    bus: BUS,
-    dc: DC,
-    wr: WR,
-}
-
-impl<BUS, DC, WR> PGpio16BitInterface<BUS, DC, WR>
-where
-    BUS: OutputBus<Word = u16>,
+    BUS: OutputBus,
+    BUS::Word: From<u8> + Eq,
     DC: OutputPin,
     WR: OutputPin,
 {
@@ -289,7 +181,7 @@ where
 
     fn send_word(
         &mut self,
-        word: u16,
+        word: BUS::Word,
     ) -> Result<(), ParallelError<BUS::Error, DC::Error, WR::Error>> {
         self.wr.set_low().map_err(ParallelError::Wr)?;
         self.bus.set_value(word).map_err(ParallelError::Bus)?;
@@ -297,9 +189,10 @@ where
     }
 }
 
-impl<BUS, DC, WR> CommandInterface for PGpio16BitInterface<BUS, DC, WR>
+impl<BUS, DC, WR> CommandInterface for ParallelInterface<BUS, DC, WR>
 where
-    BUS: OutputBus<Word = u16>,
+    BUS: OutputBus,
+    BUS::Word: From<u8> + Eq,
     DC: OutputPin,
     WR: OutputPin,
 {
@@ -307,11 +200,11 @@ where
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         self.dc.set_low().map_err(ParallelError::Dc)?;
-        self.send_word(u16::from(command))?;
+        self.send_word(BUS::Word::from(command))?;
         self.dc.set_high().map_err(ParallelError::Dc)?;
 
         for arg in args {
-            self.send_word(u16::from(*arg))?;
+            self.send_word(BUS::Word::from(*arg))?;
         }
 
         Ok(())
@@ -322,13 +215,14 @@ where
     }
 }
 
-impl<BUS, DC, WR> PixelInterface for PGpio16BitInterface<BUS, DC, WR>
+impl<BUS, DC, WR> PixelInterface for ParallelInterface<BUS, DC, WR>
 where
-    BUS: OutputBus<Word = u16>,
+    BUS: OutputBus,
+    BUS::Word: From<u8> + Eq,
     DC: OutputPin,
     WR: OutputPin,
 {
-    type PixelWord = u16;
+    type PixelWord = BUS::Word;
 
     fn send_pixels<const N: usize>(
         &mut self,
