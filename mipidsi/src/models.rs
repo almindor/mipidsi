@@ -34,7 +34,7 @@ pub trait Model {
     /// and returns the value of MADCTL set by init
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

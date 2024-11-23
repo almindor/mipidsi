@@ -11,7 +11,7 @@ use crate::{
 
 /// Common init for all ILI934x controllers and color formats.
 pub fn init_common<DELAY, DI>(
-    dcs: &mut DI,
+    di: &mut DI,
     delay: &mut DELAY,
     options: &ModelOptions,
     pixel_format: PixelFormat,
@@ -26,25 +26,25 @@ where
     // 8.2.2: It will be necessary to wait 5msec before sending new command following software reset.
     delay.delay_us(5_000);
 
-    dcs.write_command(madctl)?;
-    dcs.write_raw(0xB4, &[0x0])?;
-    dcs.write_command(SetInvertMode::new(options.invert_colors))?;
-    dcs.write_command(SetPixelFormat::new(pixel_format))?;
+    di.write_command(madctl)?;
+    di.write_raw(0xB4, &[0x0])?;
+    di.write_command(SetInvertMode::new(options.invert_colors))?;
+    di.write_command(SetPixelFormat::new(pixel_format))?;
 
-    dcs.write_command(EnterNormalMode)?;
+    di.write_command(EnterNormalMode)?;
 
     // 8.2.12: It will be necessary to wait 120msec after sending Sleep In command (when in Sleep Out mode)
     //          before Sleep Out command can be sent.
     // The reset might have implicitly called the Sleep In command if the controller is reinitialized.
     delay.delay_us(120_000);
 
-    dcs.write_command(ExitSleepMode)?;
+    di.write_command(ExitSleepMode)?;
 
     // 8.2.12: It takes 120msec to become Sleep Out mode after SLPOUT command issued.
     // 13.2 Power ON Sequence: Delay should be 60ms + 80ms
     delay.delay_us(140_000);
 
-    dcs.write_command(SetDisplayOn)?;
+    di.write_command(SetDisplayOn)?;
 
     Ok(madctl)
 }

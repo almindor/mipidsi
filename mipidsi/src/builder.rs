@@ -160,26 +160,25 @@ where
         assert!(width + offset_x <= max_width);
         assert!(height + offset_y <= max_height);
 
-        let mut dcs = self.di;
-
         match self.rst {
             Some(ref mut rst) => {
                 rst.set_low().map_err(InitError::Pin)?;
                 delay_source.delay_us(10);
                 rst.set_high().map_err(InitError::Pin)?;
             }
-            None => dcs
+            None => self
+                .di
                 .write_command(crate::dcs::SoftReset)
                 .map_err(InitError::DisplayError)?,
         }
 
         let madctl = self
             .model
-            .init(&mut dcs, delay_source, &self.options)
+            .init(&mut self.di, delay_source, &self.options)
             .map_err(InitError::DisplayError)?;
 
         let display = Display {
-            di: dcs,
+            di: self.di,
             model: self.model,
             rst: self.rst,
             options: self.options,

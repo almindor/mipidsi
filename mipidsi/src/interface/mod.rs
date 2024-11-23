@@ -102,66 +102,66 @@ pub trait PixelFormat<Word> {
     // but that doesn't work yet
 
     #[doc(hidden)]
-    fn send_pixels<DCS: PixelInterface<PixelWord = Word>>(
-        dcs: &mut DCS,
+    fn send_pixels<DI: PixelInterface<PixelWord = Word>>(
+        di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
-    ) -> Result<(), DCS::Error>;
+    ) -> Result<(), DI::Error>;
 
     #[doc(hidden)]
-    fn send_repeated_pixel<DCS: PixelInterface<PixelWord = Word>>(
-        dcs: &mut DCS,
+    fn send_repeated_pixel<DI: PixelInterface<PixelWord = Word>>(
+        di: &mut DI,
         pixel: Self,
         count: u32,
-    ) -> Result<(), DCS::Error>;
+    ) -> Result<(), DI::Error>;
 }
 
 impl PixelFormat<u8> for Rgb565 {
-    fn send_pixels<DCS: PixelInterface<PixelWord = u8>>(
-        dcs: &mut DCS,
+    fn send_pixels<DI: PixelInterface<PixelWord = u8>>(
+        di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_pixels(pixels.into_iter().map(rgb565_to_bytes))
+    ) -> Result<(), DI::Error> {
+        di.send_pixels(pixels.into_iter().map(rgb565_to_bytes))
     }
 
-    fn send_repeated_pixel<DCS: PixelInterface<PixelWord = u8>>(
-        dcs: &mut DCS,
+    fn send_repeated_pixel<DI: PixelInterface<PixelWord = u8>>(
+        di: &mut DI,
         pixel: Self,
         count: u32,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_repeated_pixel(rgb565_to_bytes(pixel), count)
+    ) -> Result<(), DI::Error> {
+        di.send_repeated_pixel(rgb565_to_bytes(pixel), count)
     }
 }
 
 impl PixelFormat<u8> for Rgb666 {
-    fn send_pixels<DCS: PixelInterface<PixelWord = u8>>(
-        dcs: &mut DCS,
+    fn send_pixels<DI: PixelInterface<PixelWord = u8>>(
+        di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_pixels(pixels.into_iter().map(rgb666_to_bytes))
+    ) -> Result<(), DI::Error> {
+        di.send_pixels(pixels.into_iter().map(rgb666_to_bytes))
     }
 
-    fn send_repeated_pixel<DCS: PixelInterface<PixelWord = u8>>(
-        dcs: &mut DCS,
+    fn send_repeated_pixel<DI: PixelInterface<PixelWord = u8>>(
+        di: &mut DI,
         pixel: Self,
         count: u32,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_repeated_pixel(rgb666_to_bytes(pixel), count)
+    ) -> Result<(), DI::Error> {
+        di.send_repeated_pixel(rgb666_to_bytes(pixel), count)
     }
 }
 
 impl PixelFormat<u16> for Rgb565 {
-    fn send_pixels<DCS: PixelInterface<PixelWord = u16>>(
-        dcs: &mut DCS,
+    fn send_pixels<DI: PixelInterface<PixelWord = u16>>(
+        di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_pixels(pixels.into_iter().map(rgb565_to_u16))
+    ) -> Result<(), DI::Error> {
+        di.send_pixels(pixels.into_iter().map(rgb565_to_u16))
     }
 
-    fn send_repeated_pixel<DCS: PixelInterface<PixelWord = u16>>(
-        dcs: &mut DCS,
+    fn send_repeated_pixel<DI: PixelInterface<PixelWord = u16>>(
+        di: &mut DI,
         pixel: Self,
         count: u32,
-    ) -> Result<(), DCS::Error> {
-        dcs.send_repeated_pixel(rgb565_to_u16(pixel), count)
+    ) -> Result<(), DI::Error> {
+        di.send_repeated_pixel(rgb565_to_u16(pixel), count)
     }
 }

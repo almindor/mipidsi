@@ -20,7 +20,7 @@ impl Model for ILI9341Rgb565 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
@@ -29,7 +29,7 @@ impl Model for ILI9341Rgb565 {
         DI: CommandInterface,
     {
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
+        ili934x::init_common(di, delay, options, pf).map_err(Into::into)
     }
 }
 
@@ -39,7 +39,7 @@ impl Model for ILI9341Rgb666 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
@@ -48,6 +48,6 @@ impl Model for ILI9341Rgb666 {
         DI: CommandInterface,
     {
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        ili934x::init_common(dcs, delay, options, pf).map_err(Into::into)
+        ili934x::init_common(di, delay, options, pf).map_err(Into::into)
     }
 }

@@ -20,7 +20,7 @@ impl Model for ExternalST7789 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
@@ -32,20 +32,20 @@ impl Model for ExternalST7789 {
 
         delay.delay_us(150_000);
 
-        dcs.write_command(ExitSleepMode)?;
+        di.write_command(ExitSleepMode)?;
         delay.delay_us(10_000);
 
         // set hw scroll area based on framebuffer size
-        dcs.write_command(madctl)?;
+        di.write_command(madctl)?;
 
-        dcs.write_command(SetInvertMode::new(options.invert_colors))?;
+        di.write_command(SetInvertMode::new(options.invert_colors))?;
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        dcs.write_command(SetPixelFormat::new(pf))?;
+        di.write_command(SetPixelFormat::new(pf))?;
         delay.delay_us(10_000);
-        dcs.write_command(EnterNormalMode)?;
+        di.write_command(EnterNormalMode)?;
         delay.delay_us(10_000);
-        dcs.write_command(SetDisplayOn)?;
+        di.write_command(SetDisplayOn)?;
 
         // DISPON requires some time otherwise we risk SPI data issues
         delay.delay_us(120_000);

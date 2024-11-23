@@ -16,7 +16,7 @@ impl Model for ST7796 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut DI,
+        di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
@@ -24,6 +24,6 @@ impl Model for ST7796 {
         DELAY: DelayNs,
         DI: CommandInterface,
     {
-        super::ST7789.init(dcs, delay, options)
+        super::ST7789.init(di, delay, options)
     }
 }
