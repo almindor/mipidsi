@@ -51,6 +51,37 @@ pub trait PixelInterface: CommandInterface {
     ) -> Result<(), Self::Error>;
 }
 
+impl<T: CommandInterface> CommandInterface for &mut T {
+    type Error = T::Error;
+
+    fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+        T::send_command(self, command, args)
+    }
+
+    fn flush(&mut self) -> Result<(), Self::Error> {
+        T::flush(self)
+    }
+}
+
+impl<T: PixelInterface> PixelInterface for &mut T {
+    type PixelWord = T::PixelWord;
+
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+    ) -> Result<(), Self::Error> {
+        T::send_pixels(self, pixels)
+    }
+
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [Self::PixelWord; N],
+        count: u32,
+    ) -> Result<(), Self::Error> {
+        T::send_repeated_pixel(self, pixel, count)
+    }
+}
+
 fn rgb565_to_bytes(pixel: Rgb565) -> [u8; 2] {
     embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel)
 }
