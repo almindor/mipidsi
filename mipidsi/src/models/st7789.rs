@@ -3,7 +3,7 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
-        BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
+        BitsPerPixel, EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
     interface::CommandInterface,
@@ -22,7 +22,7 @@ impl Model for ST7789 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

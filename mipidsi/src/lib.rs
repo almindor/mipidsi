@@ -96,7 +96,7 @@
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
-use dcs::Dcs;
+use dcs::InterfaceExt;
 
 pub mod interface;
 
@@ -136,7 +136,7 @@ where
     RST: OutputPin,
 {
     // DCS provider
-    dcs: Dcs<DI>,
+    di: DI,
     // Model
     model: MODEL,
     // Reset pin
@@ -176,7 +176,7 @@ where
     /// ```
     pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), DI::Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
-        self.dcs.write_command(self.madctl)?;
+        self.di.write_command(self.madctl)?;
 
         Ok(())
     }
@@ -242,11 +242,11 @@ where
     {
         self.set_address_window(sx, sy, ex, ey)?;
 
-        self.dcs.write_command(dcs::WriteMemoryStart)?;
+        self.di.write_command(dcs::WriteMemoryStart)?;
 
-        M::ColorFormat::send_pixels(&mut self.dcs.di, colors.into_iter())?;
+        M::ColorFormat::send_pixels(&mut self.di, colors.into_iter())?;
 
-        self.dcs.di.flush()
+        self.di.flush()
     }
 
     /// Sets the vertical scroll region.
@@ -281,7 +281,7 @@ where
             )
         };
 
-        self.dcs.write_command(vscrdef)
+        self.di.write_command(vscrdef)
     }
 
     /// Sets the vertical scroll offset.
@@ -293,7 +293,7 @@ where
     /// using this method.
     pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), DI::Error> {
         let vscad = dcs::SetScrollStart::new(offset);
-        self.dcs.write_command(vscad)
+        self.di.write_command(vscad)
     }
 
     ///
@@ -301,7 +301,7 @@ where
     /// This returns the display interface, reset pin and and the model deconstructing the driver.
     ///
     pub fn release(self) -> (DI, M, Option<RST>) {
-        (self.dcs.release(), self.model, self.rst)
+        (self.di, self.model, self.rst)
     }
 
     // Sets the address window for the display.
@@ -321,8 +321,8 @@ where
 
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.dcs.write_command(dcs::SetColumnAddress::new(sx, ex))?;
-        self.dcs.write_command(dcs::SetPageAddress::new(sy, ey))
+        self.di.write_command(dcs::SetColumnAddress::new(sx, ex))?;
+        self.di.write_command(dcs::SetPageAddress::new(sy, ey))
     }
 
     ///
@@ -332,7 +332,7 @@ where
         &mut self,
         tearing_effect: options::TearingEffect,
     ) -> Result<(), DI::Error> {
-        self.dcs
+        self.di
             .write_command(dcs::SetTearingEffect::new(tearing_effect))
     }
 
@@ -348,7 +348,7 @@ where
     /// Need to call [Self::wake] before issuing other commands
     ///
     pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        self.dcs.write_command(dcs::EnterSleepMode)?;
+        self.di.write_command(dcs::EnterSleepMode)?;
         // All supported models requires a 120ms delay before issuing other commands
         delay.delay_us(120_000);
         self.sleeping = true;
@@ -359,7 +359,7 @@ where
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
     pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        self.dcs.write_command(dcs::ExitSleepMode)?;
+        self.di.write_command(dcs::ExitSleepMode)?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);
         self.sleeping = false;
@@ -374,8 +374,8 @@ where
     /// because the rest of the code isn't aware of any state changes that were caused by sending raw commands.
     /// The user must ensure that the state of the controller isn't altered in a way that interferes with the normal
     /// operation of this crate.
-    pub unsafe fn dcs(&mut self) -> &mut Dcs<DI> {
-        &mut self.dcs
+    pub unsafe fn dcs(&mut self) -> &mut DI {
+        &mut self.di
     }
 }
 

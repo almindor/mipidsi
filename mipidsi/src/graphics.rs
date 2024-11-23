@@ -7,6 +7,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
+use crate::dcs::InterfaceExt;
 use crate::{dcs::BitsPerPixel, interface::PixelInterface};
 use crate::{dcs::WriteMemoryStart, models::Model};
 use crate::{interface::PixelFormat, Display};
@@ -111,9 +112,9 @@ where
         let ey = bottom_right.y as u16;
 
         self.set_address_window(sx, sy, ex, ey)?;
-        self.dcs.write_command(WriteMemoryStart)?;
-        M::ColorFormat::send_repeated_pixel(&mut self.dcs.di, color, count)?;
-        self.dcs.di.flush()
+        self.di.write_command(WriteMemoryStart)?;
+        M::ColorFormat::send_repeated_pixel(&mut self.di, color, count)?;
+        self.di.flush()
     }
 }
 

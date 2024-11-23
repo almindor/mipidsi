@@ -238,7 +238,7 @@ where
         pixel: [Self::PixelWord; N],
         count: u32,
     ) -> Result<(), Self::Error> {
-        if count == 0 {
+        if count == 0 || N == 0 {
             return Ok(());
         }
 
@@ -347,7 +347,7 @@ where
         pixel: [Self::PixelWord; N],
         count: u32,
     ) -> Result<(), Self::Error> {
-        if count == 0 {
+        if count == 0 || N == 0 {
             return Ok(());
         }
 

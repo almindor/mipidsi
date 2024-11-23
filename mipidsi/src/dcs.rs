@@ -42,27 +42,9 @@ pub trait DcsCommand {
 /// All other commands, which do not have an associated type in this module, can be sent using
 /// the [`write_raw`](Self::write_raw) method. The underlying display interface is also accessible
 /// using the public [`di`](Self::di) field.
-pub struct Dcs<DI> {
-    /// Display interface instance.
-    pub di: DI,
-}
-
-impl<DI> Dcs<DI>
-where
-    DI: CommandInterface,
-{
-    /// Creates a new [Dcs] instance from a display interface.
-    pub fn write_only(di: DI) -> Self {
-        Self { di }
-    }
-
-    /// Releases the display interface.
-    pub fn release(self) -> DI {
-        self.di
-    }
-
+pub trait InterfaceExt: CommandInterface {
     /// Sends a DCS command to the display interface.
-    pub fn write_command(&mut self, command: impl DcsCommand) -> Result<(), DI::Error> {
+    fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Self::Error> {
         let mut param_bytes: [u8; 16] = [0; 16];
         let n = command.fill_params_buf(&mut param_bytes);
         self.write_raw(command.instruction(), &param_bytes[..n])
@@ -77,11 +59,13 @@ where
     /// This method is intended to be used for sending commands which are not part of the MIPI DCS
     /// user command set. Use [`write_command`](Self::write_command) for commands in the user
     /// command set.
-    pub fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), DI::Error> {
-        self.di.send_command(instruction, param_bytes)?;
-        self.di.flush()
+    fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Self::Error> {
+        self.send_command(instruction, param_bytes)?;
+        self.flush()
     }
 }
+
+impl<T: CommandInterface> InterfaceExt for T {}
 
 // DCS commands that don't use any parameters
 

@@ -3,8 +3,8 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
-        BitsPerPixel, Dcs, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat,
+        BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
+        SetInvertMode, SetPixelFormat,
     },
     interface::CommandInterface,
     models::Model,
@@ -20,7 +20,7 @@ impl Model for ST7735s {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

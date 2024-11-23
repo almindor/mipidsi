@@ -4,7 +4,7 @@ use embedded_hal::digital;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::interface::{PixelFormat, PixelInterface};
-use crate::{dcs::Dcs, error::InitError, models::Model, Display};
+use crate::{dcs::InterfaceExt, error::InitError, models::Model, Display};
 
 use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
 
@@ -160,7 +160,7 @@ where
         assert!(width + offset_x <= max_width);
         assert!(height + offset_y <= max_height);
 
-        let mut dcs = Dcs::write_only(self.di);
+        let mut dcs = self.di;
 
         match self.rst {
             Some(ref mut rst) => {
@@ -179,7 +179,7 @@ where
             .map_err(InitError::DisplayError)?;
 
         let display = Display {
-            dcs,
+            di: dcs,
             model: self.model,
             rst: self.rst,
             options: self.options,

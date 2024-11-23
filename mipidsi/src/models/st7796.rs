@@ -2,10 +2,7 @@ use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 
 use crate::{
-    dcs::{Dcs, SetAddressMode},
-    interface::CommandInterface,
-    models::Model,
-    options::ModelOptions,
+    dcs::SetAddressMode, interface::CommandInterface, models::Model, options::ModelOptions,
 };
 
 /// ST7796 display in Rgb565 color mode.
@@ -19,7 +16,7 @@ impl Model for ST7796 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

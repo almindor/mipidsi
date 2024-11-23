@@ -2,7 +2,7 @@ use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 use mipidsi::{
     dcs::{
-        BitsPerPixel, Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode,
+        BitsPerPixel, EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
     interface::CommandInterface,
@@ -20,7 +20,7 @@ impl Model for ExternalST7789 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

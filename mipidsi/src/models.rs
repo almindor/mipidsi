@@ -1,10 +1,6 @@
 //! Display models.
 
-use crate::{
-    dcs::{Dcs, SetAddressMode},
-    interface::CommandInterface,
-    options::ModelOptions,
-};
+use crate::{dcs::SetAddressMode, interface::CommandInterface, options::ModelOptions};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
@@ -38,7 +34,7 @@ pub trait Model {
     /// and returns the value of MADCTL set by init
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

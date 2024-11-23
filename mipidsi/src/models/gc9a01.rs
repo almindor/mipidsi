@@ -3,14 +3,14 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
-        BitsPerPixel, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn, SetInvertMode,
-        SetPixelFormat,
+        BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
+        SetInvertMode, SetPixelFormat,
     },
     interface::CommandInterface,
     options::ModelOptions,
 };
 
-use super::{Dcs, Model};
+use super::Model;
 
 /// GC9A01 display in Rgb565 color mode.
 pub struct GC9A01;
@@ -21,7 +21,7 @@ impl Model for GC9A01 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>

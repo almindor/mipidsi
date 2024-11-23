@@ -2,7 +2,7 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{
-        Dcs, EnterNormalMode, ExitSleepMode, PixelFormat, SetAddressMode, SetDisplayOn,
+        EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
     interface::CommandInterface,
@@ -11,7 +11,7 @@ use crate::{
 
 /// Common init for all ILI934x controllers and color formats.
 pub fn init_common<DELAY, DI>(
-    dcs: &mut Dcs<DI>,
+    dcs: &mut DI,
     delay: &mut DELAY,
     options: &ModelOptions,
     pixel_format: PixelFormat,

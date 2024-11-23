@@ -2,7 +2,7 @@ use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
 use embedded_hal::delay::DelayNs;
 
 use crate::{
-    dcs::{BitsPerPixel, Dcs, PixelFormat, SetAddressMode},
+    dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
     interface::CommandInterface,
     models::{ili934x, Model},
     options::ModelOptions,
@@ -20,7 +20,7 @@ impl Model for ILI9341Rgb565 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
@@ -39,7 +39,7 @@ impl Model for ILI9341Rgb666 {
 
     fn init<DELAY, DI>(
         &mut self,
-        dcs: &mut Dcs<DI>,
+        dcs: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
     ) -> Result<SetAddressMode, DI::Error>
