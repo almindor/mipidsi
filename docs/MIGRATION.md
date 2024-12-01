@@ -1,5 +1,45 @@
 # Migration guide for `mipidsi` crate
 
+## v0.8 -> 0.9
+
+### Users
+
+* The `display_interface` dependancy has been removed in favor of our own traits and implementations. This gives significantly better performance (#149)
+
+  * Replace `display_interface_spi::SPIInterface` with `mipidsi::interface::SpiInterface`. Note that it requires a small/medium sized `&mut [u8]` buffer. 512 bytes works well, your milage may vary.
+  ```rust
+  // before
+  use display_interface_spi::SPIInterface;
+
+  let di = SPIInterface::new(spi_device, dc);
+
+  // after
+  use mipidsi::interface::SpiInterface;
+
+  let mut buffer = [0_u8; 512];
+  let di = SpiInterface::new(spi_device, dc, &mut buffer);
+  ```
+
+  * Replace `display_interface_parallel_gpio::PGPIO{8,16}BitInterface` with `mipidsi::interface::ParallelInterface` and use `Generic{8,16}BitBus` from `mipidsi::interface`
+  ```rust
+  // before
+  use display_interface_parallel_gpio::Generic8BitBus;
+  use display_interface_parallel_gpio::PGPIO8BitInterface;
+
+  let bus = Generic8BitBus::new(pins);
+  let di = PGPIO8BitInterface::new(bus, dc, wr);
+
+  // after
+  use mipidsi::interface::Generic8BitBus;
+  use mipidsi::interface::ParallelInterface;
+
+  let bus = Generic8BitBus::new(pins);
+  let di = ParallelInterface::new(bus, dc, wr);
+  ```
+
+  * If you have a custom impl of the `display_interface_parallel_gpio::OutputBus` trait, replace it with `mipidsi::interface::OutputBus`. This trait is identical except that it uses an associated error type instead of being hardcoded to `display_interface::DisplayError`
+
+
 ## v0.7 -> 0.8
 
 ### Users
