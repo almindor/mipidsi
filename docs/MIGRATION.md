@@ -4,7 +4,7 @@
 
 ### Users
 
-* The `display_interface` dependancy has been removed in favor of our own traits and implementations. This gives significantly better performance (#149)
+* The `display_interface` dependency has been removed in favor of our own traits and implementations. This gives significantly better performance (#149)
 
   * Replace `display_interface_spi::SPIInterface` with `mipidsi::interface::SpiInterface`. Note that it requires a small/medium sized `&mut [u8]` buffer. 512 bytes works well, your milage may vary.
   ```rust
