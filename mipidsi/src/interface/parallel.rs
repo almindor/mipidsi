@@ -1,6 +1,6 @@
 use embedded_hal::digital::OutputPin;
 
-use super::{CommandInterface, PixelInterface};
+use super::Interface;
 
 /// This trait represents the data pins of a parallel bus.
 ///
@@ -189,13 +189,14 @@ where
     }
 }
 
-impl<BUS, DC, WR> CommandInterface for ParallelInterface<BUS, DC, WR>
+impl<BUS, DC, WR> Interface for ParallelInterface<BUS, DC, WR>
 where
     BUS: OutputBus,
     BUS::Word: From<u8> + Eq,
     DC: OutputPin,
     WR: OutputPin,
 {
+    type PixelWord = BUS::Word;
     type Error = ParallelError<BUS::Error, DC::Error, WR::Error>;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
@@ -209,20 +210,6 @@ where
 
         Ok(())
     }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-impl<BUS, DC, WR> PixelInterface for ParallelInterface<BUS, DC, WR>
-where
-    BUS: OutputBus,
-    BUS::Word: From<u8> + Eq,
-    DC: OutputPin,
-    WR: OutputPin,
-{
-    type PixelWord = BUS::Word;
 
     fn send_pixels<const N: usize>(
         &mut self,
@@ -255,6 +242,10 @@ where
         } else {
             self.send_pixels((0..count).map(|_| pixel))
         }
+    }
+
+    fn flush(&mut self) -> Result<(), Self::Error> {
+        Ok(())
     }
 }
 

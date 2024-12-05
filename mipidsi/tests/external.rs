@@ -5,7 +5,7 @@ use mipidsi::{
         BitsPerPixel, EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
-    interface::CommandInterface,
+    interface::Interface,
     models::Model,
     options::ModelOptions,
 };
@@ -26,7 +26,7 @@ impl Model for ExternalST7789 {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         let madctl = SetAddressMode::from(options);
 

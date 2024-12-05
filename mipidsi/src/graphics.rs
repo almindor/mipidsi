@@ -8,13 +8,13 @@ use embedded_graphics_core::{
 use embedded_hal::digital::OutputPin;
 
 use crate::dcs::InterfaceExt;
-use crate::{dcs::BitsPerPixel, interface::PixelInterface};
+use crate::{dcs::BitsPerPixel, interface::Interface};
 use crate::{dcs::WriteMemoryStart, models::Model};
 use crate::{interface::PixelFormat, Display};
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
-    DI: PixelInterface,
+    DI: Interface,
     M: Model,
     M::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
@@ -120,7 +120,7 @@ where
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
-    DI: PixelInterface,
+    DI: Interface,
     MODEL: Model,
     MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,

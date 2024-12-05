@@ -5,7 +5,7 @@ use crate::{
         EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
-    interface::CommandInterface,
+    interface::Interface,
     options::ModelOptions,
 };
 
@@ -18,7 +18,7 @@ pub fn init_common<DELAY, DI>(
 ) -> Result<SetAddressMode, DI::Error>
 where
     DELAY: DelayNs,
-    DI: CommandInterface,
+    DI: Interface,
 {
     let madctl = SetAddressMode::from(options);
 

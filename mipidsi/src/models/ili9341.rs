@@ -3,7 +3,7 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
-    interface::CommandInterface,
+    interface::Interface,
     models::{ili934x, Model},
     options::ModelOptions,
 };
@@ -26,7 +26,7 @@ impl Model for ILI9341Rgb565 {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(di, delay, options, pf).map_err(Into::into)
@@ -45,7 +45,7 @@ impl Model for ILI9341Rgb666 {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(di, delay, options, pf).map_err(Into::into)

@@ -1,6 +1,6 @@
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
 
-use super::{CommandInterface, PixelInterface};
+use super::Interface;
 
 /// Spi interface error
 #[derive(Clone, Copy, Debug)]
@@ -25,7 +25,8 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
     }
 }
 
-impl<SPI: SpiDevice, DC: OutputPin> CommandInterface for SpiInterface<'_, SPI, DC> {
+impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
+    type PixelWord = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
@@ -35,14 +36,6 @@ impl<SPI: SpiDevice, DC: OutputPin> CommandInterface for SpiInterface<'_, SPI, D
         self.spi.write(args).map_err(SpiError::Spi)?;
         Ok(())
     }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-impl<SPI: SpiDevice, DC: OutputPin> PixelInterface for SpiInterface<'_, SPI, DC> {
-    type PixelWord = u8;
 
     fn send_pixels<const N: usize>(
         &mut self,
@@ -94,6 +87,10 @@ impl<SPI: SpiDevice, DC: OutputPin> PixelInterface for SpiInterface<'_, SPI, DC>
                 .write(&self.buffer[..(count as usize * pixel.len())])
                 .map_err(SpiError::Spi)?;
         }
+        Ok(())
+    }
+
+    fn flush(&mut self) -> Result<(), Self::Error> {
         Ok(())
     }
 }

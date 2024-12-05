@@ -2,7 +2,7 @@
 //! Batch the pixels to be rendered into Pixel Rows and Pixel Blocks (contiguous Pixel Rows).
 //! This enables the pixels to be rendered efficiently as Pixel Blocks, which may be transmitted in a single Non-Blocking SPI request.
 use crate::{
-    interface::{PixelFormat, PixelInterface},
+    interface::{Interface, PixelFormat},
     models::Model,
     Display,
 };
@@ -11,7 +11,7 @@ use embedded_hal::digital::OutputPin;
 
 pub trait DrawBatch<DI, M, I>
 where
-    DI: PixelInterface,
+    DI: Interface,
     M: Model,
     M::ColorFormat: PixelFormat<DI::PixelWord>,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
@@ -21,7 +21,7 @@ where
 
 impl<DI, M, RST, I> DrawBatch<DI, M, I> for Display<DI, M, RST>
 where
-    DI: PixelInterface,
+    DI: Interface,
     M: Model,
     M::ColorFormat: PixelFormat<DI::PixelWord>,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,

@@ -1,6 +1,6 @@
 //! Display models.
 
-use crate::{dcs::SetAddressMode, interface::CommandInterface, options::ModelOptions};
+use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
@@ -40,5 +40,5 @@ pub trait Model {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface;
+        DI: Interface;
 }

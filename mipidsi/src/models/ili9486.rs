@@ -6,7 +6,7 @@ use crate::{
         BitsPerPixel, EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
-    interface::CommandInterface,
+    interface::Interface,
     options::ModelOptions,
 };
 
@@ -30,7 +30,7 @@ impl Model for ILI9486Rgb565 {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         delay.delay_us(120_000);
 
@@ -51,7 +51,7 @@ impl Model for ILI9486Rgb666 {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         delay.delay_us(120_000);
 
@@ -69,7 +69,7 @@ fn init_common<DELAY, DI>(
 ) -> Result<SetAddressMode, DI::Error>
 where
     DELAY: DelayNs,
-    DI: CommandInterface,
+    DI: Interface,
 {
     let madctl = SetAddressMode::from(options);
     di.write_command(ExitSleepMode)?; // turn off sleep

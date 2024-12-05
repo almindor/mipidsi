@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- replaced `display_interface` with our own traits and implementations for significanly better performance, see the migration page for details (#149)
+- replaced `display_interface` with our own trait and implementations for significanly better performance, see the migration page for details (#149)
 
 ## [v0.8.0] - 2024-05-24
 

@@ -6,7 +6,7 @@ use crate::{
         BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
-    interface::CommandInterface,
+    interface::Interface,
     models::Model,
     options::ModelOptions,
 };
@@ -26,7 +26,7 @@ impl Model for ST7735s {
     ) -> Result<SetAddressMode, DI::Error>
     where
         DELAY: DelayNs,
-        DI: CommandInterface,
+        DI: Interface,
     {
         let madctl = SetAddressMode::from(options);
 

@@ -133,7 +133,7 @@ mod batch;
 ///
 pub struct Display<DI, MODEL, RST>
 where
-    DI: interface::PixelInterface,
+    DI: interface::Interface,
     MODEL: Model,
     MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
@@ -154,7 +154,7 @@ where
 
 impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: interface::PixelInterface,
+    DI: interface::Interface,
     M: Model,
     M::ColorFormat: PixelFormat<DI::PixelWord>,
     RST: OutputPin,
@@ -391,11 +391,7 @@ pub mod _mock {
 
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::{
-        interface::{CommandInterface, PixelInterface},
-        models::ILI9341Rgb565,
-        Builder, Display, NoResetPin,
-    };
+    use crate::{interface::Interface, models::ILI9341Rgb565, Builder, Display, NoResetPin};
 
     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
         Builder::new(ILI9341Rgb565, MockDisplayInterface)
@@ -442,20 +438,13 @@ pub mod _mock {
 
     pub struct MockDisplayInterface;
 
-    impl CommandInterface for MockDisplayInterface {
+    impl Interface for MockDisplayInterface {
+        type PixelWord = u8;
         type Error = Infallible;
 
         fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
-
-        fn flush(&mut self) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
-
-    impl PixelInterface for MockDisplayInterface {
-        type PixelWord = u8;
 
         fn send_pixels<const N: usize>(
             &mut self,
@@ -469,6 +458,10 @@ pub mod _mock {
             _pixel: [Self::PixelWord; N],
             _count: u32,
         ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn flush(&mut self) -> Result<(), Self::Error> {
             Ok(())
         }
     }
