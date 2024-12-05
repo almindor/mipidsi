@@ -10,7 +10,7 @@ It consists of
 
 *NOTES*:
 
-* The name of these crates is a bit unfortunate as the drivers work with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
+* The name of these crates is a bit unfortunate as the drivers work with displays that use the MIPI Display Command Set but MIPI Display Serial Interface is NOT supported at this time.
 
 ## License
 

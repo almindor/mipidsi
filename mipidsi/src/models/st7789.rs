@@ -12,8 +12,6 @@ use crate::{
 };
 
 /// ST7789 display in Rgb565 color mode.
-///
-/// Interfaces implemented by the [display-interface](https://crates.io/crates/display-interface) are supported.
 pub struct ST7789;
 
 impl Model for ST7789 {

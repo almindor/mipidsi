@@ -6,7 +6,7 @@
 //! This crate provides a generic display driver to connect to TFT displays
 //! that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
 //!
-//! Uses [display_interface](https://crates.io/crates/display-interface) to talk to the hardware via transports.
+//! Uses [interface::Interface] to talk to the hardware via transports.
 //!
 //! An optional batching of draws is supported via the `batch` feature (default on)
 //!
@@ -92,9 +92,8 @@
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
 //! Use the appropriate display interface crate for your needs:
-//! - [`display-interface-spi`](https://docs.rs/display-interface-spi/)
-//! - [`display-interface-parallel-gpio`](https://docs.rs/display-interface-parallel-gpio)
-//! - [`display-interface-i2c`](https://docs.rs/display-interface-i2c/)
+//! - [`interface::SpiInterface`]
+//! - [`interface::ParallelInterface`]
 //!
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
@@ -382,7 +381,7 @@ where
     }
 }
 
-/// Mock implementations of embedded-hal and display-interface traits.
+/// Mock implementations of embedded-hal and interface traits.
 ///
 /// Do not use types in this module outside of doc tests.
 #[doc(hidden)]

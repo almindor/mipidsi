@@ -4,8 +4,6 @@ use embedded_hal::delay::DelayNs;
 use crate::{dcs::SetAddressMode, interface::Interface, models::Model, options::ModelOptions};
 
 /// ST7796 display in Rgb565 color mode.
-///
-/// Interfaces implemented by the [display-interface](https://crates.io/crates/display-interface) are supported.
 pub struct ST7796;
 
 impl Model for ST7796 {
