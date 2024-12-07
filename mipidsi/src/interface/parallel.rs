@@ -152,7 +152,7 @@ pub enum ParallelError<BUS, DC, WR> {
 /// [OutputBus] implementation as well as one
 /// `OutputPin` for the data/command selection and one `OutputPin` for the write-enable flag.
 ///
-/// All pins are supposed to be high-active, high for the D/C pin meaning "data" and the
+/// All pins in the data bus are supposed to be high-active. High for the D/C pin meaning "data" and the
 /// write-enable being pulled low before the setting of the bits and supposed to be sampled at a
 /// low to high edge.
 pub struct ParallelInterface<BUS, DC, WR> {
