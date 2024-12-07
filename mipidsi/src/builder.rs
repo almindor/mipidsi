@@ -4,7 +4,7 @@ use embedded_hal::digital;
 use embedded_hal::{delay::DelayNs, digital::OutputPin};
 
 use crate::interface::{Interface, PixelFormat};
-use crate::{dcs::InterfaceExt, error::InitError, models::Model, Display};
+use crate::{dcs::InterfaceExt, models::Model, Display};
 
 use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
 
@@ -162,20 +162,20 @@ where
 
         match self.rst {
             Some(ref mut rst) => {
-                rst.set_low().map_err(InitError::Pin)?;
+                rst.set_low().map_err(InitError::ResetPin)?;
                 delay_source.delay_us(10);
-                rst.set_high().map_err(InitError::Pin)?;
+                rst.set_high().map_err(InitError::ResetPin)?;
             }
             None => self
                 .di
                 .write_command(crate::dcs::SoftReset)
-                .map_err(InitError::DisplayError)?,
+                .map_err(InitError::Interface)?,
         }
 
         let madctl = self
             .model
             .init(&mut self.di, delay_source, &self.options)
-            .map_err(InitError::DisplayError)?;
+            .map_err(InitError::Interface)?;
 
         let display = Display {
             di: self.di,
@@ -188,6 +188,15 @@ where
 
         Ok(display)
     }
+}
+
+/// Error returned by [`Builder::init`].
+#[derive(Debug)]
+pub enum InitError<DI, P> {
+    /// Error caused by the display interface.
+    Interface(DI),
+    /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::OutputPin) implementation.
+    ResetPin(P),
 }
 
 /// Marker type for no reset pin.

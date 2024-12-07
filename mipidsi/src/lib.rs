@@ -102,8 +102,6 @@ use dcs::InterfaceExt;
 
 pub mod interface;
 
-pub mod error;
-
 use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::OutputPin;
 
