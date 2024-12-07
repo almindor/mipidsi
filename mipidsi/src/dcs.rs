@@ -33,7 +33,7 @@ pub trait DcsCommand {
     fn fill_params_buf(&self, buffer: &mut [u8]) -> usize;
 }
 
-/// Wrapper around [`Interface`] with support for writing DCS commands.
+/// An extension trait for [`Interface`] with support for writing DCS commands.
 ///
 /// Commands which are part of the manufacturer independent user command set can be sent to the
 /// display by using the [`write_command`](Self::write_command) method with one of the command types
