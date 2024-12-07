@@ -39,6 +39,55 @@
 
   * If you have a custom impl of the `display_interface_parallel_gpio::OutputBus` trait, replace it with `mipidsi::interface::OutputBus`. This trait is identical except that it uses an associated error type instead of being hardcoded to `display_interface::DisplayError`
 
+  * If you are using `stm32f4xx-hal`'s fsmc, you can copy and paste this adapter:
+  ```rust
+  pub struct FsmcAdapter<S, WORD>(pub Lcd<S, WORD>);
+
+  impl<S, WORD> Interface for FsmcAdapter<S, WORD>
+  where
+      S: SubBank,
+      WORD: Word + Copy + From<u8>,
+  {
+      type Word = WORD;
+
+      type Error = Infallible;
+
+      fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+          self.0.write_command(command.into());
+          for &arg in args {
+              self.0.write_data(arg.into());
+          }
+
+          Ok(())
+      }
+
+      fn send_pixels<const N: usize>(
+          &mut self,
+          pixels: impl IntoIterator<Item = [Self::Word; N]>,
+      ) -> Result<(), Self::Error> {
+          for pixel in pixels {
+              for word in pixel {
+                  self.0.write_data(word);
+              }
+          }
+
+          Ok(())
+      }
+
+      fn send_repeated_pixel<const N: usize>(
+          &mut self,
+          pixel: [Self::Word; N],
+          count: u32,
+      ) -> Result<(), Self::Error> {
+          self.send_pixels((0..count).map(|_| pixel))
+      }
+
+      fn flush(&mut self) -> Result<(), Self::Error> {
+          Ok(())
+      }
+    }
+    ```
+
 
 ## v0.7 -> 0.8
 
