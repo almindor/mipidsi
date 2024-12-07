@@ -30,7 +30,7 @@ pub struct Builder<DI, MODEL, RST>
 where
     DI: Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
+    MODEL::ColorFormat: PixelFormat<DI::Word>,
 {
     di: DI,
     model: MODEL,
@@ -42,7 +42,7 @@ impl<DI, MODEL> Builder<DI, MODEL, NoResetPin>
 where
     DI: Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
+    MODEL::ColorFormat: PixelFormat<DI::Word>,
 {
     ///
     /// Constructs a new builder for given [Model].
@@ -62,7 +62,7 @@ impl<DI, MODEL, RST> Builder<DI, MODEL, RST>
 where
     DI: Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
+    MODEL::ColorFormat: PixelFormat<DI::Word>,
     RST: OutputPin,
 {
     ///

@@ -16,7 +16,7 @@ impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
     DI: Interface,
     M: Model,
-    M::ColorFormat: PixelFormat<DI::PixelWord>,
+    M::ColorFormat: PixelFormat<DI::Word>,
     RST: OutputPin,
 {
     type Error = DI::Error;
@@ -122,7 +122,7 @@ impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
     DI: Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
+    MODEL::ColorFormat: PixelFormat<DI::Word>,
     RST: OutputPin,
 {
     fn size(&self) -> Size {

@@ -26,7 +26,7 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
 }
 
 impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
-    type PixelWord = u8;
+    type Word = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
@@ -39,7 +39,7 @@ impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
 
     fn send_pixels<const N: usize>(
         &mut self,
-        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+        pixels: impl IntoIterator<Item = [Self::Word; N]>,
     ) -> Result<(), Self::Error> {
         let mut arrays = pixels.into_iter();
 
@@ -65,7 +65,7 @@ impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
 
     fn send_repeated_pixel<const N: usize>(
         &mut self,
-        pixel: [Self::PixelWord; N],
+        pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error> {
         let fill_count = core::cmp::min(count, (self.buffer.len() / N) as u32);

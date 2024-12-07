@@ -196,7 +196,7 @@ where
     DC: OutputPin,
     WR: OutputPin,
 {
-    type PixelWord = BUS::Word;
+    type Word = BUS::Word;
     type Error = ParallelError<BUS::Error, DC::Error, WR::Error>;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
@@ -213,7 +213,7 @@ where
 
     fn send_pixels<const N: usize>(
         &mut self,
-        pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+        pixels: impl IntoIterator<Item = [Self::Word; N]>,
     ) -> Result<(), Self::Error> {
         for pixel in pixels {
             for word in pixel {
@@ -225,7 +225,7 @@ where
 
     fn send_repeated_pixel<const N: usize>(
         &mut self,
-        pixel: [Self::PixelWord; N],
+        pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error> {
         if count == 0 || N == 0 {

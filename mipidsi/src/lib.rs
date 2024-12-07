@@ -132,7 +132,7 @@ pub struct Display<DI, MODEL, RST>
 where
     DI: interface::Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::PixelWord>,
+    MODEL::ColorFormat: PixelFormat<DI::Word>,
     RST: OutputPin,
 {
     // DCS provider
@@ -153,7 +153,7 @@ impl<DI, M, RST> Display<DI, M, RST>
 where
     DI: interface::Interface,
     M: Model,
-    M::ColorFormat: PixelFormat<DI::PixelWord>,
+    M::ColorFormat: PixelFormat<DI::Word>,
     RST: OutputPin,
 {
     ///
@@ -436,7 +436,7 @@ pub mod _mock {
     pub struct MockDisplayInterface;
 
     impl Interface for MockDisplayInterface {
-        type PixelWord = u8;
+        type Word = u8;
         type Error = Infallible;
 
         fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
@@ -445,14 +445,14 @@ pub mod _mock {
 
         fn send_pixels<const N: usize>(
             &mut self,
-            _pixels: impl IntoIterator<Item = [Self::PixelWord; N]>,
+            _pixels: impl IntoIterator<Item = [Self::Word; N]>,
         ) -> Result<(), Self::Error> {
             Ok(())
         }
 
         fn send_repeated_pixel<const N: usize>(
             &mut self,
-            _pixel: [Self::PixelWord; N],
+            _pixel: [Self::Word; N],
             _count: u32,
         ) -> Result<(), Self::Error> {
             Ok(())
