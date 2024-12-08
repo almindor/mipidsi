@@ -9,7 +9,7 @@
 This crate provides a generic display driver to connect to TFT displays
 that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
 
-Uses `interface::Interface` to talk to the hardware via transports (currently SPI, I2C and Parallel GPIO).
+Uses `interface::Interface` to talk to the hardware via transports (currently SPI and Parallel GPIO).
 
 An optional batching of draws is supported via the `batch` feature (default on)
 
