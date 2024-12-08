@@ -8,6 +8,10 @@
 //!
 //! Uses [interface::Interface] to talk to the hardware via transports.
 //!
+//! Use the appropriate display interface crate for your needs:
+//! - [`interface::SpiInterface`]
+//! - [`interface::ParallelInterface`]
+//!
 //! An optional batching of draws is supported via the `batch` feature (default on)
 //!
 //! ### List of supported models
@@ -91,9 +95,6 @@
 //! // Clear the display to black
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
-//! Use the appropriate display interface crate for your needs:
-//! - [`interface::SpiInterface`]
-//! - [`interface::ParallelInterface`]
 //!
 //! ## Troubleshooting
 //! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
