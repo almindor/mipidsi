@@ -11,7 +11,11 @@ pub enum SpiError<SPI, DC> {
     Dc(DC),
 }
 
-/// Spi interface
+/// Spi interface, including a buffer
+///
+/// The buffer is used to gather batches of pixel data to be sent over SPI.
+/// Larger buffers will genererally be faster (with diminishing returns), at the expense of using more RAM.
+/// The buffer should be at least big enough to hold a few pixels of data.
 pub struct SpiInterface<'a, SPI, DC> {
     spi: SPI,
     dc: DC,
