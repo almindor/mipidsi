@@ -16,7 +16,6 @@ Buttons:
 Read the README.md for more information.
 */
 
-use display_interface_spi::SPIInterface;
 use embedded_graphics::{
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
@@ -24,6 +23,7 @@ use embedded_graphics::{
     text::Text,
 };
 use embedded_hal_bus::spi::ExclusiveDevice;
+use mipidsi::interface::SpiInterface;
 use mipidsi::{models::ST7789, options::ColorInversion, Builder};
 use rppal::gpio::Gpio;
 use rppal::hal::Delay;
@@ -68,7 +68,8 @@ fn main() -> ExitCode {
     // SPI Display
     let spi = Spi::new(Bus::Spi0, SlaveSelect::Ss1, 60_000_000_u32, Mode::Mode0).unwrap();
     let spi_device = ExclusiveDevice::new_no_delay(spi, NoCs).unwrap();
-    let di = SPIInterface::new(spi_device, dc);
+    let mut buffer = [0_u8; 512];
+    let di = SpiInterface::new(spi_device, dc, &mut buffer);
     let mut delay = Delay::new();
     let mut display = Builder::new(ST7789, di)
         .display_size(W as u16, H as u16)

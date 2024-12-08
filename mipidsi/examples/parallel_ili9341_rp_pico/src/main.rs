@@ -28,7 +28,7 @@ use embedded_graphics::{
 };
 
 // Provides the parallel port and display interface builders
-use display_interface_parallel_gpio::{Generic8BitBus, PGPIO8BitInterface};
+use mipidsi::interface::{Generic8BitBus, ParallelInterface};
 
 // Provides the Display builder
 use mipidsi::Builder;
@@ -96,7 +96,7 @@ fn main() -> ! {
     ));
 
     // Define the display interface from a generic 8 bit bus, a Data/Command select pin and a write enable pin
-    let di = PGPIO8BitInterface::new(bus, dc, wr);
+    let di = ParallelInterface::new(bus, dc, wr);
 
     // Define the display from the display bus, set the color order as Bgr and initialize it with
     // the delay struct and the reset pin

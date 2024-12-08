@@ -21,7 +21,7 @@ use embedded_graphics::{
 };
 
 // Provides the parallel port and display interface builders
-use display_interface_spi::SPIInterface;
+use mipidsi::interface::SpiInterface;
 
 // Provides the Display builder
 use mipidsi::{models::ILI9486Rgb565, Builder};
@@ -71,8 +71,10 @@ fn main() -> ! {
     let cs_output = Output::new(cs, Level::High);
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs_output).unwrap();
 
+    let mut buffer = [0_u8; 512];
+
     // Define the display interface with no chip select
-    let di = SPIInterface::new(spi_device, dc);
+    let di = SpiInterface::new(spi_device, dc, &mut buffer);
 
     // Define the display from the display interface and initialize it
     let mut display = Builder::new(ILI9486Rgb565, di)

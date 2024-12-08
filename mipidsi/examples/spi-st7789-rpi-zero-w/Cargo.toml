@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 mipidsi = { path = "../../" }
-display-interface-spi = "0.5.0"
 embedded-graphics = "0.8.0"
 rppal = { version = "0.17.1", features = ["hal"] }
 embedded-hal-bus = "0.2.0"
