@@ -13,9 +13,9 @@ Uses [display_interface](https://crates.io/crates/display-interface) to talk to 
 
 An optional batching of draws is supported via the `batch` feature (default on)
 
-*NOTES*:
+_NOTES_:
 
-* The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
+- The name of this crate is a bit unfortunate as this driver works with displays that use the MIPI Display Command Set via any transport supported by [display_interface](https://crates.io/crates/display-interface) but MIPI Display Serial Interface is NOT supported at this time.
 
 ## License
 
@@ -35,13 +35,14 @@ Variants that require different screen sizes and window addressing offsets are n
 
 ### List of supported models
 
-* GC9A01
-* ILI9341
-* ILI9342C
-* ILI9486
-* ST7735
-* ST7789
-* ST7796
+- GC9107
+- GC9A01
+- ILI9341
+- ILI9342C
+- ILI9486
+- ST7735
+- ST7789
+- ST7796
 
 ## Migration
 
@@ -52,6 +53,7 @@ See [MIGRATION.md](../docs/MIGRATION.md) document.
 See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) document.
 
 ### Example
+
 ```rust
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
 let di = SPIInterfaceNoCS::new(spi, dc);
@@ -65,5 +67,5 @@ display.clear(Rgb666::BLACK)?;
 
 ## Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.75.0 and up. It *might*
+This crate is guaranteed to compile on stable Rust 1.75.0 and up. It _might_
 compile with older versions but that may change in any new patch release.

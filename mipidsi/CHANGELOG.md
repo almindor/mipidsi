@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - added `Display::set_pixels_from_buffer` to allow high performance display writes
+- added `GC9107` model support
 
 ## [v0.8.0] - 2024-05-24
 
@@ -52,7 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
- - fixed MSRV in `Cargo.toml` to match the rest at `v1.61`
+- fixed MSRV in `Cargo.toml` to match the rest at `v1.61`
 
 ## [v0.7.0] - 2023-05-24
 
@@ -85,7 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - added the `Builder` as construction method for displays to simplify configuration
-and protect against use-before-init bugs
+  and protect against use-before-init bugs
 - added `Model::default_options()` so that each model can provide a sane default regardless of helper constructors
 
 ### Changed
@@ -143,13 +144,15 @@ and protect against use-before-init bugs
 ## [v0.2.0] - 2021-04-12
 
 ### Changed
+
 - fix RGB/BGR color issue on some models
 - expand `Orientation` to use mirror image settings properly
 - change `Display::init` to include `DisplayOptions` and allow setting all `MADCTL` values on init, including `Orientation`
 - fix issues [#6](https://github.com/almindor/mipidsi/issues/6), [#8](https://github.com/almindor/mipidsi/issues/8) and [#10](https://github.com/almindor/mipidsi/issues/10)
-    - big thanks to [@brianmay](https://github.com/brianmay) and [@KerryRJ](https://github.com/KerryRJ)
+  - big thanks to [@brianmay](https://github.com/brianmay) and [@KerryRJ](https://github.com/KerryRJ)
 
 ## [v0.1.0] - 2021-09-09
 
 ### Added
+
 - Initial release

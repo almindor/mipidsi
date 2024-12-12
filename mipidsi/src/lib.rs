@@ -12,6 +12,7 @@
 //!
 //! ### List of supported models
 //!
+//! * GC9107
 //! * GC9A01
 //! * ILI9341
 //! * ILI9342C
@@ -256,7 +257,7 @@ where
     /// the bottom right corner.
     ///
     /// <div class="warning">
-    ///    
+    ///
     /// This method is intended for advanced use cases where low level access to
     /// the displays framebuffer is required for performance reasons.  The
     /// caller must ensure the raw pixel data in `raw_buf` has the correct
