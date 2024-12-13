@@ -16,44 +16,20 @@ pub enum SpiError<SPI, DC> {
 /// The buffer is used to gather batches of pixel data to be sent over SPI.
 /// Larger buffers will genererally be faster (with diminishing returns), at the expense of using more RAM.
 /// The buffer should be at least big enough to hold a few pixels of data.
-///
-/// The buffer can be any type that implements [`AsMut<[u8]>`](AsMut) such as
-/// - Mutable slices, `&mut [u8]`
-/// - Owned arrays, `[u8; N]`
-/// - Or even heap types like `Box<[u8]>` or `Vec<u8>`
-///
-/// # Examples:
-///
-/// Slice buffer
-/// ```rust
-/// # use mipidsi::interface::SpiInterface;
-/// # let spi = mipidsi::_mock::MockSpi;
-/// # let dc = mipidsi::_mock::MockOutputPin;
-/// let mut buffer = [0_u8; 128];
-/// let iface = SpiInterface::new(spi, dc, &mut buffer);
-/// ```
-///
-/// Array buffer
-/// ```rust
-/// # use mipidsi::interface::SpiInterface;
-/// # let spi = mipidsi::_mock::MockSpi;
-/// # let dc = mipidsi::_mock::MockOutputPin;
-/// let iface = SpiInterface::new(spi, dc, [0_u8; 128]);
-/// ```
-pub struct SpiInterface<SPI, DC, B> {
+pub struct SpiInterface<'a, SPI, DC> {
     spi: SPI,
     dc: DC,
-    buffer: B,
+    buffer: &'a mut [u8],
 }
 
-impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> SpiInterface<SPI, DC, B> {
+impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
     /// Create new interface
-    pub fn new(spi: SPI, dc: DC, buffer: B) -> Self {
+    pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
         Self { spi, dc, buffer }
     }
 }
 
-impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> Interface for SpiInterface<SPI, DC, B> {
+impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
     type Word = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
 
@@ -71,14 +47,12 @@ impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> Interface for SpiInterface<S
     ) -> Result<(), Self::Error> {
         let mut arrays = pixels.into_iter();
 
-        let buffer = self.buffer.as_mut();
-
-        assert!(buffer.len() >= N);
+        assert!(self.buffer.len() >= N);
 
         let mut done = false;
         while !done {
             let mut i = 0;
-            for chunk in buffer.chunks_exact_mut(N) {
+            for chunk in self.buffer.chunks_exact_mut(N) {
                 if let Some(array) = arrays.next() {
                     let chunk: &mut [u8; N] = chunk.try_into().unwrap();
                     *chunk = array;
@@ -88,7 +62,7 @@ impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> Interface for SpiInterface<S
                     break;
                 };
             }
-            self.spi.write(&buffer[..i]).map_err(SpiError::Spi)?;
+            self.spi.write(&self.buffer[..i]).map_err(SpiError::Spi)?;
         }
         Ok(())
     }
@@ -98,11 +72,9 @@ impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> Interface for SpiInterface<S
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error> {
-        let buffer = self.buffer.as_mut();
-
-        let fill_count = core::cmp::min(count, (buffer.len() / N) as u32);
+        let fill_count = core::cmp::min(count, (self.buffer.len() / N) as u32);
         let filled_len = fill_count as usize * N;
-        for chunk in buffer[..(filled_len)].chunks_exact_mut(N) {
+        for chunk in self.buffer[..(filled_len)].chunks_exact_mut(N) {
             let chunk: &mut [u8; N] = chunk.try_into().unwrap();
             *chunk = pixel;
         }
@@ -110,13 +82,13 @@ impl<SPI: SpiDevice, DC: OutputPin, B: AsMut<[u8]>> Interface for SpiInterface<S
         let mut count = count;
         while count >= fill_count {
             self.spi
-                .write(&buffer[..filled_len])
+                .write(&self.buffer[..filled_len])
                 .map_err(SpiError::Spi)?;
             count -= fill_count;
         }
         if count != 0 {
             self.spi
-                .write(&buffer[..(count as usize * pixel.len())])
+                .write(&self.buffer[..(count as usize * pixel.len())])
                 .map_err(SpiError::Spi)?;
         }
         Ok(())
