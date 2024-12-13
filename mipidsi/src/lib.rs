@@ -16,6 +16,7 @@
 //!
 //! ### List of supported models
 //!
+//! * GC9107
 //! * GC9A01
 //! * ILI9341
 //! * ILI9342C
