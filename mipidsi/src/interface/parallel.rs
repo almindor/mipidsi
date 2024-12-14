@@ -149,8 +149,8 @@ pub enum ParallelError<BUS, DC, WR> {
 /// Parallel communication interface
 ///
 /// This interface implements a "8080" style write-only display interface using any
-/// [OutputBus] implementation as well as one
-/// `OutputPin` for the data/command selection and one `OutputPin` for the write-enable flag.
+/// [`OutputBus`] implementation as well as one
+/// [`OutputPin`] for the data/command selection and one [`OutputPin`] for the write-enable flag.
 ///
 /// All pins in the data bus are supposed to be high-active. High for the D/C pin meaning "data" and the
 /// write-enable being pulled low before the setting of the bits and supposed to be sampled at a

@@ -13,8 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- replaced `display_interface` with our own trait and implementations for significanly better performance, see the migration page for details (#149)
-aster
+- replaced `display_interface` with our own trait and implementations for significantly better performance, see the [migration guide](https://github.com/almindor/mipidsi/blob/master/docs/MIGRATION.mdMIGRATION.md#v08---09) for details
 
 ## [v0.8.0] - 2024-05-24
 
