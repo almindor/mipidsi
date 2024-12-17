@@ -77,7 +77,7 @@ fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
 }
 
 /// This is an implementation detail, it should not be implemented or used outside this crate
-pub trait PixelFormat<Word> {
+pub trait InterfacePixelFormat<Word> {
     // this should just be
     // const N: usize;
     // fn convert(self) -> [Word; Self::N];
@@ -97,7 +97,7 @@ pub trait PixelFormat<Word> {
     ) -> Result<(), DI::Error>;
 }
 
-impl PixelFormat<u8> for Rgb565 {
+impl InterfacePixelFormat<u8> for Rgb565 {
     fn send_pixels<DI: Interface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -114,7 +114,7 @@ impl PixelFormat<u8> for Rgb565 {
     }
 }
 
-impl PixelFormat<u8> for Rgb666 {
+impl InterfacePixelFormat<u8> for Rgb666 {
     fn send_pixels<DI: Interface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -131,7 +131,7 @@ impl PixelFormat<u8> for Rgb666 {
     }
 }
 
-impl PixelFormat<u16> for Rgb565 {
+impl InterfacePixelFormat<u16> for Rgb565 {
     fn send_pixels<DI: Interface<Word = u16>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,

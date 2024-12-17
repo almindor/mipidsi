@@ -10,13 +10,13 @@ use embedded_hal::digital::OutputPin;
 use crate::dcs::InterfaceExt;
 use crate::{dcs::BitsPerPixel, interface::Interface};
 use crate::{dcs::WriteMemoryStart, models::Model};
-use crate::{interface::PixelFormat, Display};
+use crate::{interface::InterfacePixelFormat, Display};
 
 impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
 where
     DI: Interface,
     M: Model,
-    M::ColorFormat: PixelFormat<DI::Word>,
+    M::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
 {
     type Error = DI::Error;
@@ -121,7 +121,7 @@ impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
     DI: Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::Word>,
+    MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
 {
     fn size(&self) -> Size {

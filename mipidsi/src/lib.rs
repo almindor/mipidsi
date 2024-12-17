@@ -108,7 +108,7 @@ use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::OutputPin;
 
 pub mod options;
-use interface::PixelFormat;
+use interface::InterfacePixelFormat;
 use options::MemoryMapping;
 
 mod builder;
@@ -134,7 +134,7 @@ pub struct Display<DI, MODEL, RST>
 where
     DI: interface::Interface,
     MODEL: Model,
-    MODEL::ColorFormat: PixelFormat<DI::Word>,
+    MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
 {
     // DCS provider
@@ -155,7 +155,7 @@ impl<DI, M, RST> Display<DI, M, RST>
 where
     DI: interface::Interface,
     M: Model,
-    M::ColorFormat: PixelFormat<DI::Word>,
+    M::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
 {
     ///
