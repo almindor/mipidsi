@@ -113,8 +113,7 @@ where
 
         self.set_address_window(sx, sy, ex, ey)?;
         self.di.write_command(WriteMemoryStart)?;
-        M::ColorFormat::send_repeated_pixel(&mut self.di, color, count)?;
-        self.di.flush()
+        M::ColorFormat::send_repeated_pixel(&mut self.di, color, count)
     }
 }
 

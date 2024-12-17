@@ -246,9 +246,7 @@ where
 
         self.di.write_command(dcs::WriteMemoryStart)?;
 
-        M::ColorFormat::send_pixels(&mut self.di, colors.into_iter())?;
-
-        self.di.flush()
+        M::ColorFormat::send_pixels(&mut self.di, colors)
     }
 
     /// Sets the vertical scroll region.
@@ -457,10 +455,6 @@ pub mod _mock {
             _pixel: [Self::Word; N],
             _count: u32,
         ) -> Result<(), Self::Error> {
-            Ok(())
-        }
-
-        fn flush(&mut self) -> Result<(), Self::Error> {
             Ok(())
         }
     }

@@ -243,10 +243,6 @@ where
             self.send_pixels((0..count).map(|_| pixel))
         }
     }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        Ok(())
-    }
 }
 
 fn is_same<const N: usize, T: Copy + Eq>(array: [T; N]) -> Option<T> {

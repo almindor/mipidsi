@@ -20,15 +20,11 @@ pub trait Interface {
     type Error: core::fmt::Debug;
 
     /// Send a command with optional parameters
-    ///
-    /// [`Interface::flush`] must be called to ensure the data is actually sent
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error>;
 
     /// Send a sequence of pixels
     ///
     /// `WriteMemoryStart` must be sent before calling this function
-    ///
-    /// [`Interface::flush`] must be called to ensure the data is actually sent
     fn send_pixels<const N: usize>(
         &mut self,
         pixels: impl IntoIterator<Item = [Self::Word; N]>,
@@ -37,16 +33,11 @@ pub trait Interface {
     /// Send the same pixel value multiple times
     ///
     /// `WriteMemoryStart` must be sent before calling this function
-    ///
-    /// [`Interface::flush`] must be called to ensure the data is actually sent
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error>;
-
-    /// Sends any remaining buffered data
-    fn flush(&mut self) -> Result<(), Self::Error>;
 }
 
 impl<T: Interface> Interface for &mut T {
@@ -70,10 +61,6 @@ impl<T: Interface> Interface for &mut T {
         count: u32,
     ) -> Result<(), Self::Error> {
         T::send_repeated_pixel(self, pixel, count)
-    }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        T::flush(self)
     }
 }
 

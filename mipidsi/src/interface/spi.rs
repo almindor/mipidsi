@@ -96,8 +96,4 @@ impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
         }
         Ok(())
     }
-
-    fn flush(&mut self) -> Result<(), Self::Error> {
-        Ok(())
-    }
 }

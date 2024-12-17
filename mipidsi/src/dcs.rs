@@ -59,8 +59,7 @@ pub trait InterfaceExt: Interface {
     /// user command set. Use [`write_command`](Self::write_command) for commands in the user
     /// command set.
     fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Self::Error> {
-        self.send_command(instruction, param_bytes)?;
-        self.flush()
+        self.send_command(instruction, param_bytes)
     }
 }
 
