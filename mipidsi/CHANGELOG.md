@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- added `Display::set_pixels_from_buffer` to allow high performance display writes
 - added `GC9107` model support
+
+### Changed
+
+- replaced `display_interface` with our own trait and implementations for significantly better performance, see the [migration guide](https://github.com/almindor/mipidsi/blob/master/docs/MIGRATION.mdMIGRATION.md#v08---09) for details
 
 ## [v0.8.0] - 2024-05-24
 

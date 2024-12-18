@@ -1,5 +1,90 @@
 # Migration guide for `mipidsi` crate
 
+## v0.8 -> 0.9
+
+### Users
+
+* The `display_interface` dependency has been removed in favor of our own trait and implementations. This gives significantly better performance (#149)
+
+  * Replace `display_interface_spi::SPIInterface` with `mipidsi::interface::SpiInterface`. Note that it requires a small/medium sized `&mut [u8]` buffer. 512 bytes works well, your milage may vary.
+  ```rust
+  // before
+  use display_interface_spi::SPIInterface;
+
+  let di = SPIInterface::new(spi_device, dc);
+
+  // after
+  use mipidsi::interface::SpiInterface;
+
+  let mut buffer = [0_u8; 512];
+  let di = SpiInterface::new(spi_device, dc, &mut buffer);
+  ```
+
+  * Replace `display_interface_parallel_gpio::PGPIO{8,16}BitInterface` with `mipidsi::interface::ParallelInterface` and use `Generic{8,16}BitBus` from `mipidsi::interface`
+  ```rust
+  // before
+  use display_interface_parallel_gpio::Generic8BitBus;
+  use display_interface_parallel_gpio::PGPIO8BitInterface;
+
+  let bus = Generic8BitBus::new(pins);
+  let di = PGPIO8BitInterface::new(bus, dc, wr);
+
+  // after
+  use mipidsi::interface::Generic8BitBus;
+  use mipidsi::interface::ParallelInterface;
+
+  let bus = Generic8BitBus::new(pins);
+  let di = ParallelInterface::new(bus, dc, wr);
+  ```
+
+  * If you have a custom impl of the `display_interface_parallel_gpio::OutputBus` trait, replace it with `mipidsi::interface::OutputBus`. This trait is identical except that it uses an associated error type instead of being hardcoded to `display_interface::DisplayError`
+
+  * If you are using `stm32f4xx-hal`'s fsmc, you can copy and paste this adapter:
+  ```rust
+  pub struct FsmcAdapter<S, WORD>(pub Lcd<S, WORD>);
+
+  impl<S, WORD> Interface for FsmcAdapter<S, WORD>
+  where
+      S: SubBank,
+      WORD: Word + Copy + From<u8>,
+  {
+      type Word = WORD;
+
+      type Error = Infallible;
+
+      fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+          self.0.write_command(command.into());
+          for &arg in args {
+              self.0.write_data(arg.into());
+          }
+
+          Ok(())
+      }
+
+      fn send_pixels<const N: usize>(
+          &mut self,
+          pixels: impl IntoIterator<Item = [Self::Word; N]>,
+      ) -> Result<(), Self::Error> {
+          for pixel in pixels {
+              for word in pixel {
+                  self.0.write_data(word);
+              }
+          }
+
+          Ok(())
+      }
+
+      fn send_repeated_pixel<const N: usize>(
+          &mut self,
+          pixel: [Self::Word; N],
+          count: u32,
+      ) -> Result<(), Self::Error> {
+          self.send_pixels((0..count).map(|_| pixel))
+      }
+    }
+    ```
+
+
 ## v0.7 -> 0.8
 
 ### Users
