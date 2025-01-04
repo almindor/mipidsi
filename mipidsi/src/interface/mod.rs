@@ -73,7 +73,17 @@ fn rgb565_to_u16(pixel: Rgb565) -> [u16; 1] {
     )]
 }
 fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
-    embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel).map(|x| x << 2)
+    let raw = embedded_graphics_core::pixelcolor::IntoStorage::into_storage(pixel);
+
+    // `max` is the max 6-bit value.
+    // `raw` is: Unused[31:18] Red[17:12] Green[11:6] Blue[5:0]
+    
+    let max = 0x3F;
+    let blue = (raw & max) as u8;
+    let green = ((raw >> 6) & max) as u8;
+    let red = ((raw >> 12) & max) as u8;
+
+    [red << 2, green << 2, blue << 2]
 }
 
 /// This is an implementation detail, it should not be implemented or used outside this crate
