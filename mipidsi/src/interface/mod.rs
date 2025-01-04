@@ -1,7 +1,7 @@
 //! Interface traits and implementations
 
 mod spi;
-use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
+use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
 pub use spi::*;
 
 mod parallel;
@@ -73,7 +73,7 @@ fn rgb565_to_u16(pixel: Rgb565) -> [u16; 1] {
     )]
 }
 fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
-    embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel).map(|x| x << 2)
+    [pixel.r(), pixel.g(), pixel.b()].map(|x| x << 2)
 }
 
 /// This is an implementation detail, it should not be implemented or used outside this crate
