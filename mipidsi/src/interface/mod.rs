@@ -77,13 +77,13 @@ fn rgb666_to_bytes(pixel: Rgb666) -> [u8; 3] {
 
     // `max` is the max 6-bit value.
     // `raw` is: Unused[31:18] Red[17:12] Green[11:6] Blue[5:0]
-    
+
     let max = 0x3F;
     let blue = (raw & max) as u8;
     let green = ((raw >> 6) & max) as u8;
     let red = ((raw >> 12) & max) as u8;
 
-    [red << 2, green << 2, blue << 2]
+    [red, green, blue].map(|x| x << 2)
 }
 
 /// This is an implementation detail, it should not be implemented or used outside this crate
