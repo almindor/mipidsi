@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0]
+
 ### Added
 
 - added `GC9107` model support
 
 ### Changed
 
-- replaced `display_interface` with our own trait and implementations for significantly better performance, see the [migration guide](https://github.com/almindor/mipidsi/blob/master/docs/MIGRATION.mdMIGRATION.md#v08---09) for details
+- replaced `display_interface` with our own trait and implementations for significantly better performance, see the [migration guide](https://github.com/almindor/mipidsi/blob/master/docs/MIGRATION.md#v08---09) for details
 
 ## [v0.8.0] - 2024-05-24
 
