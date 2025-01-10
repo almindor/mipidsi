@@ -29,17 +29,21 @@ impl Model for GC9107 {
         DELAY: DelayNs,
         DI: Interface,
     {
-        let madctl = SetAddressMode::from(options);
+        delay.delay_ms(200);
 
-        delay.delay_us(200_000);
-
-        di.write_command(madctl)?;
+        di.write_raw(0xFE, &[])?;
+        delay.delay_ms(5);
+        di.write_raw(0xEF, &[])?;
+        delay.delay_ms(5);
 
         di.write_raw(0xB0, &[0xC0])?;
         di.write_raw(0xB2, &[0x2F])?;
         di.write_raw(0xB3, &[0x03])?;
         di.write_raw(0xB6, &[0x19])?;
         di.write_raw(0xB7, &[0x01])?;
+
+        let madctl = SetAddressMode::from(options);
+        di.write_command(madctl)?;
 
         di.write_raw(0xAC, &[0xCB])?;
         di.write_raw(0xAB, &[0x0E])?;
@@ -65,21 +69,21 @@ impl Model for GC9107 {
         di.write_raw(
             0xF0,
             &[
-                0x1F, 0x28, 0x04, 0x3E, 0x2A, 0x2E, 0x20, 0x00, 0x0C, 0x06, 0x00, 0x1C, 0x1F, 0x0f,
+                0x01, 0x2b, 0x23, 0x3c, 0xb7, 0x12, 0x17, 0x60, 0x00, 0x06, 0x0c, 0x17, 0x12, 0x1f,
             ],
         )?;
 
         di.write_raw(
             0xF1,
             &[
-                0x00, 0x2D, 0x2F, 0x3C, 0x6F, 0x1C, 0x0B, 0x00, 0x00, 0x00, 0x07, 0x0D, 0x11, 0x0f,
+                0x05, 0x2e, 0x2d, 0x44, 0xd6, 0x15, 0x17, 0xa0, 0x02, 0x0d, 0x0d, 0x1a, 0x18, 0x1f,
             ],
         )?;
 
         di.write_command(SetInvertMode::new(options.invert_colors))?;
 
         di.write_command(ExitSleepMode)?; // turn off sleep
-        delay.delay_us(120_000);
+        delay.delay_ms(120);
 
         di.write_command(SetDisplayOn)?; // turn on display
 
