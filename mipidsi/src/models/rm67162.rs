@@ -20,7 +20,7 @@ pub struct RM67162;
 
 impl Model for RM67162 {
     type ColorFormat = Rgb565;
-    const FRAMEBUFFER_SIZE: (u16, u16) = (536, 240);
+    const FRAMEBUFFER_SIZE: (u16, u16) = (240, 536);
 
     fn init<DELAY, DI>(
         &mut self,
