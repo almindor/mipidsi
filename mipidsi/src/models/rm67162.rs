@@ -16,6 +16,14 @@ use super::Model;
 /// Supports:
 /// - 16-bit RGB565 color
 /// - 240x536 resolution
+///
+/// This driver was developed for the Lilygo T-Display-S3 AMOLED display (v2).
+/// The initialization sequence is based on Lilygo's Arduino example code.
+///
+/// Currently only tested with 240x536 resolution displays.
+/// While it may work with other display sizes, this is untested and could lead to unexpected behavior.
+/// If you encounter issues with different display sizes, please report them.
+///
 pub struct RM67162;
 
 impl Model for RM67162 {
