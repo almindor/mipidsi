@@ -33,29 +33,12 @@ pub trait Interface {
         pixels: impl IntoIterator<Item = [Self::Word; N]>,
     ) -> Result<(), Self::Error>;
 
-    /// Send raw pixel data from a &[u8] slice.
-    ///
-    /// `WriteMemoryStart` must be sent before calling this function
-    fn send_pixels_from_buffer(
-        &mut self,
-        pixels: &[u8],
-    ) -> Result<(), Self::Error>;
-
     /// Send the same pixel value multiple times
     ///
     /// `WriteMemoryStart` must be sent before calling this function
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
-        count: u32,
-    ) -> Result<(), Self::Error>;
-
-    /// Send the same &[u8] value multiple times
-    ///
-    /// `WriteMemoryStart` must be sent before calling this function
-    fn send_repeated_pixel_raw(
-        &mut self,
-        pixel_data: &[u8],
         count: u32,
     ) -> Result<(), Self::Error>;
 }
@@ -75,27 +58,12 @@ impl<T: Interface> Interface for &mut T {
         T::send_pixels(self, pixels)
     }
 
-    fn send_pixels_from_buffer(
-        &mut self,
-        pixels: &[u8],
-    ) -> Result<(), Self::Error> {
-        T::send_pixels_from_buffer(self, pixels)
-    }
-
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error> {
         T::send_repeated_pixel(self, pixel, count)
-    }
-
-    fn send_repeated_pixel_raw(
-            &mut self,
-            pixel_data: &[u8],
-            count: u32,
-        ) -> Result<(), Self::Error> {
-        T::send_repeated_pixel_raw(self, pixel_data, count)
     }
 }
 

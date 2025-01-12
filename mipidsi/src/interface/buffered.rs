@@ -1,3 +1,5 @@
+use core::future::Future;
+
 use super::Interface;
 
 ///
@@ -7,7 +9,33 @@ pub trait FlushingInterface: Interface {
     ///
     /// Applies changed in buffer to display
     ///
-    fn flush(&mut self) -> Result<(), Self::Error>;
+    fn flush(&mut self) -> impl Future<Output = Result<(), Self::Error>>;
+}
+
+/// Async version of the interface with expectation of [u8] data
+pub trait AsyncInterface {
+    /// Associated error
+    type Error: core::fmt::Debug;
+
+    /// Send a command with optional parameters
+    fn send_command(&mut self, command: u8, args: &[u8]) -> impl Future<Output = Result<(), Self::Error>>;
+
+    /// Send raw pixel data from a &[u8] slice.
+    ///
+    /// `WriteMemoryStart` must be sent before calling this function
+    fn send_pixels_from_buffer(
+        &mut self,
+        pixels: &[u8],
+    ) -> impl Future<Output = Result<(), Self::Error>>;
+
+    /// Send the same &[u8] value multiple times
+    ///
+    /// `WriteMemoryStart` must be sent before calling this function
+    fn send_repeated_pixel_raw(
+        &mut self,
+        pixel_data: &[u8],
+        count: u32,
+    ) -> impl Future<Output = Result<(), Self::Error>>;
 }
 
 ///
@@ -55,7 +83,7 @@ pub struct BufferedInterface<'buffer, DI, const MAX_OPS: usize> {
 
 impl<'buffer, DI, const MAX_OPS: usize> BufferedInterface<'buffer, DI, MAX_OPS>
 where
-    DI: Interface,
+    DI: AsyncInterface,
 {
     ///
     /// Create new [BufferedInterface] with a given [Interface] to send buffer
@@ -73,7 +101,7 @@ where
 
 impl<DI, const MAX_OPS: usize> Interface for BufferedInterface<'_, DI, MAX_OPS>
 where
-    DI: Interface<Word = u8>,
+    DI: AsyncInterface,
 {
     type Word = u8;
 
@@ -121,13 +149,6 @@ where
         Ok(())
     }
 
-    fn send_pixels_from_buffer(
-            &mut self,
-            pixels: &[u8],
-        ) -> Result<(), Self::Error> {
-        self.di.send_pixels_from_buffer(pixels).map_err(|e| FlushingError::Underlaying(e))
-    }
-
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [u8; N],
@@ -147,29 +168,21 @@ where
 
         Ok(())
     }
-
-    fn send_repeated_pixel_raw(
-            &mut self,
-            pixel_data: &[u8],
-            count: u32,
-        ) -> Result<(), Self::Error> {
-        self.di.send_repeated_pixel_raw(pixel_data, count).map_err(|e| FlushingError::Underlaying(e))
-    }
 }
 
 impl<DI, const MAX_OPS: usize> FlushingInterface for BufferedInterface<'_, DI, MAX_OPS>
 where
-    DI: Interface<Word = u8>, // TODO expand
+    DI: AsyncInterface + Send,
 {
-    fn flush(&mut self) -> Result<(), Self::Error> {
+    async fn flush(&mut self) -> Result<(), Self::Error> {
         while let Some(op) = self.ops.pop_back() {
             match op {
                 Chunk::Command(index, arg_bytes) => self.di.send_command(
                     self.buffer[index],
                     &self.buffer[index + 1..index + 1 + arg_bytes],
-                )?,
-                Chunk::Pixels(index, bytes) => self.di.send_pixels_from_buffer(&self.buffer[index..index+bytes])?,
-                Chunk::Repeat(index, bytes, count) => self.di.send_repeated_pixel_raw(&self.buffer[index..index+bytes], count)?,
+                ).await?,
+                Chunk::Pixels(index, bytes) => self.di.send_pixels_from_buffer(&self.buffer[index..index+bytes]).await?,
+                Chunk::Repeat(index, bytes, count) => self.di.send_repeated_pixel_raw(&self.buffer[index..index+bytes], count).await?,
             }
         }
 
@@ -177,4 +190,96 @@ where
 
         Ok(())
     }
+}
+
+
+//-------- SPI
+
+use embedded_hal_async::{digital::Wait, spi::SpiDevice};
+
+/// Spi interface error
+#[derive(Clone, Copy, Debug)]
+pub enum AsyncSpiError<SPI, DC> {
+    /// SPI bus error
+    Spi(SPI),
+    /// Data/command pin error
+    Dc(DC),
+}
+
+/// Spi interface, including a buffer
+///
+/// The buffer is used to gather batches of pixel data to be sent over SPI.
+/// Larger buffers will genererally be faster (with diminishing returns), at the expense of using more RAM.
+/// The buffer should be at least big enough to hold a few pixels of data.
+///
+/// You may want to use [static_cell](https://crates.io/crates/static_cell)
+/// to obtain a `&'static mut [u8; N]` buffer.
+pub struct AsyncSpiInterface<'a, SPI, DC> {
+    spi: SPI,
+    dc: DC,
+    buffer: &'a mut [u8],
+}
+
+impl<'a, SPI: SpiDevice, DC: Wait> AsyncSpiInterface<'a, SPI, DC> {
+    /// Create new interface
+    pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
+        Self { spi, dc, buffer }
+    }
+}
+
+impl<SPI: SpiDevice, DC: Wait> AsyncInterface for AsyncSpiInterface<'_, SPI, DC> {
+    type Error = AsyncSpiError<SPI::Error, DC::Error>;
+    
+    async fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+        self.dc.wait_for_low().await.map_err(AsyncSpiError::Dc)?;
+        self.spi.write(&[command]).await.map_err(AsyncSpiError::Spi)?;
+        self.dc.wait_for_high().await.map_err(AsyncSpiError::Dc)?;
+
+        self.spi.write(args).await.map_err(AsyncSpiError::Spi)
+    }
+    
+    async fn send_pixels_from_buffer(
+        &mut self,
+        pixels: &[u8],
+    ) -> Result<(), Self::Error> {
+        self.spi.write(pixels).await.map_err(AsyncSpiError::Spi)
+    }
+    
+    async fn send_repeated_pixel_raw(
+        &mut self,
+        pixel_data: &[u8],
+        count: u32,
+    ) -> Result<(), Self::Error> {
+        let n = pixel_data.len();
+        let fill_count = core::cmp::min(count, (self.buffer.len() / n) as u32);
+        let filled_len = fill_count as usize * n;
+        let mut i = 0;
+
+        // TODO: optimize
+        for _ in 0..fill_count {
+            for byte in pixel_data {
+                self.buffer[i] = *byte;
+                i+=1;
+            }
+        }
+
+        let mut count = count;
+        while count >= fill_count {
+            self.spi
+                .write(&self.buffer[..filled_len])
+                .await
+                .map_err(AsyncSpiError::Spi)?;
+            count -= fill_count;
+        }
+        if count != 0 {
+            self.spi
+                .write(&self.buffer[..(count as usize * n)])
+                .await
+                .map_err(AsyncSpiError::Spi)?;
+        }
+
+        Ok(())
+    }
+
+
 }

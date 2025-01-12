@@ -9,18 +9,10 @@ repository = "https://github.com/almindor/mipidsi"
 keywords = ["embedded-hal-driver", "mipi", "dcs", "display"]
 readme = "README.md"
 documentation = "https://docs.rs/mipidsi"
-rust-version = "1.75"
+rust-version = "1.84"
 
 [dependencies]
-display-interface = "0.4.1"
 embedded-graphics-core = "0.4.0"
-embedded-hal = "0.2.7"
-nb = "1.0.0"
-
-[dependencies.heapless]
-optional = true
-version = "0.7.16"
-
-[features]
-default = ["batch"]
-batch = ["heapless"]
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+heapless = "0.8.0"

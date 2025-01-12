@@ -223,13 +223,6 @@ where
         Ok(())
     }
 
-    fn send_pixels_from_buffer(
-            &mut self,
-            _pixels: &[u8],
-        ) -> Result<(), Self::Error> {
-        todo!("parallel later")
-    }
-
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
@@ -249,14 +242,6 @@ where
         } else {
             self.send_pixels((0..count).map(|_| pixel))
         }
-    }
-
-    fn send_repeated_pixel_raw(
-            &mut self,
-            _pixel_data: &[u8],
-            _count: u32,
-        ) -> Result<(), Self::Error> {
-        todo!("parallel later")
     }
 }
 
