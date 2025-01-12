@@ -21,10 +21,10 @@
 //! * ILI9341
 //! * ILI9342C
 //! * ILI9486
+//! * RM67162
 //! * ST7735
 //! * ST7789
 //! * ST7796
-//! * RM67162
 //!
 //! ## Examples
 //! **For the ili9486 display, using the SPI interface with no chip select:**

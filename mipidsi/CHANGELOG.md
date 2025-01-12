@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- added `RM67162` model support
+
 ## [0.9.0]
 
 ### Added
