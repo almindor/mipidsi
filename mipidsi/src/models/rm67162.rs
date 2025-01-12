@@ -40,19 +40,18 @@ impl Model for RM67162 {
         di.write_raw(0xFE, &[0x07])?; // SET APGE6
         di.write_raw(0x07, &[0x4F])?;
         di.write_raw(0xFE, &[0x01])?; // SET APGE0
-        di.write_raw(0x2A, &[0x02])?; // Set column start address
-        di.write_raw(0x2B, &[0x73])?; // Set row start address
+        di.write_raw(0x2A, &[0x02])?;
+        di.write_raw(0x2B, &[0x73])?;
         di.write_raw(0xFE, &[0x0A])?; // SET APGE9
         di.write_command(SetDisplayOn)?;
         di.write_raw(0xFE, &[0x00])?; // CMD Mode Switch to User Command Set
         di.write_raw(0x51, &[0xaf])?; // Set brightness
         di.write_raw(0x53, &[0x20])?; // Write CTRL display
-        di.write_raw(0x35, &[0x00])?; // set Tearing Effect Line on
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         di.write_command(SetPixelFormat::new(pf))?;
 
-        di.write_raw(0xC4, &[0x80])?; // set_DSPI Mode to SPI_WRAM
+        di.write_raw(0xC4, &[0x80])?; // enable SRAM access via SPI
 
         di.write_command(madctl)?;
 
