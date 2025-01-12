@@ -42,19 +42,20 @@ impl Model for RM67162 {
     {
         let madctl = SetAddressMode::from(options);
 
-        di.write_raw(0xFE, &[0x04])?; // SET APGE3
+        di.write_raw(0xFE, &[0x04])?;
         di.write_raw(0x6A, &[0x00])?;
-        di.write_raw(0xFE, &[0x05])?; // SET APGE4
-        di.write_raw(0xFE, &[0x07])?; // SET APGE6
+        di.write_raw(0xFE, &[0x05])?;
+        di.write_raw(0xFE, &[0x07])?;
         di.write_raw(0x07, &[0x4F])?;
-        di.write_raw(0xFE, &[0x01])?; // SET APGE0
+        di.write_raw(0xFE, &[0x01])?;
         di.write_raw(0x2A, &[0x02])?;
         di.write_raw(0x2B, &[0x73])?;
-        di.write_raw(0xFE, &[0x0A])?; // SET APGE9
-        di.write_command(SetDisplayOn)?;
-        di.write_raw(0xFE, &[0x00])?; // CMD Mode Switch to User Command Set
+        di.write_raw(0xFE, &[0x0A])?;
+        di.write_raw(0x29, &[0x10])?;
+        di.write_raw(0xFE, &[0x00])?;
         di.write_raw(0x51, &[0xaf])?; // Set brightness
-        di.write_raw(0x53, &[0x20])?; // Write CTRL display
+        di.write_raw(0x53, &[0x20])?;
+        di.write_raw(0x35, &[0x00])?;
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         di.write_command(SetPixelFormat::new(pf))?;
@@ -65,10 +66,10 @@ impl Model for RM67162 {
 
         di.write_command(SetInvertMode::new(options.invert_colors))?;
 
-        di.write_command(ExitSleepMode)?; // turn off sleep
+        di.write_command(ExitSleepMode)?;
         delay.delay_us(120_000);
 
-        di.write_command(SetDisplayOn)?; // turn on display
+        di.write_command(SetDisplayOn)?;
 
         Ok(madctl)
     }
