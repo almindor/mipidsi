@@ -52,7 +52,7 @@ impl Model for RM67162 {
         di.write_raw(0x2A, &[0x02])?;
         di.write_raw(0x2B, &[0x73])?;
         di.write_raw(0xFE, &[0x0A])?;
-        di.write_command(SetDisplayOn)?;
+        di.write_raw(0x29, &[0x10])?;
         di.write_raw(0xFE, &[0x00])?;
         di.write_raw(0x51, &[0xaf])?; // Set brightness
         di.write_raw(0x53, &[0x20])?;
