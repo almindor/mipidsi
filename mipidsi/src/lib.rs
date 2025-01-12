@@ -379,6 +379,19 @@ where
     }
 }
 
+impl<DI, M, RST> Display<DI, M, RST>
+where
+    DI: interface::FlushingInterface,
+    M: Model,
+    M::ColorFormat: InterfacePixelFormat<DI::Word>,
+    RST: OutputPin,
+{
+    /// Write buffer to underlaying IO interface
+    pub fn flush(&mut self) -> Result<(), DI::Error> {
+        self.di.flush()
+    }
+}
+
 /// Mock implementations of embedded-hal and interface traits.
 ///
 /// Do not use types in this module outside of doc tests.
@@ -450,11 +463,26 @@ pub mod _mock {
             Ok(())
         }
 
+        fn send_pixels_from_buffer(
+                &mut self,
+                _pixels: &[u8],
+            ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
         fn send_repeated_pixel<const N: usize>(
             &mut self,
             _pixel: [Self::Word; N],
             _count: u32,
         ) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn send_repeated_pixel_raw(
+                &mut self,
+                _pixel_data: &[u8],
+                _count: u32,
+            ) -> Result<(), Self::Error> {
             Ok(())
         }
     }

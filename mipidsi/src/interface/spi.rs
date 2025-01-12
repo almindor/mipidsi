@@ -70,6 +70,15 @@ impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
         Ok(())
     }
 
+    fn send_pixels_from_buffer(
+            &mut self,
+            pixels: &[u8],
+        ) -> Result<(), Self::Error> {
+        self.spi.write(pixels).map_err(SpiError::Spi)?;
+
+        Ok(())
+    }
+
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
@@ -92,6 +101,39 @@ impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
         if count != 0 {
             self.spi
                 .write(&self.buffer[..(count as usize * pixel.len())])
+                .map_err(SpiError::Spi)?;
+        }
+        Ok(())
+    }
+
+    fn send_repeated_pixel_raw(
+            &mut self,
+            pixel_data: &[u8],
+            count: u32,
+        ) -> Result<(), Self::Error> {
+        let n = pixel_data.len();
+        let fill_count = core::cmp::min(count, (self.buffer.len() / n) as u32);
+        let filled_len = fill_count as usize * n;
+        let mut i = 0;
+
+        // TODO: optimize
+        for _ in 0..fill_count {
+            for byte in pixel_data {
+                self.buffer[i] = *byte;
+                i+=1;
+            }
+        }
+
+        let mut count = count;
+        while count >= fill_count {
+            self.spi
+                .write(&self.buffer[..filled_len])
+                .map_err(SpiError::Spi)?;
+            count -= fill_count;
+        }
+        if count != 0 {
+            self.spi
+                .write(&self.buffer[..(count as usize * n)])
                 .map_err(SpiError::Spi)?;
         }
         Ok(())
