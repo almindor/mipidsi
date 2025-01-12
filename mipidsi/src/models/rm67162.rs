@@ -13,6 +13,7 @@ use crate::{
 use super::Model;
 
 /// RM67162 AMOLED display driver implementation
+///
 /// Supports:
 /// - 16-bit RGB565 color
 /// - 240x536 resolution
