@@ -35,15 +35,6 @@ pub trait AsyncInterface {
         &mut self,
         pixels: &[u8],
     ) -> impl Future<Output = Result<(), Self::Error>>;
-
-    /// Send the same &[u8] value multiple times
-    ///
-    /// `WriteMemoryStart` must be sent before calling this function
-    fn send_repeated_pixel_raw(
-        &mut self,
-        pixel_data: &[u8],
-        count: u32,
-    ) -> impl Future<Output = Result<(), Self::Error>>;
 }
 
 ///
@@ -74,8 +65,6 @@ enum Chunk {
     Command(usize, usize),
     // index of pixel bytes in buffer + their byte size
     Pixels(usize, usize),
-    // index of pixel bytes in buffer for one pixel, size of the pixel bytes data + count for repeat operation
-    Repeat(usize, usize, u32),
 }
 
 ///
@@ -136,20 +125,19 @@ where
         &mut self,
         pixels: impl IntoIterator<Item = [u8; N]>,
     ) -> Result<(), Self::Error> {
-        let index = self.index;
         let mut bytes = 0usize;
 
         for pixel in pixels.into_iter().flatten() {
-            if index + bytes >= self.buffer.len() {
+            if self.index + bytes >= self.buffer.len() {
                 return Err(FlushingError::BufferOverflow);
             }
 
-            self.buffer[index + bytes] = pixel;
+            self.buffer[self.index + bytes] = pixel;
             bytes += 1;
         }
 
         self.ops
-            .push_front(Chunk::Pixels(index, bytes))
+            .push_front(Chunk::Pixels(self.index, bytes))
             .map_err(|_| FlushingError::MaxOperationsReached)?;
 
         self.index += bytes;
@@ -162,17 +150,23 @@ where
         pixel: [u8; N],
         count: u32,
     ) -> Result<(), Self::Error> {
-        if self.index + N >= self.buffer.len() {
+        let n = N * (count as usize); // TODO: fix for u16 usize platforms
+
+        if self.index + n >= self.buffer.len() {
             return Err(FlushingError::BufferOverflow);
         }
 
         self.ops
-            .push_front(Chunk::Repeat(self.index, N, count))
+            .push_front(Chunk::Pixels(self.index, n))
             .map_err(|_| FlushingError::MaxOperationsReached)?;
 
-        self.buffer[self.index..self.index + N].copy_from_slice(&pixel);
+        let mut i = 0;
+        for _ in 0..count {
+            self.buffer[i..i + N].copy_from_slice(&pixel);
+            i += N;
+        }
 
-        self.index += N;
+        self.index += n;
 
         Ok(())
     }
@@ -196,11 +190,6 @@ where
                 Chunk::Pixels(index, bytes) => {
                     self.di
                         .send_pixels_from_buffer(&self.buffer[index..index + bytes])
-                        .await?
-                }
-                Chunk::Repeat(index, bytes, count) => {
-                    self.di
-                        .send_repeated_pixel_raw(&self.buffer[index..index + bytes], count)
                         .await?
                 }
             }
