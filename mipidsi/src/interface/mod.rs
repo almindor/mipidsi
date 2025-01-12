@@ -7,8 +7,10 @@ pub use spi::*;
 mod parallel;
 pub use parallel::*;
 
-mod buffered;
-pub use buffered::*;
+#[cfg(feature = "async")]
+mod async_interface;
+#[cfg(feature = "async")]
+pub use async_interface::*;
 
 /// Command and pixel interface
 pub trait Interface {

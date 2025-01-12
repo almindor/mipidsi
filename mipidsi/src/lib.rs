@@ -379,19 +379,6 @@ where
     }
 }
 
-impl<DI, M, RST> Display<DI, M, RST>
-where
-    DI: interface::FlushingInterface,
-    M: Model,
-    M::ColorFormat: InterfacePixelFormat<DI::Word>,
-    RST: OutputPin,
-{
-    /// Write buffer to underlaying IO interface
-    pub async fn flush(&mut self) -> Result<(), DI::Error> {
-        self.di.flush().await
-    }
-}
-
 /// Mock implementations of embedded-hal and interface traits.
 ///
 /// Do not use types in this module outside of doc tests.

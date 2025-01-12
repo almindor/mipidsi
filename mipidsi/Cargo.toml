@@ -14,16 +14,20 @@ rust-version = "1.75"
 [dependencies]
 embedded-graphics-core = "0.4.0"
 embedded-hal = "1.0.0"
-embedded-hal-async = "1.0.0"
-nb = "1.1.0"
+# nb = "1.1.0"
 
 [dependencies.heapless]
 optional = true
 version = "0.8.0"
 
+[dependencies.embedded-hal-async]
+optional = true
+version = "1.0.0"
+
 [dev-dependencies]
 embedded-graphics = "0.8.1"
 
 [features]
-default = ["batch"]
+default = ["batch", "async"]
 batch = ["heapless"]
+async = ["heapless", "embedded-hal-async"]
