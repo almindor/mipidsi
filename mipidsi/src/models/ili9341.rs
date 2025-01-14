@@ -14,7 +14,7 @@ pub struct ILI9341Rgb565;
 /// ILI9341 display in Rgb666 color mode.
 pub struct ILI9341Rgb666;
 
-/// ILI9341 display in Rgb565 color mode.
+/// ILI9341 display in Bgr565 color mode.
 pub struct ILI9341Bgr565;
 
 impl Model for ILI9341Rgb565 {
