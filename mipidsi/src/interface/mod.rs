@@ -1,7 +1,7 @@
 //! Interface traits and implementations
 
 mod spi;
-use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
+use embedded_graphics_core::pixelcolor::{Bgr565, Rgb565, Rgb666, RgbColor};
 pub use spi::*;
 
 mod parallel;
@@ -67,6 +67,11 @@ impl<T: Interface> Interface for &mut T {
 fn rgb565_to_bytes(pixel: Rgb565) -> [u8; 2] {
     embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel)
 }
+
+fn bgr565_to_bytes(pixel: Bgr565) -> [u8; 2] {
+    embedded_graphics_core::pixelcolor::raw::ToBytes::to_be_bytes(pixel)
+}
+
 fn rgb565_to_u16(pixel: Rgb565) -> [u16; 1] {
     [u16::from_ne_bytes(
         embedded_graphics_core::pixelcolor::raw::ToBytes::to_ne_bytes(pixel),
@@ -128,6 +133,23 @@ impl InterfacePixelFormat<u8> for Rgb666 {
         count: u32,
     ) -> Result<(), DI::Error> {
         di.send_repeated_pixel(rgb666_to_bytes(pixel), count)
+    }
+}
+
+impl InterfacePixelFormat<u8> for Bgr565 {
+    fn send_pixels<DI: Interface<Word = u8>>(
+        di: &mut DI,
+        pixels: impl IntoIterator<Item = Self>,
+    ) -> Result<(), DI::Error> {
+        di.send_pixels(pixels.into_iter().map(bgr565_to_bytes))
+    }
+
+    fn send_repeated_pixel<DI: Interface<Word = u8>>(
+        di: &mut DI,
+        pixel: Self,
+        count: u32,
+    ) -> Result<(), DI::Error> {
+        di.send_repeated_pixel(bgr565_to_bytes(pixel), count)
     }
 }
 
