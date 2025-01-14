@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - added `RM67162` model support
 
+## Removed
+
+- remove unused `nb` dependency
+
 ## [0.9.0]
 
 ### Added
