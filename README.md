@@ -49,9 +49,10 @@ Variants that require different screen sizes and window addressing offsets are n
 
 See [MIGRATION.md](../docs/MIGRATION.md) document.
 
+
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) document.
+See [TROUBLESHOOTING.md](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you're having issues with blank screen or incorrect colors showing up.
 
 ### Example
 

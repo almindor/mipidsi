@@ -26,6 +26,10 @@
 //! * ST7789
 //! * ST7796
 //!
+//! ## Troubleshooting
+//! See [TROUBLESHOOTING.md](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you're having
+//! issues with blank screen or incorrect colors showing up.
+//!
 //! ## Examples
 //! **For the ili9486 display, using the SPI interface with no chip select:**
 //! ```
@@ -97,9 +101,6 @@
 //! // Clear the display to black
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
-//!
-//! ## Troubleshooting
-//! See [document](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
 
 use dcs::InterfaceExt;
 
