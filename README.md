@@ -40,6 +40,7 @@ Variants that require different screen sizes and window addressing offsets are n
 - ILI9341
 - ILI9342C
 - ILI9486
+- ILI9488
 - RM67162
 - ST7735
 - ST7789
