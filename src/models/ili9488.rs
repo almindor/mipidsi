@@ -9,17 +9,17 @@ use crate::{
 
 use super::{ili948x, Model};
 
-/// ILI9486 display in Rgb565 color mode.
+/// ILI9488 display in Rgb565 color mode.
 ///
 /// <div class="warning">
 /// This mode is not supported over SPI.
 /// </div>
-pub struct ILI9486Rgb565;
+pub struct ILI9488Rgb565;
 
-/// ILI9486 display in Rgb666 color mode.
-pub struct ILI9486Rgb666;
+/// ILI9488 display in Rgb666 color mode.
+pub struct ILI9488Rgb666;
 
-impl Model for ILI9486Rgb565 {
+impl Model for ILI9488Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 480);
 
@@ -40,7 +40,7 @@ impl Model for ILI9486Rgb565 {
     }
 }
 
-impl Model for ILI9486Rgb666 {
+impl Model for ILI9488Rgb666 {
     type ColorFormat = Rgb666;
     const FRAMEBUFFER_SIZE: (u16, u16) = (320, 480);
 
