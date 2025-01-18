@@ -27,10 +27,12 @@
 //! * ST7796
 //!
 //! ## Troubleshooting
-//! See [TROUBLESHOOTING.md](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you're having
-//! issues with blank screen or incorrect colors showing up.
+//!
+//! Refer to the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
+//! if you experience problems like a blank screen or incorrect colors.
 //!
 //! ## Examples
+//!
 //! **For the ili9486 display, using the SPI interface with no chip select:**
 //! ```
 //! use mipidsi::interface::SpiInterface;                    // Provides the builder for DisplayInterface
