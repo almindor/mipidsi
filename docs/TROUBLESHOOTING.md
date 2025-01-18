@@ -1,4 +1,6 @@
-# Display troubleshooting
+# Troubleshooting guide
+
+This guide lists common issues that can cause a blank or corrupted display.
 
 ## Display stays black/blank
 

@@ -45,16 +45,11 @@ Variants that require different screen sizes and window addressing offsets are n
 - ST7789
 - ST7796
 
-## Migration
-
-See [MIGRATION.md](../docs/MIGRATION.md) document.
-
-
 ## Troubleshooting
 
-See [TROUBLESHOOTING.md](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you're having issues with blank screen or incorrect colors showing up.
+Refer to the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you experience problems like a blank screen or incorrect colors.
 
-### Example
+## Example
 
 ```rust
 // create a DisplayInterface from SPI and DC pin, with no manual CS control
@@ -66,6 +61,9 @@ let mut display = Builder::new(ILI9486Rgb666, di)
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```
+## Migration
+
+See [MIGRATION.md](../docs/MIGRATION.md) document.
 
 ## Minimum Supported Rust Version (MSRV)
 
