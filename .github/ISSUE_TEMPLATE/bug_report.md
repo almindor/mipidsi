@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Check troubleshooting**
-Please first check [TROUBLESHOOTING.md](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) to ensure your issue is not solved there already.
+Before submitting a new issue, please check the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) to make sure it hasn't already been addressed there.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -22,8 +22,13 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**MCU and Display model**
-Please provide specific MCU and display model used
+**Used hardware and software**
+Please provide details about the hardware and software you are using:
+- `mipidsi` version: e.g. latest `master` or `0.9.1`
+- MCU: e.g. ESP32S3
+- HAL: e.g. esp_hal 0.23.1
+- Display Controller IC: e.g. ILI9341
+- Type of connection: e.g. SPI
 
 **Additional context**
 Add any other context about the problem here.
