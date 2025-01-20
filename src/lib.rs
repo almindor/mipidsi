@@ -116,7 +116,7 @@ use interface::InterfacePixelFormat;
 use options::MemoryMapping;
 
 mod builder;
-pub use builder::{Builder, NoResetPin};
+pub use builder::*;
 
 pub mod dcs;
 
