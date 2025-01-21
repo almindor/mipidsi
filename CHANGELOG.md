@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - added `RM67162` model support
+- made `InitError` visible
 
 ## Removed
 
