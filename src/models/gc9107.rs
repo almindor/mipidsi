@@ -29,6 +29,8 @@ impl Model for GC9107 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit);
+
         delay.delay_ms(200);
 
         di.write_raw(0xFE, &[])?;

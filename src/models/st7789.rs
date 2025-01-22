@@ -28,6 +28,8 @@ impl Model for ST7789 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+
         let madctl = SetAddressMode::from(options);
 
         delay.delay_us(150_000);

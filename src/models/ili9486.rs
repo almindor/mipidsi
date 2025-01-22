@@ -29,6 +29,8 @@ impl Model for ILI9486Rgb565 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Parallel8Bit | Parallel16Bit);
+
         delay.delay_us(120_000);
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
@@ -50,6 +52,8 @@ impl Model for ILI9486Rgb666 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+
         delay.delay_us(120_000);
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());

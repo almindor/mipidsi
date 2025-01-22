@@ -41,6 +41,8 @@ impl Model for RM67162 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit);
+
         let madctl = SetAddressMode::from(options);
 
         di.write_raw(0xFE, &[0x04])?;

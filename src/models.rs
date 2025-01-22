@@ -4,6 +4,17 @@ use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
+macro_rules! assert_interface_kind {
+    ($($kind:ident)|*) => {
+        assert!(
+            matches!(DI::KIND,
+                $($crate::interface::InterfaceKind::$kind)|*
+            ),
+            "Unsupported interface kind for the selected controller model and color format",
+        );
+    };
+}
+
 // existing model implementations
 mod gc9107;
 mod gc9a01;
@@ -48,4 +59,77 @@ pub trait Model {
     where
         DELAY: DelayNs,
         DI: Interface;
+}
+
+#[cfg(test)]
+mod tests {
+    use embedded_graphics::pixelcolor::Rgb565;
+
+    use crate::{
+        Builder,
+        _mock::{MockDelay, MockDisplayInterface},
+    };
+
+    use super::*;
+
+    struct OnlySpiModel;
+
+    impl Model for OnlySpiModel {
+        type ColorFormat = Rgb565;
+
+        const FRAMEBUFFER_SIZE: (u16, u16) = (0, 0);
+
+        fn init<DELAY, DI>(
+            &mut self,
+            _di: &mut DI,
+            _delay: &mut DELAY,
+            _options: &ModelOptions,
+        ) -> Result<SetAddressMode, DI::Error>
+        where
+            DELAY: DelayNs,
+            DI: Interface,
+        {
+            assert_interface_kind!(Serial4Line);
+            Ok(SetAddressMode::default())
+        }
+    }
+
+    struct OnlyParallelModel;
+
+    impl Model for OnlyParallelModel {
+        type ColorFormat = Rgb565;
+
+        const FRAMEBUFFER_SIZE: (u16, u16) = (0, 0);
+
+        fn init<DELAY, DI>(
+            &mut self,
+            _di: &mut DI,
+            _delay: &mut DELAY,
+            _options: &ModelOptions,
+        ) -> Result<SetAddressMode, DI::Error>
+        where
+            DELAY: DelayNs,
+            DI: Interface,
+        {
+            assert_interface_kind!(Parallel8Bit);
+            Ok(SetAddressMode::default())
+        }
+    }
+
+    #[test]
+    fn test_assert_interface_kind_serial() {
+        Builder::new(OnlySpiModel, MockDisplayInterface)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Unsupported interface kind for the selected controller model and color format"
+    )]
+    fn test_assert_interface_kind_parallel() {
+        Builder::new(OnlyParallelModel, MockDisplayInterface)
+            .init(&mut MockDelay)
+            .unwrap();
+    }
 }

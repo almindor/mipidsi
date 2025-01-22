@@ -1,6 +1,6 @@
 use embedded_hal::digital::OutputPin;
 
-use super::Interface;
+use super::{Interface, InterfaceKind};
 
 /// This trait represents the data pins of a parallel bus.
 ///
@@ -8,6 +8,9 @@ use super::Interface;
 pub trait OutputBus {
     /// [u8] for 8-bit buses, [u16] for 16-bit buses, etc.
     type Word: Copy;
+
+    /// Interface kind.
+    const KIND: InterfaceKind;
 
     /// Error type
     type Error: core::fmt::Debug;
@@ -17,7 +20,7 @@ pub trait OutputBus {
 }
 
 macro_rules! generic_bus {
-    ($GenericxBitBus:ident { type Word = $Word:ident; Pins {$($PX:ident => $x:tt,)*}}) => {
+    ($GenericxBitBus:ident { type Word = $Word:ident; const KIND: InterfaceKind = $InterfaceKind:expr; Pins {$($PX:ident => $x:tt,)*}}) => {
         /// A generic implementation of [OutputBus] using [OutputPin]s
         pub struct $GenericxBitBus<$($PX, )*> {
             pins: ($($PX, )*),
@@ -49,6 +52,8 @@ macro_rules! generic_bus {
         {
             type Word = $Word;
             type Error = E;
+
+            const KIND: InterfaceKind = $InterfaceKind;
 
             fn set_value(&mut self, value: Self::Word) -> Result<(), Self::Error> {
                 if self.last == Some(value) {
@@ -98,6 +103,7 @@ macro_rules! generic_bus {
 generic_bus! {
     Generic8BitBus {
         type Word = u8;
+        const KIND: InterfaceKind = InterfaceKind::Parallel8Bit;
         Pins {
             P0 => 0,
             P1 => 1,
@@ -114,6 +120,7 @@ generic_bus! {
 generic_bus! {
     Generic16BitBus {
         type Word = u16;
+        const KIND: InterfaceKind = InterfaceKind::Parallel16Bit;
         Pins {
             P0 => 0,
             P1 => 1,
@@ -198,6 +205,8 @@ where
 {
     type Word = BUS::Word;
     type Error = ParallelError<BUS::Error, DC::Error, WR::Error>;
+
+    const KIND: InterfaceKind = BUS::KIND;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         self.dc.set_low().map_err(ParallelError::Dc)?;

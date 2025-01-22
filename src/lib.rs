@@ -393,7 +393,11 @@ pub mod _mock {
 
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::{interface::Interface, models::ILI9341Rgb565, Builder, Display, NoResetPin};
+    use crate::{
+        interface::{Interface, InterfaceKind},
+        models::ILI9341Rgb565,
+        Builder, Display, NoResetPin,
+    };
 
     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
         Builder::new(ILI9341Rgb565, MockDisplayInterface)
@@ -443,6 +447,8 @@ pub mod _mock {
     impl Interface for MockDisplayInterface {
         type Word = u8;
         type Error = Infallible;
+
+        const KIND: InterfaceKind = InterfaceKind::Serial4Line;
 
         fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
             Ok(())

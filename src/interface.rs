@@ -19,6 +19,9 @@ pub trait Interface {
     /// Error type
     type Error: core::fmt::Debug;
 
+    /// Kind
+    const KIND: InterfaceKind;
+
     /// Send a command with optional parameters
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error>;
 
@@ -43,6 +46,8 @@ pub trait Interface {
 impl<T: Interface> Interface for &mut T {
     type Word = T::Word;
     type Error = T::Error;
+
+    const KIND: InterfaceKind = T::KIND;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         T::send_command(self, command, args)
@@ -146,4 +151,30 @@ impl InterfacePixelFormat<u16> for Rgb565 {
     ) -> Result<(), DI::Error> {
         di.send_repeated_pixel(rgb565_to_u16(pixel), count)
     }
+}
+
+/// Interface kind.
+///
+/// Specifies the kind of physical connection to the display controller that is
+/// supported by this interface.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum InterfaceKind {
+    /// Serial interface with data/command pin.
+    ///
+    /// SPI style interface with 8 bits per word and an additional pin to
+    /// distinguish between data and command words.
+    Serial4Line,
+
+    /// 8 bit parallel interface.
+    ///
+    /// 8080 style parallel interface with 8 data pins and chip select, write enable,
+    /// and command/data signals.
+    Parallel8Bit,
+
+    /// 16 bit parallel interface.
+    ///
+    /// 8080 style parallel interface with 16 data pins and chip select, write enable,
+    /// and command/data signals.
+    Parallel16Bit,
 }

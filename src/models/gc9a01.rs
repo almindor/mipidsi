@@ -29,6 +29,8 @@ impl Model for GC9A01 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+
         let madctl = SetAddressMode::from(options);
 
         delay.delay_us(200_000);

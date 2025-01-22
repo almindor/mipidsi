@@ -20,6 +20,8 @@ impl Model for ST7796 {
         DELAY: DelayNs,
         DI: Interface,
     {
+        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+
         super::ST7789.init(di, delay, options)
     }
 }
