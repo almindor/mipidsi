@@ -3,8 +3,8 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
-    interface::Interface,
-    models::{ili934x, Model},
+    interface::{Interface, InterfaceKind},
+    models::{ili934x, Model, ModelInitError},
     options::ModelOptions,
 };
 
@@ -23,11 +23,18 @@ impl Model for ILI9341Rgb565 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
+
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(di, delay, options, pf).map_err(Into::into)
     }
@@ -42,11 +49,18 @@ impl Model for ILI9341Rgb666 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
+
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
         ili934x::init_common(di, delay, options, pf).map_err(Into::into)
     }

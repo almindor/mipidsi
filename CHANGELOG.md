@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `RM67162` model support
 - made `InitError` visible
 - added `ILI9488` model support
+- added `KIND` constant to `Interface` trait to detect invalid model, color format, and interface combinations
+- added `InvalidConfiguration` variant to `InitError` enum
+
+### Changed
+
+- changed the returned error type of `Model::init` to a new `ModelInitError` type to allow implementations to report configuration errors
 
 ## Removed
 

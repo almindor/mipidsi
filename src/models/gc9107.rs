@@ -6,11 +6,10 @@ use crate::{
         BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
-    interface::Interface,
+    interface::{Interface, InterfaceKind},
+    models::{Model, ModelInitError},
     options::ModelOptions,
 };
-
-use super::Model;
 
 /// GC9107 display in Rgb565 color mode.
 pub struct GC9107;
@@ -24,11 +23,18 @@ impl Model for GC9107 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
+
         delay.delay_ms(200);
 
         di.write_raw(0xFE, &[])?;

@@ -1,6 +1,6 @@
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
 
-use super::Interface;
+use super::{Interface, InterfaceKind};
 
 /// Spi interface error
 #[derive(Clone, Copy, Debug)]
@@ -35,6 +35,8 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
 impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
     type Word = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
+
+    const KIND: InterfaceKind = InterfaceKind::Serial4Line;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         self.dc.set_low().map_err(SpiError::Dc)?;
