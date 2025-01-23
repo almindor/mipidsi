@@ -6,11 +6,10 @@ use crate::{
         BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
-    interface::Interface,
+    interface::{Interface, InterfaceKind},
+    models::{Model, ModelInitError},
     options::ModelOptions,
 };
-
-use super::Model;
 
 /// RM67162 AMOLED display driver implementation
 ///
@@ -36,12 +35,17 @@ impl Model for RM67162 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        assert_interface_kind!(Serial4Line | Parallel8Bit);
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
 
         let madctl = SetAddressMode::from(options);
 

@@ -6,6 +6,7 @@ use crate::{
         SetInvertMode, SetPixelFormat,
     },
     interface::Interface,
+    models::ModelInitError,
     options::ModelOptions,
 };
 
@@ -15,7 +16,7 @@ pub fn init_common<DELAY, DI>(
     delay: &mut DELAY,
     options: &ModelOptions,
     pixel_format: PixelFormat,
-) -> Result<SetAddressMode, DI::Error>
+) -> Result<SetAddressMode, ModelInitError<DI::Error>>
 where
     DELAY: DelayNs,
     DI: Interface,

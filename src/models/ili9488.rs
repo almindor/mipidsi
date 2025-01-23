@@ -3,11 +3,10 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
-    interface::Interface,
+    interface::{Interface, InterfaceKind},
+    models::{ili948x, Model, ModelInitError},
     options::ModelOptions,
 };
-
-use super::{ili948x, Model};
 
 /// ILI9488 display in Rgb565 color mode.
 pub struct ILI9488Rgb565;
@@ -24,12 +23,17 @@ impl Model for ILI9488Rgb565 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
 
         delay.delay_us(120_000);
 
@@ -47,12 +51,17 @@ impl Model for ILI9488Rgb666 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
 
         delay.delay_us(120_000);
 

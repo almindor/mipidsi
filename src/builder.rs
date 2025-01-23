@@ -1,12 +1,17 @@
 //! [super::Display] builder module
 
-use embedded_hal::digital;
-use embedded_hal::{delay::DelayNs, digital::OutputPin};
+use embedded_hal::{
+    delay::DelayNs,
+    digital::{self, OutputPin},
+};
 
-use crate::interface::{Interface, InterfacePixelFormat};
-use crate::{dcs::InterfaceExt, models::Model, Display};
-
-use crate::options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder};
+use crate::{
+    dcs::InterfaceExt,
+    interface::{Interface, InterfacePixelFormat},
+    models::{Model, ModelInitError},
+    options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder},
+    Display,
+};
 
 /// Builder for [Display] instances.
 ///
@@ -172,10 +177,7 @@ where
                 .map_err(InitError::Interface)?,
         }
 
-        let madctl = self
-            .model
-            .init(&mut self.di, delay_source, &self.options)
-            .map_err(InitError::Interface)?;
+        let madctl = self.model.init(&mut self.di, delay_source, &self.options)?;
 
         let display = Display {
             di: self.di,
@@ -195,8 +197,25 @@ where
 pub enum InitError<DI, P> {
     /// Error caused by the display interface.
     Interface(DI),
+
     /// Error caused by the reset pin's [`OutputPin`](embedded_hal::digital::OutputPin) implementation.
     ResetPin(P),
+
+    /// Invalid configuration error.
+    ///
+    /// This error is returned when the configuration passed to the builder is
+    /// invalid. For example, when the combination of bit depth and interface
+    /// kind isn't supported by the selected model.
+    InvalidConfiguration,
+}
+
+impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
+    fn from(value: ModelInitError<DiError>) -> Self {
+        match value {
+            ModelInitError::Interface(e) => Self::Interface(e),
+            ModelInitError::InvalidConfiguration => Self::InvalidConfiguration,
+        }
+    }
 }
 
 /// Marker type for no reset pin.

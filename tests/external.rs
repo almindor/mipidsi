@@ -6,7 +6,7 @@ use mipidsi::{
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
     interface::Interface,
-    models::Model,
+    models::{Model, ModelInitError},
     options::ModelOptions,
 };
 
@@ -23,7 +23,7 @@ impl Model for ExternalST7789 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,

@@ -6,11 +6,10 @@ use crate::{
         BitsPerPixel, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode, SetDisplayOn,
         SetInvertMode, SetPixelFormat,
     },
-    interface::Interface,
+    interface::{Interface, InterfaceKind},
+    models::{Model, ModelInitError},
     options::ModelOptions,
 };
-
-use super::Model;
 
 /// GC9A01 display in Rgb565 color mode.
 pub struct GC9A01;
@@ -24,12 +23,17 @@ impl Model for GC9A01 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
 
         let madctl = SetAddressMode::from(options);
 

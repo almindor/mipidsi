@@ -4,17 +4,6 @@ use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
-macro_rules! assert_interface_kind {
-    ($($kind:ident)|*) => {
-        assert!(
-            matches!(DI::KIND,
-                $($crate::interface::InterfaceKind::$kind)|*
-            ),
-            "Unsupported interface kind for the selected controller model and color format",
-        );
-    };
-}
-
 // existing model implementations
 mod gc9107;
 mod gc9a01;
@@ -55,10 +44,32 @@ pub trait Model {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface;
+}
+
+/// Error returned by [`Model::init`].
+///
+/// This error type is used internally by implementations of the [`Model`]
+/// trait.
+pub enum ModelInitError<DiError> {
+    /// Error caused by the display interface.
+    Interface(DiError),
+
+    /// Invalid configuration error.
+    ///
+    /// This error is returned when the configuration passed to the builder is
+    /// invalid. For example, when the combination of bit depth and interface
+    /// kind isn't supported by the selected model.
+    InvalidConfiguration,
+}
+
+impl<DiError> From<DiError> for ModelInitError<DiError> {
+    fn from(value: DiError) -> Self {
+        Self::Interface(value)
+    }
 }
 
 #[cfg(test)]
@@ -68,13 +79,15 @@ mod tests {
     use crate::{
         Builder,
         _mock::{MockDelay, MockDisplayInterface},
+        interface::InterfaceKind,
+        InitError,
     };
 
     use super::*;
 
-    struct OnlySpiModel;
+    struct OnlyOneKindModel(InterfaceKind);
 
-    impl Model for OnlySpiModel {
+    impl Model for OnlyOneKindModel {
         type ColorFormat = Rgb565;
 
         const FRAMEBUFFER_SIZE: (u16, u16) = (0, 0);
@@ -84,52 +97,38 @@ mod tests {
             _di: &mut DI,
             _delay: &mut DELAY,
             _options: &ModelOptions,
-        ) -> Result<SetAddressMode, DI::Error>
+        ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
         where
             DELAY: DelayNs,
             DI: Interface,
         {
-            assert_interface_kind!(Serial4Line);
-            Ok(SetAddressMode::default())
-        }
-    }
+            if DI::KIND != self.0 {
+                return Err(ModelInitError::InvalidConfiguration);
+            }
 
-    struct OnlyParallelModel;
-
-    impl Model for OnlyParallelModel {
-        type ColorFormat = Rgb565;
-
-        const FRAMEBUFFER_SIZE: (u16, u16) = (0, 0);
-
-        fn init<DELAY, DI>(
-            &mut self,
-            _di: &mut DI,
-            _delay: &mut DELAY,
-            _options: &ModelOptions,
-        ) -> Result<SetAddressMode, DI::Error>
-        where
-            DELAY: DelayNs,
-            DI: Interface,
-        {
-            assert_interface_kind!(Parallel8Bit);
             Ok(SetAddressMode::default())
         }
     }
 
     #[test]
     fn test_assert_interface_kind_serial() {
-        Builder::new(OnlySpiModel, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap();
+        Builder::new(
+            OnlyOneKindModel(InterfaceKind::Serial4Line),
+            MockDisplayInterface,
+        )
+        .init(&mut MockDelay)
+        .unwrap();
     }
 
     #[test]
-    #[should_panic(
-        expected = "Unsupported interface kind for the selected controller model and color format"
-    )]
     fn test_assert_interface_kind_parallel() {
-        Builder::new(OnlyParallelModel, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap();
+        assert!(matches!(
+            Builder::new(
+                OnlyOneKindModel(InterfaceKind::Parallel8Bit),
+                MockDisplayInterface,
+            )
+            .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration)
+        ));
     }
 }

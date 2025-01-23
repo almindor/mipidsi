@@ -6,8 +6,8 @@ use crate::{
         BitsPerPixel, EnterNormalMode, ExitSleepMode, InterfaceExt, PixelFormat, SetAddressMode,
         SetDisplayOn, SetInvertMode, SetPixelFormat,
     },
-    interface::Interface,
-    models::Model,
+    interface::{Interface, InterfaceKind},
+    models::{Model, ModelInitError},
     options::ModelOptions,
 };
 
@@ -23,12 +23,17 @@ impl Model for ST7789 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, DI::Error>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        assert_interface_kind!(Serial4Line | Parallel8Bit | Parallel16Bit);
+        if !matches!(
+            DI::KIND,
+            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        ) {
+            return Err(ModelInitError::InvalidConfiguration);
+        }
 
         let madctl = SetAddressMode::from(options);
 
