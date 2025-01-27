@@ -80,7 +80,7 @@ mod tests {
         Builder,
         _mock::{MockDelay, MockDisplayInterface},
         interface::InterfaceKind,
-        InitError,
+        InitError, MODEL_INTERFACE_MISMATCH_ERROR_MSG,
     };
 
     use super::*;
@@ -90,7 +90,7 @@ mod tests {
     impl Model for OnlyOneKindModel {
         type ColorFormat = Rgb565;
 
-        const FRAMEBUFFER_SIZE: (u16, u16) = (0, 0);
+        const FRAMEBUFFER_SIZE: (u16, u16) = (16, 16);
 
         fn init<DELAY, DI>(
             &mut self,
@@ -128,7 +128,9 @@ mod tests {
                 MockDisplayInterface,
             )
             .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration)
+            Err(InitError::InvalidConfiguration(
+                MODEL_INTERFACE_MISMATCH_ERROR_MSG
+            ))
         ));
     }
 }
