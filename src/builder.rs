@@ -158,18 +158,22 @@ where
         let (offset_x, offset_y) = to_u32(self.options.display_offset);
         let (max_width, max_height) = to_u32(MODEL::FRAMEBUFFER_SIZE);
 
-        if width == 0 || height == 0 {
+        if width == 0 || height == 0 || width > max_width || height > max_height {
             return Err(InitError::InvalidConfiguration(
-                "invalid display dimensions",
+                ConfigurationError::DisplayDimensions,
             ));
         }
 
         if width + offset_x > max_width {
-            return Err(InitError::InvalidConfiguration("display too wide"));
+            return Err(InitError::InvalidConfiguration(
+                ConfigurationError::XOffsetOverflow,
+            ));
         }
 
         if height + offset_y > max_height {
-            return Err(InitError::InvalidConfiguration("display too tall"));
+            return Err(InitError::InvalidConfiguration(
+                ConfigurationError::YOffsetOverflow,
+            ));
         }
 
         match self.rst {
@@ -213,18 +217,29 @@ pub enum InitError<DI, P> {
     /// This error is returned when the configuration passed to the builder is
     /// invalid. For example, when the combination of bit depth and interface
     /// kind isn't supported by the selected model.
-    InvalidConfiguration(&'static str),
+    InvalidConfiguration(ConfigurationError),
 }
 
-// unify msg for tests
-pub(crate) const MODEL_INTERFACE_MISMATCH_ERROR_MSG: &str = "display model and interface mismatch";
+/// Specifics of [InitError::InvalidConfiguration] if configuration was found invalid
+#[non_exhaustive]
+#[derive(Debug)]
+pub enum ConfigurationError {
+    /// Display Model and Interface kind are mismatching
+    ModelInterfaceMismatch,
+    /// Display dimensions provided in [Builder::display_size] were invalid, e.g. width or height of 0
+    DisplayDimensions,
+    /// Display width from [Builder::display_size] + offset_x from [Builder::display_offset] > maximum width from framebuffer definition
+    XOffsetOverflow,
+    /// Display height from [Builder::display_size] + offset_y from [Builder::display_offset] > maximum height from framebuffer definition
+    YOffsetOverflow,
+}
 
 impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
     fn from(value: ModelInitError<DiError>) -> Self {
         match value {
             ModelInitError::Interface(e) => Self::Interface(e),
             ModelInitError::InvalidConfiguration => {
-                Self::InvalidConfiguration(MODEL_INTERFACE_MISMATCH_ERROR_MSG)
+                Self::InvalidConfiguration(ConfigurationError::ModelInterfaceMismatch)
             }
         }
     }
@@ -272,60 +287,68 @@ mod tests {
     }
 
     #[test]
-    fn panic_too_wide() {
+    fn error_too_wide() {
         assert!(matches!(
             Builder::new(ILI9341Rgb565, MockDisplayInterface)
                 .reset_pin(MockOutputPin)
                 .display_size(241, 320)
                 .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration("display too wide"),)
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::DisplayDimensions
+            ))
         ))
     }
 
     #[test]
-    fn panic_too_tall() {
+    fn error_too_tall() {
         assert!(matches!(
             Builder::new(ILI9341Rgb565, MockDisplayInterface)
                 .reset_pin(MockOutputPin)
                 .display_size(240, 321)
                 .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration("display too tall")),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::DisplayDimensions
+            )),
         ))
     }
 
     #[test]
-    fn panic_offset_invalid_x() {
+    fn error_offset_invalid_x() {
         assert!(matches!(
             Builder::new(ILI9341Rgb565, MockDisplayInterface)
                 .reset_pin(MockOutputPin)
                 .display_size(240, 320)
                 .display_offset(1, 0)
                 .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration("display too wide")),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::XOffsetOverflow
+            )),
         ))
     }
 
     #[test]
-    fn panic_offset_invalid_y() {
+    fn error_offset_invalid_y() {
         assert!(matches!(
             Builder::new(ILI9341Rgb565, MockDisplayInterface)
                 .reset_pin(MockOutputPin)
                 .display_size(240, 310)
                 .display_offset(0, 11)
                 .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration("display too tall")),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::YOffsetOverflow
+            )),
         ))
     }
 
     #[test]
-    fn panic_zero_size() {
+    fn error_zero_size() {
         assert!(matches!(
             Builder::new(ILI9341Rgb565, MockDisplayInterface)
                 .reset_pin(MockOutputPin)
                 .display_size(0, 0)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                "invalid display dimensions"
+                ConfigurationError::DisplayDimensions
             )),
         ))
     }

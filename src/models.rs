@@ -80,7 +80,7 @@ mod tests {
         Builder,
         _mock::{MockDelay, MockDisplayInterface},
         interface::InterfaceKind,
-        InitError, MODEL_INTERFACE_MISMATCH_ERROR_MSG,
+        ConfigurationError, InitError,
     };
 
     use super::*;
@@ -129,7 +129,7 @@ mod tests {
             )
             .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                MODEL_INTERFACE_MISMATCH_ERROR_MSG
+                ConfigurationError::ModelInterfaceMismatch
             ))
         ));
     }
