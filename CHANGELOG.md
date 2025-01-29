@@ -18,10 +18,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - changed the returned error type of `Model::init` to a new `ModelInitError` type to allow implementations to report configuration errors
+- added new errors returned from `Builder::init` in case of invalid `display_size` or `display_offset` parameters
 
 ## Removed
 
 - remove unused `nb` dependency
+- remove panic from `Builder::display_size` if invalid size is given
 
 ## [0.9.0]
 

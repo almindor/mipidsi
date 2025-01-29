@@ -147,11 +147,8 @@ where
     /// Blocks using the provided [DelayNs] `delay_source` to perform the display initialization.
     /// The display will be awake ready to use, no need to call [Display::wake] after init.
     ///
-    /// # Panics
-    ///
-    /// Panics if the area defined by the [`display_size`](Self::display_size)
-    /// and [`display_offset`](Self::display_offset) settings is (partially)
-    /// outside the framebuffer.
+    /// Returns [InitError] if the area defined by the [`display_size`](Self::display_size)
+    /// and [`display_offset`](Self::display_offset) settings is (partially) outside the framebuffer.
     pub fn init(
         mut self,
         delay_source: &mut impl DelayNs,
