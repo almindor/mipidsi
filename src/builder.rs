@@ -160,19 +160,19 @@ where
 
         if width == 0 || height == 0 || width > max_width || height > max_height {
             return Err(InitError::InvalidConfiguration(
-                ConfigurationError::DisplayDimensions,
+                ConfigurationError::InvalidDisplaySize,
             ));
         }
 
         if width + offset_x > max_width {
             return Err(InitError::InvalidConfiguration(
-                ConfigurationError::XOffsetOverflow,
+                ConfigurationError::InvalidOffset,
             ));
         }
 
         if height + offset_y > max_height {
             return Err(InitError::InvalidConfiguration(
-                ConfigurationError::YOffsetOverflow,
+                ConfigurationError::InvalidOffset,
             ));
         }
 
@@ -224,14 +224,23 @@ pub enum InitError<DI, P> {
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum ConfigurationError {
-    /// Display Model and Interface kind are mismatching
-    ModelInterfaceMismatch,
+    /// Unsupported interface kind.
+    ///
+    /// The chosen interface isn't supported by the selected model. Note that
+    /// some controller models don't support all combinations of physical
+    /// interface and color formats. To resolve this, try to use another color
+    /// format if available (e.g. [`ILI9486Rgb666`](crate::models::ILI9486Rgb666) instead of
+    /// [`ILI9486Rgb565`](crate::models::ILI9486Rgb565) if you use a SPI connection)
+    UnsupportedInterface,
     /// Display dimensions provided in [Builder::display_size] were invalid, e.g. width or height of 0
-    DisplayDimensions,
-    /// Display width from [Builder::display_size] + offset_x from [Builder::display_offset] > maximum width from framebuffer definition
-    XOffsetOverflow,
-    /// Display height from [Builder::display_size] + offset_y from [Builder::display_offset] > maximum height from framebuffer definition
-    YOffsetOverflow,
+    InvalidDisplaySize,
+    /// Invalid display offset.
+    ///
+    /// The active display area, defined by [`display_size`](Builder::display_size) and
+    /// [`display_offset`](Builder::display_offset), extends beyond the boundaries of
+    /// the controller's framebuffer. To resolve this, reduce the offset to a maximum value of
+    /// [`FRAMEBUFFER_SIZE`](Model::FRAMEBUFFER_SIZE) minus [`display_size`](Builder::display_size).
+    InvalidOffset,
 }
 
 impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
@@ -239,7 +248,7 @@ impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
         match value {
             ModelInitError::Interface(e) => Self::Interface(e),
             ModelInitError::InvalidConfiguration => {
-                Self::InvalidConfiguration(ConfigurationError::ModelInterfaceMismatch)
+                Self::InvalidConfiguration(ConfigurationError::UnsupportedInterface)
             }
         }
     }
@@ -294,7 +303,7 @@ mod tests {
                 .display_size(241, 320)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::DisplayDimensions
+                ConfigurationError::InvalidDisplaySize
             ))
         ))
     }
@@ -307,7 +316,7 @@ mod tests {
                 .display_size(240, 321)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::DisplayDimensions
+                ConfigurationError::InvalidDisplaySize
             )),
         ))
     }
@@ -321,7 +330,7 @@ mod tests {
                 .display_offset(1, 0)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::XOffsetOverflow
+                ConfigurationError::InvalidOffset
             )),
         ))
     }
@@ -335,7 +344,7 @@ mod tests {
                 .display_offset(0, 11)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::YOffsetOverflow
+                ConfigurationError::InvalidOffset
             )),
         ))
     }
@@ -348,7 +357,7 @@ mod tests {
                 .display_size(0, 0)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::DisplayDimensions
+                ConfigurationError::InvalidDisplaySize
             )),
         ))
     }

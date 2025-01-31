@@ -129,7 +129,7 @@ mod tests {
             )
             .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::ModelInterfaceMismatch
+                ConfigurationError::UnsupportedInterface
             ))
         ));
     }
