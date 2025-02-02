@@ -6,6 +6,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{ili934x, Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// ILI9342C display in Rgb565 color mode.
@@ -32,7 +33,9 @@ impl Model for ILI9342CRgb565 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
@@ -58,7 +61,9 @@ impl Model for ILI9342CRgb666 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());

@@ -9,6 +9,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// GC9A01 display in Rgb565 color mode.
@@ -32,7 +33,9 @@ impl Model for GC9A01 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         let madctl = SetAddressMode::from(options);

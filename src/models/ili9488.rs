@@ -6,6 +6,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{ili948x, Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// ILI9488 display in Rgb565 color mode.
@@ -32,7 +33,9 @@ impl Model for ILI9488Rgb565 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         delay.delay_us(120_000);
@@ -60,7 +63,9 @@ impl Model for ILI9488Rgb666 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         delay.delay_us(120_000);

@@ -108,13 +108,9 @@ where
 
     /// Sets the display size.
     ///
-    /// # Panics
     ///
-    /// Panics if `width` or `height` is 0.
     #[must_use]
     pub fn display_size(mut self, width: u16, height: u16) -> Self {
-        assert!(width != 0 && height != 0);
-
         self.options.display_size = (width, height);
         self
     }
@@ -149,11 +145,8 @@ where
     /// Blocks using the provided [DelayNs] `delay_source` to perform the display initialization.
     /// The display will be awake ready to use, no need to call [Display::wake] after init.
     ///
-    /// # Panics
-    ///
-    /// Panics if the area defined by the [`display_size`](Self::display_size)
-    /// and [`display_offset`](Self::display_offset) settings is (partially)
-    /// outside the framebuffer.
+    /// Returns [InitError] if the area defined by the [`display_size`](Self::display_size)
+    /// and [`display_offset`](Self::display_offset) settings is (partially) outside the framebuffer.
     pub fn init(
         mut self,
         delay_source: &mut impl DelayNs,
@@ -162,8 +155,24 @@ where
         let (width, height) = to_u32(self.options.display_size);
         let (offset_x, offset_y) = to_u32(self.options.display_offset);
         let (max_width, max_height) = to_u32(MODEL::FRAMEBUFFER_SIZE);
-        assert!(width + offset_x <= max_width);
-        assert!(height + offset_y <= max_height);
+
+        if width == 0 || height == 0 || width > max_width || height > max_height {
+            return Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplaySize,
+            ));
+        }
+
+        if width + offset_x > max_width {
+            return Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplayOffset,
+            ));
+        }
+
+        if height + offset_y > max_height {
+            return Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplayOffset,
+            ));
+        }
 
         match self.rst {
             Some(ref mut rst) => {
@@ -206,14 +215,39 @@ pub enum InitError<DI, P> {
     /// This error is returned when the configuration passed to the builder is
     /// invalid. For example, when the combination of bit depth and interface
     /// kind isn't supported by the selected model.
-    InvalidConfiguration,
+    InvalidConfiguration(ConfigurationError),
+}
+
+/// Specifics of [InitError::InvalidConfiguration] if configuration was found invalid
+#[non_exhaustive]
+#[derive(Debug)]
+pub enum ConfigurationError {
+    /// Unsupported interface kind.
+    ///
+    /// The chosen interface isn't supported by the selected model. Note that
+    /// some controller models don't support all combinations of physical
+    /// interface and color formats. To resolve this, try to use another color
+    /// format if available (e.g. [`ILI9486Rgb666`](crate::models::ILI9486Rgb666) instead of
+    /// [`ILI9486Rgb565`](crate::models::ILI9486Rgb565) if you use a SPI connection)
+    UnsupportedInterface,
+    /// Invalid display size
+    ///
+    /// Display dimensions provided in [Builder::display_size] were invalid, e.g. width or height of 0
+    InvalidDisplaySize,
+    /// Invalid display offset.
+    ///
+    /// The active display area, defined by [`display_size`](Builder::display_size) and
+    /// [`display_offset`](Builder::display_offset), extends beyond the boundaries of
+    /// the controller's framebuffer. To resolve this, reduce the offset to a maximum value of
+    /// [`FRAMEBUFFER_SIZE`](Model::FRAMEBUFFER_SIZE) minus [`display_size`](Builder::display_size).
+    InvalidDisplayOffset,
 }
 
 impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
     fn from(value: ModelInitError<DiError>) -> Self {
         match value {
             ModelInitError::Interface(e) => Self::Interface(e),
-            ModelInitError::InvalidConfiguration => Self::InvalidConfiguration,
+            ModelInitError::InvalidConfiguration(ce) => Self::InvalidConfiguration(ce),
         }
     }
 }
@@ -260,54 +294,69 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: width + offset_x <= max_width")]
-    fn panic_too_wide() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .display_size(241, 320)
-            .init(&mut MockDelay)
-            .unwrap();
+    fn error_too_wide() {
+        assert!(matches!(
+            Builder::new(ILI9341Rgb565, MockDisplayInterface)
+                .reset_pin(MockOutputPin)
+                .display_size(241, 320)
+                .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplaySize
+            ))
+        ))
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: height + offset_y <= max_height")]
-    fn panic_too_high() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .display_size(240, 321)
-            .init(&mut MockDelay)
-            .unwrap();
+    fn error_too_tall() {
+        assert!(matches!(
+            Builder::new(ILI9341Rgb565, MockDisplayInterface)
+                .reset_pin(MockOutputPin)
+                .display_size(240, 321)
+                .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplaySize
+            )),
+        ))
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: width + offset_x <= max_width")]
-    fn panic_offset_invalid_x() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .display_size(240, 320)
-            .display_offset(1, 0)
-            .init(&mut MockDelay)
-            .unwrap();
+    fn error_offset_invalid_x() {
+        assert!(matches!(
+            Builder::new(ILI9341Rgb565, MockDisplayInterface)
+                .reset_pin(MockOutputPin)
+                .display_size(240, 320)
+                .display_offset(1, 0)
+                .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplayOffset
+            )),
+        ))
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: height + offset_y <= max_height")]
-    fn panic_offset_invalid_y() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .display_size(240, 310)
-            .display_offset(0, 11)
-            .init(&mut MockDelay)
-            .unwrap();
+    fn error_offset_invalid_y() {
+        assert!(matches!(
+            Builder::new(ILI9341Rgb565, MockDisplayInterface)
+                .reset_pin(MockOutputPin)
+                .display_size(240, 310)
+                .display_offset(0, 11)
+                .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplayOffset
+            )),
+        ))
     }
 
     #[test]
-    #[should_panic(expected = "assertion failed: width != 0 && height != 0")]
-    fn panic_zero_size() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .display_size(0, 0)
-            .init(&mut MockDelay)
-            .unwrap();
+    fn error_zero_size() {
+        assert!(matches!(
+            Builder::new(ILI9341Rgb565, MockDisplayInterface)
+                .reset_pin(MockOutputPin)
+                .display_size(0, 0)
+                .init(&mut MockDelay),
+            Err(InitError::InvalidConfiguration(
+                ConfigurationError::InvalidDisplaySize
+            )),
+        ))
     }
 }
