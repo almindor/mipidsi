@@ -108,9 +108,7 @@ where
 
     /// Sets the display size.
     ///
-    /// # Panics
     ///
-    /// Panics if `width` or `height` is 0.
     #[must_use]
     pub fn display_size(mut self, width: u16, height: u16) -> Self {
         self.options.display_size = (width, height);
