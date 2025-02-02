@@ -230,6 +230,8 @@ pub enum ConfigurationError {
     /// format if available (e.g. [`ILI9486Rgb666`](crate::models::ILI9486Rgb666) instead of
     /// [`ILI9486Rgb565`](crate::models::ILI9486Rgb565) if you use a SPI connection)
     UnsupportedInterface,
+    /// Invalid display dimentions
+    ///
     /// Display dimensions provided in [Builder::display_size] were invalid, e.g. width or height of 0
     InvalidDisplaySize,
     /// Invalid display offset.
