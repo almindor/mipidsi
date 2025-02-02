@@ -1,6 +1,6 @@
 //! Display models.
 
-use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions};
+use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions, ConfigurationError};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
@@ -63,7 +63,7 @@ pub enum ModelInitError<DiError> {
     /// This error is returned when the configuration passed to the builder is
     /// invalid. For example, when the combination of bit depth and interface
     /// kind isn't supported by the selected model.
-    InvalidConfiguration,
+    InvalidConfiguration(ConfigurationError),
 }
 
 impl<DiError> From<DiError> for ModelInitError<DiError> {
@@ -103,7 +103,9 @@ mod tests {
             DI: Interface,
         {
             if DI::KIND != self.0 {
-                return Err(ModelInitError::InvalidConfiguration);
+                return Err(ModelInitError::InvalidConfiguration(
+                    ConfigurationError::UnsupportedInterface,
+                ));
             }
 
             Ok(SetAddressMode::default())

@@ -6,6 +6,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// ST7796 display in Rgb565 color mode.
@@ -29,7 +30,9 @@ impl Model for ST7796 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         super::ST7789.init(di, delay, options)

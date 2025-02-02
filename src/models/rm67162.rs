@@ -9,6 +9,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// RM67162 AMOLED display driver implementation
@@ -44,7 +45,9 @@ impl Model for RM67162 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         let madctl = SetAddressMode::from(options);

@@ -9,6 +9,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// ST7735s display in Rgb565 color mode.
@@ -32,7 +33,9 @@ impl Model for ST7735s {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         let madctl = SetAddressMode::from(options);

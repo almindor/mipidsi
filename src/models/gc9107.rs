@@ -9,6 +9,7 @@ use crate::{
     interface::{Interface, InterfaceKind},
     models::{Model, ModelInitError},
     options::ModelOptions,
+    ConfigurationError,
 };
 
 /// GC9107 display in Rgb565 color mode.
@@ -32,7 +33,9 @@ impl Model for GC9107 {
             DI::KIND,
             InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit
         ) {
-            return Err(ModelInitError::InvalidConfiguration);
+            return Err(ModelInitError::InvalidConfiguration(
+                ConfigurationError::UnsupportedInterface,
+            ));
         }
 
         delay.delay_ms(200);

@@ -247,9 +247,7 @@ impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
     fn from(value: ModelInitError<DiError>) -> Self {
         match value {
             ModelInitError::Interface(e) => Self::Interface(e),
-            ModelInitError::InvalidConfiguration => {
-                Self::InvalidConfiguration(ConfigurationError::UnsupportedInterface)
-            }
+            ModelInitError::InvalidConfiguration(ce) => Self::InvalidConfiguration(ce),
         }
     }
 }
