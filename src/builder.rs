@@ -164,13 +164,13 @@ where
 
         if width + offset_x > max_width {
             return Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidOffset,
+                ConfigurationError::InvalidDisplayOffset,
             ));
         }
 
         if height + offset_y > max_height {
             return Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidOffset,
+                ConfigurationError::InvalidDisplayOffset,
             ));
         }
 
@@ -230,7 +230,7 @@ pub enum ConfigurationError {
     /// format if available (e.g. [`ILI9486Rgb666`](crate::models::ILI9486Rgb666) instead of
     /// [`ILI9486Rgb565`](crate::models::ILI9486Rgb565) if you use a SPI connection)
     UnsupportedInterface,
-    /// Invalid display dimentions
+    /// Invalid display size
     ///
     /// Display dimensions provided in [Builder::display_size] were invalid, e.g. width or height of 0
     InvalidDisplaySize,
@@ -240,7 +240,7 @@ pub enum ConfigurationError {
     /// [`display_offset`](Builder::display_offset), extends beyond the boundaries of
     /// the controller's framebuffer. To resolve this, reduce the offset to a maximum value of
     /// [`FRAMEBUFFER_SIZE`](Model::FRAMEBUFFER_SIZE) minus [`display_size`](Builder::display_size).
-    InvalidOffset,
+    InvalidDisplayOffset,
 }
 
 impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
@@ -328,7 +328,7 @@ mod tests {
                 .display_offset(1, 0)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidOffset
+                ConfigurationError::InvalidDisplayOffset
             )),
         ))
     }
@@ -342,7 +342,7 @@ mod tests {
                 .display_offset(0, 11)
                 .init(&mut MockDelay),
             Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidOffset
+                ConfigurationError::InvalidDisplayOffset
             )),
         ))
     }
