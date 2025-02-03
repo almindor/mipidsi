@@ -32,7 +32,11 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
     }
 }
 
-impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
+impl<SPI, DC> Interface for SpiInterface<'_, SPI, DC>
+where
+    SPI: SpiDevice,
+    DC: OutputPin,
+{
     type Word = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
 
