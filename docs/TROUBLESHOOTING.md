@@ -40,7 +40,7 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong subpixel order](colors_wrong_subpixel_order.svg)
 
 ```rust
-.with_color_order(mipidsi::options::ColorOrder::Bgr)
+.color_order(mipidsi::options::ColorOrder::Bgr)
 ```
 
 ### Wrong color inversion
@@ -48,7 +48,7 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong color inversion](colors_wrong_color_inversion.svg)
 
 ```rust
-.with_invert_colors(mipidsi::options::ColorInversion::Inverted)
+.invert_colors(mipidsi::options::ColorInversion::Inverted)
 ```
 
 ### Wrong subpixel order and color inversion
@@ -56,6 +56,6 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong subpixel order and color inversion](colors_both_wrong.svg)
 
 ```rust
-.with_color_order(mipidsi::options::ColorOrder::Bgr)
-.with_invert_colors(mipidsi::options::ColorInversion::Inverted)
+.color_order(mipidsi::options::ColorOrder::Bgr)
+.invert_colors(mipidsi::options::ColorInversion::Inverted)
 ```
