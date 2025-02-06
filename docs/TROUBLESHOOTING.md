@@ -23,8 +23,9 @@ The way colors are displayed depend on the subpixel layout and technology (like 
 To make it easier to identify the correct settings the `mipidsi` crate provides a `TestImage`, which can be used to verify the color settings and adjust them in case they are incorrect.
 
 ```rust
-let mut display = Builder::ili9486_rgb666(di)
-    .init(&mut delay, Some(rst))?;
+let mut display = Builder::new(mipidsi::models::ILI9486Rgb565, di)
+    .reset_pin(rst)
+    .init(&mut delay)?;
 
 TestImage::new().draw(&mut display)?;
 ```
@@ -40,7 +41,7 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong subpixel order](colors_wrong_subpixel_order.svg)
 
 ```rust
-.with_color_order(mipidsi::options::ColorOrder::Bgr)
+.color_order(mipidsi::options::ColorOrder::Bgr)
 ```
 
 ### Wrong color inversion
@@ -48,7 +49,7 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong color inversion](colors_wrong_color_inversion.svg)
 
 ```rust
-.with_invert_colors(mipidsi::options::ColorInversion::Inverted)
+.invert_colors(mipidsi::options::ColorInversion::Inverted)
 ```
 
 ### Wrong subpixel order and color inversion
@@ -56,6 +57,6 @@ If the test image isn't displayed as expected use one of the reference image bel
 ![Wrong subpixel order and color inversion](colors_both_wrong.svg)
 
 ```rust
-.with_color_order(mipidsi::options::ColorOrder::Bgr)
-.with_invert_colors(mipidsi::options::ColorInversion::Inverted)
+.color_order(mipidsi::options::ColorOrder::Bgr)
+.invert_colors(mipidsi::options::ColorInversion::Inverted)
 ```
