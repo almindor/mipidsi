@@ -1,6 +1,7 @@
-use embedded_hal::{digital::OutputPin, spi::SpiDevice};
+use embedded_hal::digital::OutputPin;
+use embedded_hal_async::spi::SpiDevice;
 
-use super::{FlushingInterface, Interface, InterfaceKind, SpiError};
+use super::{AsyncInterface, FlushingInterface, InterfaceKind, SpiError};
 
 /// Async Spi interface, including a dma buffer
 ///
@@ -27,7 +28,7 @@ impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterfaceAsync<'a, SPI, DC> {
     }
 }
 
-impl<SPI, DC> Interface for SpiInterfaceAsync<'_, SPI, DC>
+impl<SPI, DC> AsyncInterface for SpiInterfaceAsync<'_, SPI, DC>
 where
     SPI: SpiDevice,
     DC: OutputPin,
@@ -37,11 +38,11 @@ where
 
     const KIND: InterfaceKind = InterfaceKind::Serial4Line;
 
-    fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+    async fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         self.dc.set_low().map_err(SpiError::Dc)?;
-        self.spi.write(&[command]).map_err(SpiError::Spi)?;
+        self.spi.write(&[command]).await.map_err(SpiError::Spi)?;
         self.dc.set_high().map_err(SpiError::Dc)?;
-        self.spi.write(args).map_err(SpiError::Spi)?;
+        self.spi.write(args).await.map_err(SpiError::Spi)?;
 
         Ok(())
     }
@@ -92,6 +93,7 @@ where
     async fn flush(&mut self) -> Result<(), Self::Error> {
         self.spi
             .write(&self.buffer[..self.index])
+            .await
             .map_err(SpiError::Spi)?;
 
         self.index = 0;

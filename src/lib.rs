@@ -1,110 +1,6 @@
 #![no_std]
 // associated re-typing not supported in rust yet
 #![allow(clippy::type_complexity)]
-#![warn(missing_docs)]
-
-//! This crate provides a generic display driver to connect to TFT displays
-//! that implement the [MIPI Display Command Set](https://www.mipi.org/specifications/display-command-set).
-//!
-//! Uses implementations of the [interface::Interface] trait to talk to the
-//! hardware via different transports. Builtin support for these transports is
-//! available:
-//! - SPI ([`interface::SpiInterface`])
-//! - 8080 style parallel via GPIO ([`interface::ParallelInterface`])
-//!
-//! An optional batching of draws is supported via the `batch` feature (default on)
-//!
-//! ### List of supported models
-//!
-//! * GC9107
-//! * GC9A01
-//! * ILI9341
-//! * ILI9342C
-//! * ILI9486
-//! * ILI9488
-//! * RM67162
-//! * ST7735
-//! * ST7789
-//! * ST7796
-//!
-//! ## Troubleshooting
-//!
-//! Refer to the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
-//! if you experience problems like a blank screen or incorrect colors.
-//!
-//! ## Examples
-//!
-//! **For the ili9486 display, using the SPI interface with no chip select:**
-//! ```
-//! use mipidsi::interface::SpiInterface;                    // Provides the builder for DisplayInterface
-//! use mipidsi::{Builder, models::ILI9486Rgb666};           // Provides the builder for Display
-//! use embedded_graphics::{prelude::*, pixelcolor::Rgb666}; // Provides the required color type
-//!
-//! /* Define the SPI interface as the variable `spi` */
-//! /* Define the DC digital output pin as the variable `dc` */
-//! /* Define the Reset digital output pin as the variable `rst` */
-//!# let spi = mipidsi::_mock::MockSpi;
-//!# let dc = mipidsi::_mock::MockOutputPin;
-//!# let rst = mipidsi::_mock::MockOutputPin;
-//!# let mut delay = mipidsi::_mock::MockDelay;
-//!
-//! // Create a buffer
-//! let mut buffer = [0_u8; 512];
-//!
-//! // Create a DisplayInterface from SPI and DC pin, with no manual CS control
-//! let di = SpiInterface::new(spi, dc, &mut buffer);
-//!
-//! // Create the ILI9486 display driver from the display interface and optional RST pin
-//! let mut display = Builder::new(ILI9486Rgb666, di)
-//!     .reset_pin(rst)
-//!     .init(&mut delay).unwrap();
-//!
-//! // Clear the display to black
-//! display.clear(Rgb666::BLACK).unwrap();
-//! ```
-//!
-//! **For the ili9341 display, using the Parallel port, with the RGB666 color space and the Bgr
-//! color order:**
-//! ```
-//! // Provides the builder for DisplayInterface
-//! use mipidsi::interface::{Generic8BitBus, ParallelInterface};
-//! // Provides the builder for Display
-//! use mipidsi::{Builder, models::ILI9341Rgb666};
-//! // Provides the required color type
-//! use embedded_graphics::{prelude::*, pixelcolor::Rgb666};
-//!
-//! /* Define digital output pins d0 - d7 for the parallel port as `lcd_dX` */
-//! /* Define the D/C digital output pin as `dc` */
-//! /* Define the WR and Reset digital output pins with the initial state set as High as `wr` and
-//! `rst` */
-//!# let lcd_d0 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d1 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d2 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d3 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d4 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d5 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d6 = mipidsi::_mock::MockOutputPin;
-//!# let lcd_d7 = mipidsi::_mock::MockOutputPin;
-//!# let wr = mipidsi::_mock::MockOutputPin;
-//!# let dc = mipidsi::_mock::MockOutputPin;
-//!# let rst = mipidsi::_mock::MockOutputPin;
-//!# let mut delay = mipidsi::_mock::MockDelay;
-//!
-//! // Create the DisplayInterface from a Generic8BitBus, which is made from the parallel pins
-//! let bus = Generic8BitBus::new((lcd_d0, lcd_d1, lcd_d2,
-//!     lcd_d3, lcd_d4, lcd_d5, lcd_d6, lcd_d7));
-//! let di = ParallelInterface::new(bus, dc, wr);
-//!
-//! // Create the ILI9341 display driver from the display interface with the RGB666 color space
-//! let mut display = Builder::new(ILI9341Rgb666, di)
-//!      .reset_pin(rst)
-//!      .color_order(mipidsi::options::ColorOrder::Bgr)
-//!      .init(&mut delay).unwrap();
-//!
-//! // Clear the display to black
-//! display.clear(Rgb666::RED).unwrap();
-//! ```
-
 use dcs::InterfaceExt;
 
 pub mod interface;
@@ -137,7 +33,7 @@ mod batch;
 ///
 pub struct Display<DI, MODEL, RST>
 where
-    DI: interface::Interface,
+    DI: interface::AsyncInterface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
@@ -158,7 +54,7 @@ where
 
 impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: interface::Interface,
+    DI: interface::AsyncInterface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
@@ -181,9 +77,12 @@ where
     /// # let mut display = mipidsi::_mock::new_mock_display();
     /// display.set_orientation(Orientation::default().rotate(Rotation::Deg180)).unwrap();
     /// ```
-    pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), DI::Error> {
+    pub async fn set_orientation(
+        &mut self,
+        orientation: options::Orientation,
+    ) -> Result<(), DI::Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
-        self.di.write_command(self.madctl)?;
+        self.di.write_command(self.madctl).await?;
 
         Ok(())
     }
@@ -205,8 +104,13 @@ where
     /// # let mut display = mipidsi::_mock::new_mock_display();
     /// display.set_pixel(100, 200, Rgb565::new(251, 188, 20)).unwrap();
     /// ```
-    pub fn set_pixel(&mut self, x: u16, y: u16, color: M::ColorFormat) -> Result<(), DI::Error> {
-        self.set_pixels(x, y, x, y, core::iter::once(color))
+    pub async fn set_pixel(
+        &mut self,
+        x: u16,
+        y: u16,
+        color: M::ColorFormat,
+    ) -> Result<(), DI::Error> {
+        self.set_pixels(x, y, x, y, core::iter::once(color)).await
     }
 
     ///
@@ -236,7 +140,7 @@ where
     /// result in undefined behavior.
     ///
     /// </div>
-    pub fn set_pixels<T>(
+    pub async fn set_pixels<T>(
         &mut self,
         sx: u16,
         sy: u16,
@@ -247,9 +151,9 @@ where
     where
         T: IntoIterator<Item = M::ColorFormat>,
     {
-        self.set_address_window(sx, sy, ex, ey)?;
+        self.set_address_window(sx, sy, ex, ey).await?;
 
-        self.di.write_command(dcs::WriteMemoryStart)?;
+        self.di.write_command(dcs::WriteMemoryStart).await?;
 
         M::ColorFormat::send_pixels(&mut self.di, colors)
     }
@@ -269,7 +173,7 @@ where
     ///
     /// After the scrolling region is defined the [`set_vertical_scroll_offset`](Self::set_vertical_scroll_offset) can be
     /// used to scroll the display.
-    pub fn set_vertical_scroll_region(
+    pub async fn set_vertical_scroll_region(
         &mut self,
         top_fixed_area: u16,
         bottom_fixed_area: u16,
@@ -286,7 +190,7 @@ where
             )
         };
 
-        self.di.write_command(vscrdef)
+        self.di.write_command(vscrdef).await
     }
 
     /// Sets the vertical scroll offset.
@@ -296,9 +200,9 @@ where
     ///
     /// Use [`set_vertical_scroll_region`](Self::set_vertical_scroll_region) to setup the scroll region, before
     /// using this method.
-    pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), DI::Error> {
+    pub async fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), DI::Error> {
         let vscad = dcs::SetScrollStart::new(offset);
-        self.di.write_command(vscad)
+        self.di.write_command(vscad).await
     }
 
     ///
@@ -310,7 +214,13 @@ where
     }
 
     // Sets the address window for the display.
-    fn set_address_window(&mut self, sx: u16, sy: u16, ex: u16, ey: u16) -> Result<(), DI::Error> {
+    async fn set_address_window(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+    ) -> Result<(), DI::Error> {
         // add clipping offsets if present
         let mut offset = self.options.display_offset;
         let mapping = MemoryMapping::from(self.options.orientation);
@@ -326,19 +236,24 @@ where
 
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        self.di.write_command(dcs::SetColumnAddress::new(sx, ex))?;
-        self.di.write_command(dcs::SetPageAddress::new(sy, ey))
+        self.di
+            .write_command(dcs::SetColumnAddress::new(sx, ex))
+            .await?;
+        self.di
+            .write_command(dcs::SetPageAddress::new(sy, ey))
+            .await
     }
 
     ///
     /// Configures the tearing effect output.
     ///
-    pub fn set_tearing_effect(
+    pub async fn set_tearing_effect(
         &mut self,
         tearing_effect: options::TearingEffect,
     ) -> Result<(), DI::Error> {
         self.di
             .write_command(dcs::SetTearingEffect::new(tearing_effect))
+            .await
     }
 
     ///
@@ -352,8 +267,8 @@ where
     /// Puts the display to sleep, reducing power consumption.
     /// Need to call [Self::wake] before issuing other commands
     ///
-    pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        self.di.write_command(dcs::EnterSleepMode)?;
+    pub async fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
+        self.di.write_command(dcs::EnterSleepMode).await?;
         // All supported models requires a 120ms delay before issuing other commands
         delay.delay_us(120_000);
         self.sleeping = true;
@@ -363,8 +278,8 @@ where
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
-    pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        self.di.write_command(dcs::ExitSleepMode)?;
+    pub async fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
+        self.di.write_command(dcs::ExitSleepMode).await?;
         // ST7789 and st7735s have the highest minimal delay of 120ms
         delay.delay_us(120_000);
         self.sleeping = false;
@@ -394,92 +309,5 @@ where
     /// Flushes the framebuffer to the underlaying display interface
     pub async fn flush(&mut self) -> Result<(), DI::Error> {
         self.di.flush().await
-    }
-}
-
-/// Mock implementations of embedded-hal and interface traits.
-///
-/// Do not use types in this module outside of doc tests.
-#[doc(hidden)]
-pub mod _mock {
-    use core::convert::Infallible;
-
-    use embedded_hal::{delay::DelayNs, digital, spi};
-
-    use crate::{
-        interface::{Interface, InterfaceKind},
-        models::ILI9341Rgb565,
-        Builder, Display, NoResetPin,
-    };
-
-    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
-        Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap()
-    }
-
-    pub struct MockOutputPin;
-
-    impl digital::OutputPin for MockOutputPin {
-        fn set_low(&mut self) -> Result<(), Self::Error> {
-            Ok(())
-        }
-
-        fn set_high(&mut self) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
-
-    impl digital::ErrorType for MockOutputPin {
-        type Error = core::convert::Infallible;
-    }
-
-    pub struct MockSpi;
-
-    impl spi::SpiDevice for MockSpi {
-        fn transaction(
-            &mut self,
-            _operations: &mut [spi::Operation<'_, u8>],
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
-
-    impl spi::ErrorType for MockSpi {
-        type Error = core::convert::Infallible;
-    }
-
-    pub struct MockDelay;
-
-    impl DelayNs for MockDelay {
-        fn delay_ns(&mut self, _ns: u32) {}
-    }
-
-    pub struct MockDisplayInterface;
-
-    impl Interface for MockDisplayInterface {
-        type Word = u8;
-        type Error = Infallible;
-
-        const KIND: InterfaceKind = InterfaceKind::Serial4Line;
-
-        fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
-            Ok(())
-        }
-
-        fn send_pixels<const N: usize>(
-            &mut self,
-            _pixels: impl IntoIterator<Item = [Self::Word; N]>,
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
-
-        fn send_repeated_pixel<const N: usize>(
-            &mut self,
-            _pixel: [Self::Word; N],
-            _count: u32,
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
     }
 }

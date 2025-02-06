@@ -1,20 +1,20 @@
+use embedded_graphics_core::{geometry::Size, primitives::Rectangle};
 use embedded_graphics_core::{
-    draw_target::DrawTarget,
-    geometry::{Dimensions, OriginDimensions, Size},
-    pixelcolor::RgbColor,
-    primitives::Rectangle,
-    Pixel,
+    pixelcolor::Rgb565,
+    prelude::{Point, RgbColor},
 };
 use embedded_hal::digital::OutputPin;
 
+use crate::dcs::BitsPerPixel;
 use crate::dcs::InterfaceExt;
-use crate::{dcs::BitsPerPixel, interface::Interface};
+use crate::interface::AsyncInterface;
 use crate::{dcs::WriteMemoryStart, models::Model};
 use crate::{interface::InterfacePixelFormat, Display};
 
-impl<DI, M, RST> DrawTarget for Display<DI, M, RST>
+/*
+impl<DI, M, RST> Display<DI, M, RST>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
@@ -22,32 +22,17 @@ where
     type Error = DI::Error;
     type Color = M::ColorFormat;
 
-    #[cfg(not(feature = "batch"))]
-    fn draw_iter<I>(&mut self, pixels: I) -> Result<(), Self::Error>
-    where
-        I: IntoIterator<Item = Pixel<Self::Color>>,
-    {
-        for pixel in pixels {
-            let x = pixel.0.x as u16;
-            let y = pixel.0.y as u16;
-
-            self.set_pixel(x, y, pixel.1)?;
-        }
-
-        Ok(())
-    }
-
     #[cfg(feature = "batch")]
-    fn draw_iter<T>(&mut self, item: T) -> Result<(), Self::Error>
+    async fn draw_iter<T>(&mut self, item: T) -> Result<(), Self::Error>
     where
         T: IntoIterator<Item = Pixel<Self::Color>>,
     {
         use crate::batch::DrawBatch;
 
-        self.draw_batch(item)
+        self.draw_batch(item).await
     }
 
-    fn fill_contiguous<I>(&mut self, area: &Rectangle, colors: I) -> Result<(), Self::Error>
+    async fn fill_contiguous<I>(&mut self, area: &Rectangle, colors: I) -> Result<(), Self::Error>
     where
         I: IntoIterator<Item = Self::Color>,
     {
@@ -71,6 +56,7 @@ where
         if &intersection == area {
             // Draw the original iterator if no edge overlaps the framebuffer
             self.set_pixels(sx, sy, ex, ey, take_u32(colors, count))
+                .await
         } else {
             // Skip pixels above and to the left of the intersection
             let mut initial_skip = 0;
@@ -94,10 +80,15 @@ where
                 ey,
                 take_u32(TakeSkip::new(colors, take_per_row, skip_per_row), count),
             )
+            .await
         }
     }
 
-    fn fill_solid(&mut self, area: &Rectangle, color: Self::Color) -> Result<(), Self::Error> {
+    async fn fill_solid(
+        &mut self,
+        area: &Rectangle,
+        color: Self::Color,
+    ) -> Result<(), Self::Error> {
         let area = area.intersection(&self.bounding_box());
         let Some(bottom_right) = area.bottom_right() else {
             // No intersection -> nothing to draw
@@ -111,15 +102,15 @@ where
         let ex = bottom_right.x as u16;
         let ey = bottom_right.y as u16;
 
-        self.set_address_window(sx, sy, ex, ey)?;
-        self.di.write_command(WriteMemoryStart)?;
+        self.set_address_window(sx, sy, ex, ey).await?;
+        self.di.write_command(WriteMemoryStart).await?;
         M::ColorFormat::send_repeated_pixel(&mut self.di, color, count)
     }
 }
 
 impl<DI, MODEL, RST> OriginDimensions for Display<DI, MODEL, RST>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
@@ -188,26 +179,9 @@ fn take_u32<I: Iterator>(iter: I, max_count: u32) -> impl Iterator<Item = I::Ite
     iter.take(max_count.try_into().unwrap())
 }
 
-#[cfg(target_pointer_width = "16")]
-fn take_u32<I: Iterator>(iter: I, max_count: u32) -> impl Iterator<Item = I::Item> {
-    let mut count = 0;
-    iter.take_while(move |_| {
-        count += 1;
-        count <= max_count
-    })
-}
-
 #[cfg(not(target_pointer_width = "16"))]
 fn nth_u32<I: Iterator>(mut iter: I, n: u32) -> Option<I::Item> {
     iter.nth(n.try_into().unwrap())
-}
-
-#[cfg(target_pointer_width = "16")]
-fn nth_u32<I: Iterator>(mut iter: I, n: u32) -> Option<I::Item> {
-    for _ in 0..n {
-        iter.next();
-    }
-    iter.next()
 }
 
 #[cfg(test)]
@@ -260,5 +234,51 @@ mod test {
         // just return None
         let mut iter = TakeSkip::new(0..11, 0, 2);
         assert_eq!(iter.next(), None);
+    }
+}
+*/
+
+impl<DI, M, RST> Display<DI, M, RST>
+where
+    DI: AsyncInterface,
+    M: Model,
+    M::ColorFormat: InterfacePixelFormat<DI::Word>,
+    RST: OutputPin,
+    Rgb565: InterfacePixelFormat<<DI as AsyncInterface>::Word>,
+{
+    pub async fn fill_solid(&mut self, area: &Rectangle, color: Rgb565) -> Result<(), DI::Error> {
+        let area = area.intersection(&Rectangle::new(Point::new(0, 0), Size::new(240, 320)));
+        let Some(bottom_right) = area.bottom_right() else {
+            // No intersection -> nothing to draw
+            return Ok(());
+        };
+
+        let count = area.size.width * area.size.height;
+
+        let sx = area.top_left.x as u16;
+        let sy = area.top_left.y as u16;
+        let ex = bottom_right.x as u16;
+        let ey = bottom_right.y as u16;
+
+        self.set_address_window(sx, sy, ex, ey).await?;
+        self.di.write_command(WriteMemoryStart).await?;
+        Rgb565::send_repeated_pixel(&mut self.di, color, count)
+    }
+}
+
+impl BitsPerPixel {
+    /// Returns the bits per pixel for a embedded-graphics [`RgbColor`].
+    pub const fn from_rgb_color<C: RgbColor>() -> Self {
+        let bpp = C::MAX_R.trailing_ones() + C::MAX_G.trailing_ones() + C::MAX_B.trailing_ones();
+
+        match bpp {
+            3 => Self::Three,
+            8 => Self::Eight,
+            12 => Self::Twelve,
+            16 => Self::Sixteen,
+            18 => Self::Eighteen,
+            24 => Self::TwentyFour,
+            _ => panic!("invalid RgbColor bits per pixel"),
+        }
     }
 }

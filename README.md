@@ -1,4 +1,15 @@
-# mipidsi
+# Async mipidsi
+
+## Important Note:
+
+This repo is a fork of the great crate `mipidsi` for the MIPI Compliant Display Command Set that uses `embedded-hal-async` and DMA Buffers to speed up the transfer process and unload the CPU as most as possible.
+
+It is currently only available for the Display `ILI9341` (the one I'm currently working on) at a color format of `Rgb565`.
+
+All Comments are welcome!
+
+
+## Original README:
 
 <p align="center">
     <a href="https://crates.io/crates/mipidsi"><img src="https://img.shields.io/crates/v/mipidsi.svg" alt="Crates.io"></a>

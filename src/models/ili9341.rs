@@ -3,7 +3,7 @@ use embedded_hal::delay::DelayNs;
 
 use crate::{
     dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
-    interface::{Interface, InterfaceKind},
+    interface::{AsyncInterface, InterfaceKind},
     models::{ili934x, Model, ModelInitError},
     options::ModelOptions,
     ConfigurationError,
@@ -19,7 +19,7 @@ impl Model for ILI9341Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
-    fn init<DELAY, DI>(
+    async fn init<DELAY, DI>(
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
@@ -27,7 +27,7 @@ impl Model for ILI9341Rgb565 {
     ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
-        DI: Interface,
+        DI: AsyncInterface,
     {
         if !matches!(
             DI::KIND,
@@ -39,7 +39,9 @@ impl Model for ILI9341Rgb565 {
         }
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        ili934x::init_common(di, delay, options, pf).map_err(Into::into)
+        ili934x::init_common(di, delay, options, pf)
+            .await
+            .map_err(Into::into)
     }
 }
 
@@ -47,7 +49,7 @@ impl Model for ILI9341Rgb666 {
     type ColorFormat = Rgb666;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
-    fn init<DELAY, DI>(
+    async fn init<DELAY, DI>(
         &mut self,
         di: &mut DI,
         delay: &mut DELAY,
@@ -55,7 +57,7 @@ impl Model for ILI9341Rgb666 {
     ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
-        DI: Interface,
+        DI: AsyncInterface,
     {
         if !matches!(
             DI::KIND,
@@ -67,6 +69,8 @@ impl Model for ILI9341Rgb666 {
         }
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        ili934x::init_common(di, delay, options, pf).map_err(Into::into)
+        ili934x::init_common(di, delay, options, pf)
+            .await
+            .map_err(Into::into)
     }
 }

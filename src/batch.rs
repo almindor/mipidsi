@@ -2,7 +2,7 @@
 //! Batch the pixels to be rendered into Pixel Rows and Pixel Blocks (contiguous Pixel Rows).
 //! This enables the pixels to be rendered efficiently as Pixel Blocks, which may be transmitted in a single Non-Blocking SPI request.
 use crate::{
-    interface::{Interface, InterfacePixelFormat},
+    interface::{AsyncInterface, InterfacePixelFormat},
     models::Model,
     Display,
 };
@@ -11,23 +11,24 @@ use embedded_hal::digital::OutputPin;
 
 pub trait DrawBatch<DI, M, I>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error>;
+    #![allow(unused)]
+    async fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error>;
 }
 
 impl<DI, M, RST, I> DrawBatch<DI, M, I> for Display<DI, M, RST>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
     RST: OutputPin,
 {
-    fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error> {
+    async fn draw_batch(&mut self, item_pixels: I) -> Result<(), DI::Error> {
         //  Get the pixels for the item to be rendered.
         let pixels = item_pixels.into_iter();
         //  Batch the pixels into Pixel Rows.
@@ -45,7 +46,8 @@ where
         } in blocks
         {
             //  Render the Pixel Block.
-            self.set_pixels(x_left, y_top, x_right, y_bottom, colors)?;
+            self.set_pixels(x_left, y_top, x_right, y_bottom, colors)
+                .await?;
 
             //  Dump out the Pixel Blocks for the square in test_display()
             /* if x_left >= 60 && x_left <= 150 && x_right >= 60 && x_right <= 150 && y_top >= 60 && y_top <= 150 && y_bottom >= 60 && y_bottom <= 150 {

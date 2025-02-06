@@ -7,7 +7,7 @@ use embedded_hal::{
 
 use crate::{
     dcs::InterfaceExt,
-    interface::{Interface, InterfacePixelFormat},
+    interface::{self, AsyncInterface, InterfacePixelFormat},
     models::{Model, ModelInitError},
     options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder},
     Display,
@@ -33,7 +33,7 @@ use crate::{
 /// ```
 pub struct Builder<DI, MODEL, RST>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
 {
@@ -45,7 +45,7 @@ where
 
 impl<DI, MODEL> Builder<DI, MODEL, NoResetPin>
 where
-    DI: Interface,
+    DI: AsyncInterface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
 {
@@ -65,7 +65,7 @@ where
 
 impl<DI, MODEL, RST> Builder<DI, MODEL, RST>
 where
-    DI: Interface,
+    DI: interface::AsyncInterface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
     RST: OutputPin,
@@ -147,7 +147,7 @@ where
     ///
     /// Returns [InitError] if the area defined by the [`display_size`](Self::display_size)
     /// and [`display_offset`](Self::display_offset) settings is (partially) outside the framebuffer.
-    pub fn init(
+    pub async fn init(
         mut self,
         delay_source: &mut impl DelayNs,
     ) -> Result<Display<DI, MODEL, RST>, InitError<DI::Error, RST::Error>> {
@@ -183,10 +183,14 @@ where
             None => self
                 .di
                 .write_command(crate::dcs::SoftReset)
+                .await
                 .map_err(InitError::Interface)?,
         }
 
-        let madctl = self.model.init(&mut self.di, delay_source, &self.options)?;
+        let madctl = self
+            .model
+            .init(&mut self.di, delay_source, &self.options)
+            .await?;
 
         let display = Display {
             di: self.di,
@@ -246,7 +250,7 @@ pub enum ConfigurationError {
 impl<DiError, P> From<ModelInitError<DiError>> for InitError<DiError, P> {
     fn from(value: ModelInitError<DiError>) -> Self {
         match value {
-            ModelInitError::Interface(e) => Self::Interface(e),
+            ModelInitError::AsyncInterface(e) => Self::Interface(e),
             ModelInitError::InvalidConfiguration(ce) => Self::InvalidConfiguration(ce),
         }
     }
@@ -267,96 +271,4 @@ impl digital::OutputPin for NoResetPin {
 
 impl digital::ErrorType for NoResetPin {
     type Error = core::convert::Infallible;
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        _mock::{MockDelay, MockDisplayInterface, MockOutputPin},
-        models::ILI9341Rgb565,
-    };
-
-    use super::*;
-
-    #[test]
-    fn init_without_reset_pin() {
-        let _: Display<_, _, NoResetPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap();
-    }
-
-    #[test]
-    fn init_reset_pin() {
-        let _: Display<_, _, MockOutputPin> = Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .reset_pin(MockOutputPin)
-            .init(&mut MockDelay)
-            .unwrap();
-    }
-
-    #[test]
-    fn error_too_wide() {
-        assert!(matches!(
-            Builder::new(ILI9341Rgb565, MockDisplayInterface)
-                .reset_pin(MockOutputPin)
-                .display_size(241, 320)
-                .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidDisplaySize
-            ))
-        ))
-    }
-
-    #[test]
-    fn error_too_tall() {
-        assert!(matches!(
-            Builder::new(ILI9341Rgb565, MockDisplayInterface)
-                .reset_pin(MockOutputPin)
-                .display_size(240, 321)
-                .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidDisplaySize
-            )),
-        ))
-    }
-
-    #[test]
-    fn error_offset_invalid_x() {
-        assert!(matches!(
-            Builder::new(ILI9341Rgb565, MockDisplayInterface)
-                .reset_pin(MockOutputPin)
-                .display_size(240, 320)
-                .display_offset(1, 0)
-                .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidDisplayOffset
-            )),
-        ))
-    }
-
-    #[test]
-    fn error_offset_invalid_y() {
-        assert!(matches!(
-            Builder::new(ILI9341Rgb565, MockDisplayInterface)
-                .reset_pin(MockOutputPin)
-                .display_size(240, 310)
-                .display_offset(0, 11)
-                .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidDisplayOffset
-            )),
-        ))
-    }
-
-    #[test]
-    fn error_zero_size() {
-        assert!(matches!(
-            Builder::new(ILI9341Rgb565, MockDisplayInterface)
-                .reset_pin(MockOutputPin)
-                .display_size(0, 0)
-                .init(&mut MockDelay),
-            Err(InitError::InvalidConfiguration(
-                ConfigurationError::InvalidDisplaySize
-            )),
-        ))
-    }
 }

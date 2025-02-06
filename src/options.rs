@@ -1,5 +1,6 @@
 //! [ModelOptions] and other helper types.
 
+#![allow(unused)]
 use crate::models::Model;
 
 mod orientation;

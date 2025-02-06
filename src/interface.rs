@@ -1,4 +1,5 @@
 //! Interface traits and implementations
+#![allow(async_fn_in_trait)]
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
 
 mod spi;
@@ -9,6 +10,40 @@ pub use spi_async::*;
 mod parallel;
 pub use parallel::*;
 
+pub trait AsyncInterface {
+    /// The native width of the interface
+    ///
+    /// In most cases this will be u8, except for larger parallel interfaces such as
+    /// 16 bit (currently supported)
+    /// or 9 or 18 bit (currently unsupported)
+    type Word: Copy;
+
+    /// Error type
+    type Error: core::fmt::Debug;
+
+    /// Kind
+    const KIND: InterfaceKind;
+
+    /// Send a command with optional parameters
+    async fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error>;
+
+    /// Send a sequence of pixels
+    ///
+    /// `WriteMemoryStart` must be sent before calling this function
+    fn send_pixels<const N: usize>(
+        &mut self,
+        pixels: impl IntoIterator<Item = [Self::Word; N]>,
+    ) -> Result<(), Self::Error>;
+
+    /// Send the same pixel value multiple times
+    ///
+    /// `WriteMemoryStart` must be sent before calling this function
+    fn send_repeated_pixel<const N: usize>(
+        &mut self,
+        pixel: [Self::Word; N],
+        count: u32,
+    ) -> Result<(), Self::Error>;
+}
 /// Command and pixel interface
 pub trait Interface {
     /// The native width of the interface
@@ -46,7 +81,7 @@ pub trait Interface {
 }
 
 /// Pixel interface that writes to a intermediate buffer and provides an async flush
-pub trait FlushingInterface: Interface {
+pub trait FlushingInterface: AsyncInterface {
     /// Flushes stored pixel data to the interface
     fn flush(&mut self) -> impl core::future::Future<Output = Result<(), Self::Error>>;
 }
@@ -97,13 +132,13 @@ pub trait InterfacePixelFormat<Word> {
     // but that doesn't work yet
 
     #[doc(hidden)]
-    fn send_pixels<DI: Interface<Word = Word>>(
+    fn send_pixels<DI: AsyncInterface<Word = Word>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
     ) -> Result<(), DI::Error>;
 
     #[doc(hidden)]
-    fn send_repeated_pixel<DI: Interface<Word = Word>>(
+    fn send_repeated_pixel<DI: AsyncInterface<Word = Word>>(
         di: &mut DI,
         pixel: Self,
         count: u32,
@@ -111,14 +146,14 @@ pub trait InterfacePixelFormat<Word> {
 }
 
 impl InterfacePixelFormat<u8> for Rgb565 {
-    fn send_pixels<DI: Interface<Word = u8>>(
+    fn send_pixels<DI: AsyncInterface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
     ) -> Result<(), DI::Error> {
         di.send_pixels(pixels.into_iter().map(rgb565_to_bytes))
     }
 
-    fn send_repeated_pixel<DI: Interface<Word = u8>>(
+    fn send_repeated_pixel<DI: AsyncInterface<Word = u8>>(
         di: &mut DI,
         pixel: Self,
         count: u32,
@@ -128,14 +163,14 @@ impl InterfacePixelFormat<u8> for Rgb565 {
 }
 
 impl InterfacePixelFormat<u8> for Rgb666 {
-    fn send_pixels<DI: Interface<Word = u8>>(
+    fn send_pixels<DI: AsyncInterface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
     ) -> Result<(), DI::Error> {
         di.send_pixels(pixels.into_iter().map(rgb666_to_bytes))
     }
 
-    fn send_repeated_pixel<DI: Interface<Word = u8>>(
+    fn send_repeated_pixel<DI: AsyncInterface<Word = u8>>(
         di: &mut DI,
         pixel: Self,
         count: u32,
@@ -145,14 +180,14 @@ impl InterfacePixelFormat<u8> for Rgb666 {
 }
 
 impl InterfacePixelFormat<u16> for Rgb565 {
-    fn send_pixels<DI: Interface<Word = u16>>(
+    fn send_pixels<DI: AsyncInterface<Word = u16>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
     ) -> Result<(), DI::Error> {
         di.send_pixels(pixels.into_iter().map(rgb565_to_u16))
     }
 
-    fn send_repeated_pixel<DI: Interface<Word = u16>>(
+    fn send_repeated_pixel<DI: AsyncInterface<Word = u16>>(
         di: &mut DI,
         pixel: Self,
         count: u32,
