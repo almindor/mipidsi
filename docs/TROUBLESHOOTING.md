@@ -23,8 +23,9 @@ The way colors are displayed depend on the subpixel layout and technology (like 
 To make it easier to identify the correct settings the `mipidsi` crate provides a `TestImage`, which can be used to verify the color settings and adjust them in case they are incorrect.
 
 ```rust
-let mut display = Builder::ili9486_rgb666(di)
-    .init(&mut delay, Some(rst))?;
+let mut display = Builder::new(mipidsi::models::ILI9486Rgb565, di)
+    .reset_pin(rst)
+    .init(&mut delay)?;
 
 TestImage::new().draw(&mut display)?;
 ```
