@@ -25,14 +25,27 @@ pub struct SpiInterface<'a, SPI, DC> {
     buffer: &'a mut [u8],
 }
 
-impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterface<'a, SPI, DC> {
+impl<'a, SPI, DC> SpiInterface<'a, SPI, DC>
+where
+    SPI: SpiDevice,
+    DC: OutputPin,
+{
     /// Create new interface
     pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
         Self { spi, dc, buffer }
     }
+
+    /// Release the DC pin and SPI peripheral back, deconstructing the interface
+    pub fn release(self) -> (SPI, DC) {
+        (self.spi, self.dc)
+    }
 }
 
-impl<SPI: SpiDevice, DC: OutputPin> Interface for SpiInterface<'_, SPI, DC> {
+impl<SPI, DC> Interface for SpiInterface<'_, SPI, DC>
+where
+    SPI: SpiDevice,
+    DC: OutputPin,
+{
     type Word = u8;
     type Error = SpiError<SPI::Error, DC::Error>;
 

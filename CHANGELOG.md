@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- added `SpiInterface::release`
 - added `RM67162` model support
 - made `InitError` visible
 - added `ILI9488` model support
