@@ -29,7 +29,7 @@
 //!
 //! ## Troubleshooting
 //!
-//! Refer to the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md)
+//! Refer to the [troubleshooting guide](_troubleshooting)
 //! if you experience problems like a blank screen or incorrect colors.
 //!
 //! ## Examples
@@ -131,6 +131,8 @@ pub use test_image::TestImage;
 
 #[cfg(feature = "batch")]
 mod batch;
+
+pub mod _troubleshooting;
 
 ///
 /// Display driver to connect to TFT displays.
