@@ -1,4 +1,6 @@
-use embedded_hal::{digital::OutputPin, spi::SpiDevice};
+use embassy_futures::block_on;
+use embedded_hal::digital::OutputPin;
+use embedded_hal_async::spi::SpiDevice;
 
 use super::{FlushingInterface, Interface, InterfaceKind, SpiError};
 
@@ -13,7 +15,11 @@ pub struct SpiInterfaceAsync<'a, SPI, DC> {
     index: usize,
 }
 
-impl<'a, SPI: SpiDevice, DC: OutputPin> SpiInterfaceAsync<'a, SPI, DC> {
+impl<'a, SPI, DC> SpiInterfaceAsync<'a, SPI, DC>
+where
+    SPI: SpiDevice,
+    DC: OutputPin,
+{
     /// Create new interface
     pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
         // TODO: we should probably do at least an assertion of basic size requirement for the
@@ -39,9 +45,9 @@ where
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
         self.dc.set_low().map_err(SpiError::Dc)?;
-        self.spi.write(&[command]).map_err(SpiError::Spi)?;
+        block_on(self.spi.write(&[command])).map_err(SpiError::Spi)?;
         self.dc.set_high().map_err(SpiError::Dc)?;
-        self.spi.write(args).map_err(SpiError::Spi)?;
+        block_on(self.spi.write(args)).map_err(SpiError::Spi)?;
 
         Ok(())
     }
@@ -92,6 +98,7 @@ where
     async fn flush(&mut self) -> Result<(), Self::Error> {
         self.spi
             .write(&self.buffer[..self.index])
+            .await
             .map_err(SpiError::Spi)?;
 
         self.index = 0;
