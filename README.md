@@ -48,13 +48,14 @@ Variants that require different screen sizes and window addressing offsets are n
 
 ## Troubleshooting
 
-Refer to the [troubleshooting guide](https://github.com/almindor/mipidsi/blob/master/docs/TROUBLESHOOTING.md) if you experience problems like a blank screen or incorrect colors.
+Refer to the [troubleshooting guide](https://docs.rs/mipidsi/latest/mipidsi/_troubleshooting/index.html) if you experience problems like a blank screen or incorrect colors.
 
 ## Example
 
 ```rust
-// create a DisplayInterface from SPI and DC pin, with no manual CS control
-let di = SPIInterfaceNoCS::new(spi, dc);
+// create a SpiInterface from SpiDevice, a DC pin and a buffer
+let mut buffer = [0u8; 512];
+let di = SpiInterface::new(spi, dc, &mut buffer);
 // create the ILI9486 display driver in rgb666 color mode from the display interface and use a HW reset pin during init
 let mut display = Builder::new(ILI9486Rgb666, di)
     .reset_pin(rst)
@@ -62,9 +63,12 @@ let mut display = Builder::new(ILI9486Rgb666, di)
 // clear the display to black
 display.clear(Rgb666::BLACK)?;
 ```
+
+Refer to the [examples directory](./examples/) and to the [crate documentation](https://docs.rs/mipidsi) for more complete examples.
+
 ## Migration
 
-See [MIGRATION.md](../docs/MIGRATION.md) document.
+See [MIGRATION.md](./docs/MIGRATION.md) document.
 
 ## Minimum Supported Rust Version (MSRV)
 
