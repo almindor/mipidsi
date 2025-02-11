@@ -2,6 +2,8 @@ use embassy_futures::block_on;
 use embedded_hal::digital::OutputPin;
 use embedded_hal_async::spi::SpiDevice;
 
+use crate::dcs::{DcsCommand, SetColumnAddress, SetPageAddress, WriteMemoryStart};
+
 use super::{FlushingInterface, Interface, InterfaceKind, SpiError};
 
 /// Async Spi interface, including a dma buffer
@@ -13,6 +15,11 @@ pub struct SpiInterfaceAsync<'a, SPI, DC> {
     dc: DC,
     buffer: &'a mut [u8],
     index: usize,
+    // drawing window minmax values
+    sx: u16,
+    ex: u16,
+    sy: u16,
+    ey: u16,
 }
 
 impl<'a, SPI, DC> SpiInterfaceAsync<'a, SPI, DC>
@@ -29,7 +36,24 @@ where
             dc,
             buffer,
             index: 0,
+            sx: u16::MAX,
+            ex: 0,
+            sy: u16::MAX,
+            ey: 0,
         }
+    }
+
+    fn send_command_inner(
+        &mut self,
+        command: u8,
+        args: &[u8],
+    ) -> Result<(), SpiError<SPI::Error, DC::Error>> {
+        self.dc.set_low().map_err(SpiError::Dc)?;
+        block_on(self.spi.write(&[command])).map_err(SpiError::Spi)?;
+        self.dc.set_high().map_err(SpiError::Dc)?;
+        block_on(self.spi.write(args)).map_err(SpiError::Spi)?;
+
+        Ok(())
     }
 }
 
@@ -44,12 +68,31 @@ where
     const KIND: InterfaceKind = InterfaceKind::Serial4Line;
 
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
-        self.dc.set_low().map_err(SpiError::Dc)?;
-        block_on(self.spi.write(&[command])).map_err(SpiError::Spi)?;
-        self.dc.set_high().map_err(SpiError::Dc)?;
-        block_on(self.spi.write(args)).map_err(SpiError::Spi)?;
+        match command {
+            // SetColumnAddress
+            0x2A => {
+                let sx = u16::from_be_bytes([args[0], args[1]]);
+                let ex = u16::from_be_bytes([args[2], args[3]]);
+                self.sx = core::cmp::min(self.sx, sx);
+                self.ex = core::cmp::max(self.ex, ex);
 
-        Ok(())
+                return Ok(());
+            }
+            // SetPageAddress
+            0x2B => {
+                let sy = u16::from_be_bytes([args[0], args[1]]);
+                let ey = u16::from_be_bytes([args[2], args[3]]);
+                self.sy = core::cmp::min(self.sy, sy);
+                self.ey = core::cmp::max(self.ey, ey);
+
+                return Ok(());
+            }
+            // WriteMemory
+            0x2C => {} // do nothing atm.
+            _ => {}
+        }
+
+        self.send_command_inner(command, args)
     }
 
     fn send_pixels<const N: usize>(
@@ -96,6 +139,18 @@ where
     DC: OutputPin,
 {
     async fn flush(&mut self) -> Result<(), Self::Error> {
+        let mut param_bytes: [u8; 16] = [0; 16];
+
+        let sca = SetColumnAddress::new(self.sx, self.ex);
+        let n = sca.fill_params_buf(&mut param_bytes);
+        self.send_command_inner(sca.instruction(), &param_bytes[..n])?;
+
+        let spa = SetPageAddress::new(self.sy, self.ey);
+        let n = spa.fill_params_buf(&mut param_bytes);
+        self.send_command_inner(spa.instruction(), &param_bytes[..n])?;
+
+        self.send_command_inner(WriteMemoryStart.instruction(), &[])?;
+
         self.spi
             .write(&self.buffer[..self.index])
             .await
