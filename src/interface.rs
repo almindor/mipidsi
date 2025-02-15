@@ -1,13 +1,15 @@
 //! Interface traits and implementations
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
 
-mod spi;
-mod spi_async;
-pub use spi::*;
-pub use spi_async::*;
-
 mod parallel;
+mod spi;
+#[cfg(feature = "async")]
+mod spi_async;
+
 pub use parallel::*;
+pub use spi::*;
+#[cfg(feature = "async")]
+pub use spi_async::*;
 
 /// Command and pixel interface
 pub trait Interface {
