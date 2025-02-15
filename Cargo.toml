@@ -19,12 +19,21 @@ embedded-hal = "1.0.0"
 optional = true
 version = "0.8.0"
 
+[dependencies.embassy-futures]
+optional = true
+version = "0.1.1"
+
+[dependencies.embedded-hal-async]
+optional = true
+version = "1.0.0"
+
 [dev-dependencies]
 embedded-graphics = "0.8.1"
 
 [features]
 default = ["batch"]
 batch = ["heapless"]
+async = ["embassy-futures", "embedded-hal-async"]
 
 [workspace]
 members = ["mipidsi-async"]

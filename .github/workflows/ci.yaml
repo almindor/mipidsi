@@ -31,6 +31,12 @@ jobs:
       - name: Run tests
         run: |
           cargo test
+      - name: Run tests with all features
+        run: |
+          cargo test --all-features
+      - name: Run tests without default features
+        run: |
+          cargo test --no-default-features
 
   # On macOS and Windows, we at least make sure that the crate builds and links.
   build-other:

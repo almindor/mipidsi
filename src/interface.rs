@@ -1,11 +1,15 @@
 //! Interface traits and implementations
-
-mod spi;
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
-pub use spi::*;
 
 mod parallel;
+mod spi;
+#[cfg(feature = "async")]
+mod spi_async;
+
 pub use parallel::*;
+pub use spi::*;
+#[cfg(feature = "async")]
+pub use spi_async::*;
 
 /// Command and pixel interface
 pub trait Interface {
@@ -41,6 +45,12 @@ pub trait Interface {
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error>;
+}
+
+/// Pixel interface that writes to a intermediate buffer and provides an async flush
+pub trait FlushingInterface: Interface {
+    /// Flushes stored pixel data to the interface
+    fn flush(&mut self) -> impl core::future::Future<Output = Result<(), Self::Error>>;
 }
 
 impl<T: Interface> Interface for &mut T {

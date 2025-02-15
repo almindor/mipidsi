@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- added `async` feature with `SpiInterfaceAsync` implementation behind it
 - added `SpiInterface::release`
 - added `RM67162` model support
 - made `InitError` visible
