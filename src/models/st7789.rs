@@ -12,6 +12,8 @@ use crate::{
     ConfigurationError,
 };
 
+use super::InitEngine;
+
 /// ST7789 display in Rgb565 color mode.
 pub struct ST7789;
 
@@ -19,46 +21,44 @@ impl Model for ST7789 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
-    fn init<DELAY, DI>(
+    fn init<IE>(
         &mut self,
-        di: &mut DI,
-        delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+        ie: &mut IE,
+    ) -> Result<SetAddressMode, ModelInitError<IE::Error>>
     where
-        DELAY: DelayNs,
-        DI: Interface,
+        IE: InitEngine,
     {
-        if !matches!(
-            DI::KIND,
-            InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
-        ) {
-            return Err(ModelInitError::InvalidConfiguration(
-                ConfigurationError::UnsupportedInterface,
-            ));
-        }
+        // if !matches!(
+        //     DI::KIND,
+        //     InterfaceKind::Serial4Line | InterfaceKind::Parallel8Bit | InterfaceKind::Parallel16Bit
+        // ) {
+        //     return Err(ModelInitError::InvalidConfiguration(
+        //         ConfigurationError::UnsupportedInterface,
+        //     ));
+        // }
 
         let madctl = SetAddressMode::from(options);
 
-        delay.delay_us(150_000);
+        ie.queue_delay_us(150_000)?;
 
-        di.write_command(ExitSleepMode)?;
-        delay.delay_us(10_000);
+        ie.queue_command(ExitSleepMode)?;
+        ie.queue_delay_us(10_000)?;
 
         // set hw scroll area based on framebuffer size
-        di.write_command(madctl)?;
+        ie.queue_command(madctl)?;
 
-        di.write_command(SetInvertMode::new(options.invert_colors))?;
+        ie.queue_command(SetInvertMode::new(options.invert_colors))?;
 
         let pf = PixelFormat::with_all(BitsPerPixel::from_rgb_color::<Self::ColorFormat>());
-        di.write_command(SetPixelFormat::new(pf))?;
-        delay.delay_us(10_000);
-        di.write_command(EnterNormalMode)?;
-        delay.delay_us(10_000);
-        di.write_command(SetDisplayOn)?;
+        ie.queue_command(SetPixelFormat::new(pf))?;
+        ie.queue_delay_us(10_000)?;
+        ie.queue_command(EnterNormalMode)?;
+        ie.queue_delay_us(10_000)?;
+        ie.queue_command(SetDisplayOn)?;
 
         // DISPON requires some time otherwise we risk SPI data issues
-        delay.delay_us(120_000);
+        ie.queue_delay_us(120_000)?;
 
         Ok(madctl)
     }
