@@ -1,11 +1,15 @@
 //! Interface traits and implementations
 
 mod spi;
+use core::future::Future;
+
 use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666, RgbColor};
 pub use spi::*;
 
 mod parallel;
 pub use parallel::*;
+
+use crate::dcs::DcsCommand;
 
 /// Command and pixel interface
 pub trait Interface {
@@ -22,7 +26,14 @@ pub trait Interface {
     /// Kind
     const KIND: InterfaceKind;
 
-    /// Send a command with optional parameters
+    /// Write a DcsCommand
+    fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Self::Error> {
+        let mut param_bytes: [u8; 16] = [0; 16];
+        let n = command.fill_params_buf(&mut param_bytes);
+        self.send_command(command.instruction(), &param_bytes[..n])
+    }
+
+    /// Send a raw u8 command with optional parameters
     fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error>;
 
     /// Send a sequence of pixels
@@ -41,6 +52,41 @@ pub trait Interface {
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error>;
+}
+
+/// Async version of command and framebuffer transfer interface
+pub trait InterfaceAsync {
+    /// Error type
+    type Error: core::fmt::Debug;
+
+    /// Word
+    type Word: Copy;
+
+    /// Kind
+    const KIND: InterfaceKind;
+
+    /// Write a DcsCommand
+    fn write_command(
+        &mut self,
+        command: impl DcsCommand,
+    ) -> impl Future<Output = Result<(), Self::Error>> {
+        async move {
+            let mut param_bytes: [u8; 16] = [0; 16];
+            let n = command.fill_params_buf(&mut param_bytes);
+            self.send_command(command.instruction(), &param_bytes[..n])
+                .await
+        }
+    }
+
+    /// Send a raw u8 command with optional parameters
+    fn send_command(
+        &mut self,
+        command: u8,
+        args: &[u8],
+    ) -> impl Future<Output = Result<(), Self::Error>>;
+
+    /// Send framebuffer contents over to the device
+    fn send_buffer(&mut self, buf: &[u8]) -> impl Future<Output = Result<(), Self::Error>>;
 }
 
 impl<T: Interface> Interface for &mut T {
@@ -89,6 +135,9 @@ pub trait InterfacePixelFormat<Word> {
     // but that doesn't work yet
 
     #[doc(hidden)]
+    fn pixels_to_bytes(pixels: impl IntoIterator<Item = Self>) -> impl IntoIterator<Item = u8>;
+
+    #[doc(hidden)]
     fn send_pixels<DI: Interface<Word = Word>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -117,6 +166,10 @@ impl InterfacePixelFormat<u8> for Rgb565 {
     ) -> Result<(), DI::Error> {
         di.send_repeated_pixel(rgb565_to_bytes(pixel), count)
     }
+
+    fn pixels_to_bytes(pixels: impl IntoIterator<Item = Self>) -> impl IntoIterator<Item = u8> {
+        pixels.into_iter().flat_map(rgb565_to_bytes)
+    }
 }
 
 impl InterfacePixelFormat<u8> for Rgb666 {
@@ -134,6 +187,10 @@ impl InterfacePixelFormat<u8> for Rgb666 {
     ) -> Result<(), DI::Error> {
         di.send_repeated_pixel(rgb666_to_bytes(pixel), count)
     }
+
+    fn pixels_to_bytes(pixels: impl IntoIterator<Item = Self>) -> impl IntoIterator<Item = u8> {
+        pixels.into_iter().flat_map(rgb666_to_bytes)
+    }
 }
 
 impl InterfacePixelFormat<u16> for Rgb565 {
@@ -150,6 +207,10 @@ impl InterfacePixelFormat<u16> for Rgb565 {
         count: u32,
     ) -> Result<(), DI::Error> {
         di.send_repeated_pixel(rgb565_to_u16(pixel), count)
+    }
+
+    fn pixels_to_bytes(pixels: impl IntoIterator<Item = Self>) -> impl IntoIterator<Item = u8> {
+        pixels.into_iter().flat_map(rgb565_to_bytes)
     }
 }
 

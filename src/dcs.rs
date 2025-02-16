@@ -1,7 +1,5 @@
 //! MIPI DCS commands.
 
-use crate::interface::Interface;
-
 #[macro_use]
 mod macros;
 
@@ -32,38 +30,6 @@ pub trait DcsCommand {
     /// Fills the given buffer with the command parameters.
     fn fill_params_buf(&self, buffer: &mut [u8]) -> usize;
 }
-
-/// An extension trait for [`Interface`] with support for writing DCS commands.
-///
-/// Commands which are part of the manufacturer independent user command set can be sent to the
-/// display by using the [`write_command`](Self::write_command) method with one of the command types
-/// in this module.
-///
-/// All other commands, which do not have an associated type in this module, can be sent using
-/// the [`write_raw`](Self::write_raw) method.
-pub trait InterfaceExt: Interface {
-    /// Sends a DCS command to the display interface.
-    fn write_command(&mut self, command: impl DcsCommand) -> Result<(), Self::Error> {
-        let mut param_bytes: [u8; 16] = [0; 16];
-        let n = command.fill_params_buf(&mut param_bytes);
-        self.write_raw(command.instruction(), &param_bytes[..n])
-    }
-
-    /// Sends a raw command with the given `instruction` to the display interface.
-    ///
-    /// The `param_bytes` slice can contain the instruction parameters, which are sent as data after
-    /// the instruction code was sent. If no parameters are required an empty slice can be passed to
-    /// this method.
-    ///
-    /// This method is intended to be used for sending commands which are not part of the MIPI DCS
-    /// user command set. Use [`write_command`](Self::write_command) for commands in the user
-    /// command set.
-    fn write_raw(&mut self, instruction: u8, param_bytes: &[u8]) -> Result<(), Self::Error> {
-        self.send_command(instruction, param_bytes)
-    }
-}
-
-impl<T: Interface> InterfaceExt for T {}
 
 // DCS commands that don't use any parameters
 

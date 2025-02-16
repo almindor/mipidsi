@@ -1,6 +1,7 @@
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
+use embedded_hal_async::spi::SpiDevice as AsyncSpiDevice;
 
-use super::{Interface, InterfaceKind};
+use super::{Interface, InterfaceAsync, InterfaceKind};
 
 /// Spi interface error
 #[derive(Clone, Copy, Debug)]
@@ -25,6 +26,12 @@ pub struct SpiInterface<'a, SPI, DC> {
     buffer: &'a mut [u8],
 }
 
+/// Async version of above: TODO docs
+pub struct SpiInterfaceAsync<SPI, DC> {
+    spi: SPI,
+    dc: DC,
+}
+
 impl<'a, SPI, DC> SpiInterface<'a, SPI, DC>
 where
     SPI: SpiDevice,
@@ -33,6 +40,22 @@ where
     /// Create new interface
     pub fn new(spi: SPI, dc: DC, buffer: &'a mut [u8]) -> Self {
         Self { spi, dc, buffer }
+    }
+
+    /// Release the DC pin and SPI peripheral back, deconstructing the interface
+    pub fn release(self) -> (SPI, DC) {
+        (self.spi, self.dc)
+    }
+}
+
+impl<SPI, DC> SpiInterfaceAsync<SPI, DC>
+where
+    SPI: AsyncSpiDevice,
+    DC: OutputPin,
+{
+    /// Create new interface
+    pub fn new(spi: SPI, dc: DC) -> Self {
+        Self { spi, dc }
     }
 
     /// Release the DC pin and SPI peripheral back, deconstructing the interface
@@ -110,5 +133,28 @@ where
                 .map_err(SpiError::Spi)?;
         }
         Ok(())
+    }
+}
+
+impl<SPI, DC> InterfaceAsync for SpiInterfaceAsync<SPI, DC>
+where
+    SPI: AsyncSpiDevice,
+    DC: OutputPin,
+{
+    const KIND: InterfaceKind = InterfaceKind::Serial4Line;
+    type Error = SpiError<SPI::Error, DC::Error>;
+    type Word = u8;
+
+    async fn send_command(&mut self, command: u8, args: &[u8]) -> Result<(), Self::Error> {
+        self.dc.set_low().map_err(SpiError::Dc)?;
+        self.spi.write(&[command]).await.map_err(SpiError::Spi)?;
+        self.dc.set_high().map_err(SpiError::Dc)?;
+        self.spi.write(args).await.map_err(SpiError::Spi)?;
+
+        Ok(())
+    }
+
+    async fn send_buffer(&mut self, buf: &[u8]) -> Result<(), Self::Error> {
+        self.spi.write(buf).await.map_err(SpiError::Spi)
     }
 }
