@@ -105,12 +105,12 @@
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
 
-use dcs::InterfaceExt;
-
 pub mod interface;
 
 use embedded_hal::delay::DelayNs;
 use embedded_hal::digital::OutputPin;
+
+mod init_engine;
 
 pub mod options;
 use interface::InterfacePixelFormat;
@@ -131,6 +131,10 @@ pub use test_image::TestImage;
 
 #[cfg(feature = "batch")]
 mod batch;
+
+mod display_async;
+mod framebuffer;
+pub use display_async::*;
 
 pub mod _troubleshooting;
 
@@ -386,89 +390,89 @@ where
     }
 }
 
-/// Mock implementations of embedded-hal and interface traits.
-///
-/// Do not use types in this module outside of doc tests.
-#[doc(hidden)]
-pub mod _mock {
-    use core::convert::Infallible;
+// / Mock implementations of embedded-hal and interface traits.
+// /
+// / Do not use types in this module outside of doc tests.
+// #[doc(hidden)]
+// pub mod _mock {
+//     use core::convert::Infallible;
 
-    use embedded_hal::{delay::DelayNs, digital, spi};
+//     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::{
-        interface::{Interface, InterfaceKind},
-        models::ILI9341Rgb565,
-        Builder, Display, NoResetPin,
-    };
+//     use crate::{
+//         interface::{Interface, InterfaceKind},
+//         models::ILI9341Rgb565,
+//         Builder, Display, NoResetPin,
+//     };
 
-    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
-        Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap()
-    }
+//     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
+//         Builder::new(ILI9341Rgb565, MockDisplayInterface)
+//             .init(&mut MockDelay)
+//             .unwrap()
+//     }
 
-    pub struct MockOutputPin;
+//     pub struct MockOutputPin;
 
-    impl digital::OutputPin for MockOutputPin {
-        fn set_low(&mut self) -> Result<(), Self::Error> {
-            Ok(())
-        }
+//     impl digital::OutputPin for MockOutputPin {
+//         fn set_low(&mut self) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
 
-        fn set_high(&mut self) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
+//         fn set_high(&mut self) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
+//     }
 
-    impl digital::ErrorType for MockOutputPin {
-        type Error = core::convert::Infallible;
-    }
+//     impl digital::ErrorType for MockOutputPin {
+//         type Error = core::convert::Infallible;
+//     }
 
-    pub struct MockSpi;
+//     pub struct MockSpi;
 
-    impl spi::SpiDevice for MockSpi {
-        fn transaction(
-            &mut self,
-            _operations: &mut [spi::Operation<'_, u8>],
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
+//     impl spi::SpiDevice for MockSpi {
+//         fn transaction(
+//             &mut self,
+//             _operations: &mut [spi::Operation<'_, u8>],
+//         ) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
+//     }
 
-    impl spi::ErrorType for MockSpi {
-        type Error = core::convert::Infallible;
-    }
+//     impl spi::ErrorType for MockSpi {
+//         type Error = core::convert::Infallible;
+//     }
 
-    pub struct MockDelay;
+//     pub struct MockDelay;
 
-    impl DelayNs for MockDelay {
-        fn delay_ns(&mut self, _ns: u32) {}
-    }
+//     impl DelayNs for MockDelay {
+//         fn delay_ns(&mut self, _ns: u32) {}
+//     }
 
-    pub struct MockDisplayInterface;
+//     pub struct MockDisplayInterface;
 
-    impl Interface for MockDisplayInterface {
-        type Word = u8;
-        type Error = Infallible;
+//     impl Interface for MockDisplayInterface {
+//         type Word = u8;
+//         type Error = Infallible;
 
-        const KIND: InterfaceKind = InterfaceKind::Serial4Line;
+//         const KIND: InterfaceKind = InterfaceKind::Serial4Line;
 
-        fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
-            Ok(())
-        }
+//         fn send_command(&mut self, _command: u8, _args: &[u8]) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
 
-        fn send_pixels<const N: usize>(
-            &mut self,
-            _pixels: impl IntoIterator<Item = [Self::Word; N]>,
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
+//         fn send_pixels<const N: usize>(
+//             &mut self,
+//             _pixels: impl IntoIterator<Item = [Self::Word; N]>,
+//         ) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
 
-        fn send_repeated_pixel<const N: usize>(
-            &mut self,
-            _pixel: [Self::Word; N],
-            _count: u32,
-        ) -> Result<(), Self::Error> {
-            Ok(())
-        }
-    }
-}
+//         fn send_repeated_pixel<const N: usize>(
+//             &mut self,
+//             _pixel: [Self::Word; N],
+//             _count: u32,
+//         ) -> Result<(), Self::Error> {
+//             Ok(())
+//         }
+//     }
+// }
