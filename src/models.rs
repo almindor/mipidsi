@@ -5,28 +5,54 @@ use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
 // existing model implementations
+#[cfg(not(feature = "ili9225"))]
 mod gc9107;
+#[cfg(not(feature = "ili9225"))]
 mod gc9a01;
+#[cfg(feature = "ili9225")]
+mod ili9225;
+#[cfg(not(feature = "ili9225"))]
 mod ili9341;
+#[cfg(not(feature = "ili9225"))]
 mod ili9342c;
+#[cfg(not(feature = "ili9225"))]
 mod ili934x;
+#[cfg(not(feature = "ili9225"))]
 mod ili9486;
+#[cfg(not(feature = "ili9225"))]
 mod ili9488;
+#[cfg(not(feature = "ili9225"))]
 mod ili948x;
+#[cfg(not(feature = "ili9225"))]
 mod rm67162;
+#[cfg(not(feature = "ili9225"))]
 mod st7735s;
+#[cfg(not(feature = "ili9225"))]
 mod st7789;
+#[cfg(not(feature = "ili9225"))]
 mod st7796;
 
+#[cfg(not(feature = "ili9225"))]
 pub use gc9107::*;
+#[cfg(not(feature = "ili9225"))]
 pub use gc9a01::*;
+#[cfg(not(feature = "ili9225"))]
 pub use ili9341::*;
+#[cfg(feature = "ili9225")]
+pub use ili9225::*;
+#[cfg(not(feature = "ili9225"))]
 pub use ili9342c::*;
+#[cfg(not(feature = "ili9225"))]
 pub use ili9486::*;
+#[cfg(not(feature = "ili9225"))]
 pub use ili9488::*;
+#[cfg(not(feature = "ili9225"))]
 pub use rm67162::*;
+#[cfg(not(feature = "ili9225"))]
 pub use st7735s::*;
+#[cfg(not(feature = "ili9225"))]
 pub use st7789::*;
+#[cfg(not(feature = "ili9225"))]
 pub use st7796::*;
 
 /// Display model.
