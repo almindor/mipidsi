@@ -87,9 +87,12 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_POWER_CTRL2, &[0x10, 0x3B])?; // Set APON,PON,AON,VCI1EN,VC
         delay.delay_us(50_000);
 
-        di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &[0x01, 0x1C])?; // set the display line number and display direction
+        
+        madctl.send_commands(di)?;
+        //di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &[0x01, 0x1C])?; // set the display line number and display direction
+        //di.write_raw(ILI9225_ENTRY_MODE, &[0x10, 0x30])?; // set GRAM write direction and BGR=1.
+        
         di.write_raw(ILI9225_LCD_AC_DRIVING_CTRL, &[0x01, 0x00])?; // set 1 line inversion
-        di.write_raw(ILI9225_ENTRY_MODE, &[0x10, 0x30])?; // set GRAM write direction and BGR=1.
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x00])?; // Display off
         di.write_raw(ILI9225_BLANK_PERIOD_CTRL1, &[0x08, 0x08])?; // set the back porch and front porch
         di.write_raw(ILI9225_FRAME_CYCLE_CTRL, &[0x11, 0x00])?; // set the clocks number per line
@@ -126,6 +129,7 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x12])?;
         delay.delay_us(50_000);
         di.write_raw(ILI9225_DISP_CTRL1, &[0x10, 0x17])?;
+        
 
         Ok(madctl)
     }
@@ -248,13 +252,13 @@ impl AddressMode for ILI9225AddressMode {
             _ => 0x01, // Not reachable
         };
         let driver_params = [driver_high_byte, 0x1C];
-        di.write_raw(0x01, &driver_params)?;
+        di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &driver_params)?;
 
         // Command 2: ENTRY_MODE (0x03)
         let color_order_byte = if self.color_order == ColorOrder::Bgr { 0x10 } else { 0x00 };
         let entry_low_byte = if rotation == 1 || rotation == 3 { 0x38 } else { 0x30 };
         let entry_params = [color_order_byte, entry_low_byte];
-        di.write_raw(0x03, &entry_params)?;
+        di.write_raw(ILI9225_ENTRY_MODE, &entry_params)?;
 
         Ok(())
     }
