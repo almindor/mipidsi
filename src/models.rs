@@ -1,7 +1,7 @@
 //! Display models.
 
 use crate::{
-    dcs::{self, InterfaceExt, SetAddressMode},
+    dcs::{self, InterfaceExt},
     interface::Interface,
     options::ModelOptions,
     ConfigurationError,
@@ -41,6 +41,9 @@ pub trait Model {
     /// The color format.
     type ColorFormat: RgbColor;
 
+    /// AddressMode command for model
+    type AddressMode: dcs::AddressMode + Copy;
+
     /// The framebuffer size in pixels.
     const FRAMEBUFFER_SIZE: (u16, u16);
 
@@ -51,7 +54,7 @@ pub trait Model {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface;
@@ -138,10 +141,7 @@ mod tests {
     use embedded_graphics::pixelcolor::Rgb565;
 
     use crate::{
-        Builder,
-        _mock::{MockDelay, MockDisplayInterface},
-        interface::InterfaceKind,
-        ConfigurationError, InitError,
+        Builder, _mock::{MockDelay, MockDisplayInterface}, dcs::SetAddressMode, interface::InterfaceKind, ConfigurationError, InitError
     };
 
     use super::*;
@@ -150,6 +150,7 @@ mod tests {
 
     impl Model for OnlyOneKindModel {
         type ColorFormat = Rgb565;
+        type AddressMode = SetAddressMode;
 
         const FRAMEBUFFER_SIZE: (u16, u16) = (16, 16);
 
@@ -158,7 +159,7 @@ mod tests {
             _di: &mut DI,
             _delay: &mut DELAY,
             _options: &ModelOptions,
-        ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+        ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
         where
             DELAY: DelayNs,
             DI: Interface,

@@ -17,6 +17,7 @@ pub struct ST7735s;
 
 impl Model for ST7735s {
     type ColorFormat = Rgb565;
+    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (132, 162);
 
     fn init<DELAY, DI>(
@@ -24,7 +25,7 @@ impl Model for ST7735s {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,

@@ -1,15 +1,58 @@
 //! Module for the MADCTL instruction constructors
 
+use super::DcsCommand;
+use crate::dcs::InterfaceExt;
 use crate::options::{
     ColorOrder, HorizontalRefreshOrder, MemoryMapping, ModelOptions, Orientation, RefreshOrder,
     VerticalRefreshOrder,
 };
 
-use super::DcsCommand;
+/// This is a public trait for user can change their MADCTL command.
+pub trait AddressMode: Copy {
+    /// Returns this Madctl with [ColorOrder] set to new value
+    fn with_color_order(self, color_order: ColorOrder) -> Self;
+
+    /// Returns this Madctl with [Orientation] set to new value
+    fn with_orientation(self, orientation: Orientation) -> Self;
+
+    /// Returns this Madctl with [RefreshOrder] set to new value
+    fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self;
+
+    /// Send command to spi, It allows some LCD to send more than one command
+    fn send_commands<DI>(&self, di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: crate::interface::Interface;
+}
 
 /// Set Address Mode
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct SetAddressMode(u8);
+
+impl AddressMode for SetAddressMode {
+    /// Returns this Madctl with [ColorOrder] set to new value
+    fn with_color_order(self, color_order: ColorOrder) -> Self {
+        self.with_color_order(color_order)
+    }
+
+    /// Returns this Madctl with [Orientation] set to new value
+    fn with_orientation(self, orientation: Orientation) -> Self {
+        self.with_orientation(orientation)
+    }
+
+    /// Returns this Madctl with [RefreshOrder] set to new value
+    fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
+        self.with_refresh_order(refresh_order)
+    }
+
+    fn send_commands<DI>(&self, di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: crate::interface::Interface,
+    {
+        let mut params = [0u8; 1];
+        self.fill_params_buf(&mut params); // 使用現有的 fill_params_buf 方法
+        di.write_raw(self.instruction(), &params) // 發送 MADCTL 命令 (0x36)
+    }
+}
 
 impl SetAddressMode {
     /// Creates a new Set Address Mode command.
@@ -24,7 +67,7 @@ impl SetAddressMode {
             .with_refresh_order(refresh_order)
     }
 
-    /// Returns this Madctl with [ColorOrder] set to new value
+    /// Inner function Returns this Madctl with [ColorOrder] set to new value
     #[must_use]
     pub const fn with_color_order(self, color_order: ColorOrder) -> Self {
         let mut result = self;
@@ -36,7 +79,7 @@ impl SetAddressMode {
         result
     }
 
-    /// Returns this Madctl with [Orientation] set to new value
+    /// Inner function Returns this Madctl with [Orientation] set to new value
     #[must_use]
     pub const fn with_orientation(self, orientation: Orientation) -> Self {
         let mut result = self.0;
@@ -56,7 +99,7 @@ impl SetAddressMode {
         Self(result)
     }
 
-    /// Returns this Madctl with [RefreshOrder] set to new value
+    /// Inner function Returns this Madctl with [RefreshOrder] set to new value
     #[must_use]
     pub const fn with_refresh_order(self, refresh_order: RefreshOrder) -> Self {
         let mut result = self;

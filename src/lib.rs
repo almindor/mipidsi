@@ -105,7 +105,7 @@
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
 
-use dcs::InterfaceExt;
+use dcs::{AddressMode, InterfaceExt};
 
 pub mod interface;
 
@@ -142,6 +142,7 @@ where
     DI: interface::Interface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
+    MODEL::AddressMode: dcs::AddressMode + Copy,
     RST: OutputPin,
 {
     // DCS provider
@@ -153,7 +154,7 @@ where
     // Model Options, includes current orientation
     options: options::ModelOptions,
     // Current MADCTL value copy for runtime updates
-    madctl: dcs::SetAddressMode,
+    madctl: MODEL::AddressMode,
     // State monitor for sleeping TODO: refactor to a Model-connected state machine
     sleeping: bool,
 }
@@ -163,6 +164,7 @@ where
     DI: interface::Interface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
+    M::AddressMode: dcs::AddressMode + Copy,
     RST: OutputPin,
 {
     ///
@@ -185,8 +187,7 @@ where
     /// ```
     pub fn set_orientation(&mut self, orientation: options::Orientation) -> Result<(), DI::Error> {
         self.madctl = self.madctl.with_orientation(orientation); // set orientation
-        self.di.write_command(self.madctl)?;
-
+        self.madctl.send_commands(&mut self.di)?;
         Ok(())
     }
 

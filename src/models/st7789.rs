@@ -17,6 +17,7 @@ pub struct ST7789;
 
 impl Model for ST7789 {
     type ColorFormat = Rgb565;
+    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<DELAY, DI>(
@@ -24,7 +25,7 @@ impl Model for ST7789 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,

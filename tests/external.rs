@@ -16,6 +16,7 @@ pub struct ExternalST7789;
 
 impl Model for ExternalST7789 {
     type ColorFormat = Rgb565;
+    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<DELAY, DI>(

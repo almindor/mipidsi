@@ -1,9 +1,9 @@
 use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 
-use crate::dcs::InterfaceExt;
+use crate::dcs::{AddressMode, InterfaceExt};
+use crate::options::{ColorOrder, Orientation, RefreshOrder, Rotation};
 use crate::{
-    dcs::SetAddressMode,
     interface::Interface,
     models::{Model, ModelInitError},
     options::ModelOptions,
@@ -54,6 +54,7 @@ const ILI9225_GAMMA_CTRL10: u8 = 0x59; // Gamma Control 10
 
 impl Model for ILI9225Rgb565 {
     type ColorFormat = Rgb565;
+    type AddressMode = ILI9225AddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (176, 220);
 
     fn init<DELAY, DI>(
@@ -61,12 +62,12 @@ impl Model for ILI9225Rgb565 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
     {
-        let madctl = SetAddressMode::from(options);
+        let madctl = ILI9225AddressMode::from(options);
 
         /* Set SS bit and direction output from S528 to S1 */
         di.write_raw(ILI9225_POWER_CTRL1, &[0x00, 0x00])?; // Set SAP,DSTB,STB
@@ -175,5 +176,86 @@ impl Model for ILI9225Rgb565 {
         DI: Interface,
     {
         di.write_command(crate::dcs::WriteMemoryStartILI9225)
+    }
+
+}
+
+/// Set Address Mode
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct ILI9225AddressMode {
+    rotation: u8,
+    color_order: ColorOrder,
+}
+
+impl ILI9225AddressMode {
+    /// Create New AddressMode for ILI9225, mirrored will been ignore ili9225 not supported it.
+    pub const fn new(color_order: ColorOrder, orientation: Orientation) -> Self {
+        let rotation = match orientation.rotation {
+            Rotation::Deg0 => 0,
+            Rotation::Deg90 => 1,
+            Rotation::Deg180 => 2,
+            Rotation::Deg270 => 3,
+        };
+        Self {
+            rotation,
+            color_order,
+        }
+    }
+
+    
+}
+
+impl From<&ModelOptions> for ILI9225AddressMode {
+    fn from(options: &ModelOptions) -> Self {
+        Self::default()
+            .with_color_order(options.color_order)
+            .with_orientation(options.orientation)
+            .with_refresh_order(options.refresh_order)
+    }
+}
+
+impl AddressMode for ILI9225AddressMode {
+    fn with_color_order(self, color_order: ColorOrder) -> Self {
+        Self { color_order, ..self }
+    }
+
+    fn with_orientation(self, orientation: Orientation) -> Self {
+        let rotation = match orientation.rotation {
+            Rotation::Deg0 => 0,
+            Rotation::Deg90 => 1,
+            Rotation::Deg180 => 2,
+            Rotation::Deg270 => 3,
+        };
+        Self { rotation, ..self }
+    }
+
+    fn with_refresh_order(self, _refresh_order: RefreshOrder) -> Self {
+        self // Ignore it
+    }
+
+    fn send_commands<DI>(&self, di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        let rotation = self.rotation % 4; // Only accept 0-3
+
+        // Command 1: DRIVER_OUTPUT_CTRL (0x01)
+        let driver_high_byte = match rotation {
+            0 => 0x01, // 0°
+            1 => 0x00, // 90°
+            2 => 0x02, // 180°
+            3 => 0x03, // 270°
+            _ => 0x01, // Not reachable
+        };
+        let driver_params = [driver_high_byte, 0x1C];
+        di.write_raw(0x01, &driver_params)?;
+
+        // Command 2: ENTRY_MODE (0x03)
+        let color_order_byte = if self.color_order == ColorOrder::Bgr { 0x10 } else { 0x00 };
+        let entry_low_byte = if rotation == 1 || rotation == 3 { 0x38 } else { 0x30 };
+        let entry_params = [color_order_byte, entry_low_byte];
+        di.write_raw(0x03, &entry_params)?;
+
+        Ok(())
     }
 }

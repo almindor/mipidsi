@@ -17,6 +17,7 @@ pub struct ILI9341Rgb666;
 
 impl Model for ILI9341Rgb565 {
     type ColorFormat = Rgb565;
+    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<DELAY, DI>(
@@ -24,7 +25,7 @@ impl Model for ILI9341Rgb565 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
+    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
@@ -45,6 +46,7 @@ impl Model for ILI9341Rgb565 {
 
 impl Model for ILI9341Rgb666 {
     type ColorFormat = Rgb666;
+    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 320);
 
     fn init<DELAY, DI>(
