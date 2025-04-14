@@ -25,7 +25,6 @@ embedded-graphics = "0.8.1"
 [features]
 default = ["batch"]
 batch = ["heapless"]
-ili9225 = []
 
 [workspace]
 members = ["mipidsi-async"]

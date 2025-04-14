@@ -251,7 +251,7 @@ where
     {
         self.set_address_window(sx, sy, ex, ey)?;
 
-        self.di.write_command(dcs::WriteMemoryStart)?;
+        M::write_memory_start(&mut self.di)?;
 
         M::ColorFormat::send_pixels(&mut self.di, colors)
     }
@@ -328,17 +328,7 @@ where
 
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        if cfg!(feature = "ili9225") {
-            self.di.write_raw(0x37, &sx.to_be_bytes())?;
-            self.di.write_raw(0x36, &ex.to_be_bytes())?;
-            self.di.write_raw(0x39, &sy.to_be_bytes())?;
-            self.di.write_raw(0x38, &ey.to_be_bytes())?;
-            self.di.write_raw(0x20, &sx.to_be_bytes())?;
-            self.di.write_raw(0x21, &sy.to_be_bytes())
-        } else {
-            self.di.write_command(dcs::SetColumnAddress::new(sx, ex))?;
-            self.di.write_command(dcs::SetPageAddress::new(sy, ey))
-        }
+        M::update_address_window(&mut self.di, sx, sy, ex, ey)
     }
 
     ///
@@ -364,13 +354,10 @@ where
     /// Need to call [Self::wake] before issuing other commands
     ///
     pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        #![cfg(not(feature = "ili9225"))]
-        {
-            self.di.write_command(dcs::EnterSleepMode)?;
-            // All supported models requires a 120ms delay before issuing other commands
-            delay.delay_us(120_000);
-            self.sleeping = true;
-        }
+        M::sleep(&mut self.di, delay)?;
+        // All supported models requires a 120ms delay before issuing other commands
+        delay.delay_us(120_000);
+        self.sleeping = true;
         Ok(())
     }
 
@@ -378,13 +365,10 @@ where
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
     pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
-        #![cfg(not(feature = "ili9225"))]
-        {
-            self.di.write_command(dcs::ExitSleepMode)?;
-            // ST7789 and st7735s have the highest minimal delay of 120ms
-            delay.delay_us(120_000);
-            self.sleeping = false;
-        }
+        M::wake(&mut self.di, delay)?;
+        // ST7789 and st7735s have the highest minimal delay of 120ms
+        delay.delay_us(120_000);
+        self.sleeping = false;
         Ok(())
     }
 
@@ -410,25 +394,14 @@ pub mod _mock {
 
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    #[cfg(not(feature = "ili9225"))]
     use crate::models::ILI9341Rgb565;
     use crate::{
         interface::{Interface, InterfaceKind},
         Builder, Display, NoResetPin,
     };
 
-    #[cfg(feature = "ili9225")]
-    use crate::models::ILI9225Rgb565;
-
-    #[cfg(not(feature = "ili9225"))]
     pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9341Rgb565, NoResetPin> {
         Builder::new(ILI9341Rgb565, MockDisplayInterface)
-            .init(&mut MockDelay)
-            .unwrap()
-    }
-    #[cfg(feature = "ili9225")]
-    pub fn new_mock_display() -> Display<MockDisplayInterface, ILI9225Rgb565, NoResetPin> {
-        Builder::new(ILI9225Rgb565, MockDisplayInterface)
             .init(&mut MockDelay)
             .unwrap()
     }

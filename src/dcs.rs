@@ -67,72 +67,64 @@ impl<T: Interface> InterfaceExt for T {}
 
 // DCS commands that don't use any parameters
 
-#[cfg(feature = "ili9225")]
 dcs_basic_command!(
     /// Software Reset
-    SoftReset,
+    SoftResetILI9225,
     0x28
 );
 
-#[cfg(feature = "ili9225")]
 dcs_basic_command!(
     /// Software Reset
-    WriteMemoryStart,
+    WriteMemoryStartILI9225,
     0x22
 );
 
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Software Reset
     SoftReset,
     0x01
 );
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Enter Sleep Mode
     EnterSleepMode,
     0x10
 );
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Exit Sleep Mode
     ExitSleepMode,
     0x11
 );
-#[cfg(not(feature = "ili9225"))]
+
 dcs_basic_command!(
     /// Enter Partial Mode
     EnterPartialMode,
     0x12
 );
-#[cfg(not(feature = "ili9225"))]
+
 dcs_basic_command!(
     /// Enter Normal Mode
     EnterNormalMode,
     0x13
 );
-#[cfg(not(feature = "ili9225"))]
+
 dcs_basic_command!(
     /// Turn Display Off
     SetDisplayOff,
     0x28
 );
 
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Turn Display On
     SetDisplayOn,
     0x29
 );
 
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Exit Idle Mode
     ExitIdleMode,
     0x38
 );
 
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Enter Idle Mode
     EnterIdleMode,
@@ -149,7 +141,6 @@ dcs_basic_command!(
 //     0x20
 // );
 
-#[cfg(not(feature = "ili9225"))]
 dcs_basic_command!(
     /// Initiate Framebuffer Memory Write
     WriteMemoryStart,

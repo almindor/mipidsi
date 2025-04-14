@@ -1,18 +1,16 @@
-use embedded_graphics_core::pixelcolor::{Rgb565, Rgb666};
+use embedded_graphics_core::pixelcolor::Rgb565;
 use embedded_hal::delay::DelayNs;
 
 use crate::dcs::InterfaceExt;
 use crate::{
-    dcs::{BitsPerPixel, PixelFormat, SetAddressMode},
-    interface::{Interface, InterfaceKind},
+    dcs::SetAddressMode,
+    interface::Interface,
     models::{Model, ModelInitError},
     options::ModelOptions,
-    ConfigurationError,
 };
 
 /// ILI9225 display in Rgb565 color mode.
 pub struct ILI9225Rgb565;
-
 
 const ILI9225_POWER_CTRL1: u8 = 0x10;
 const ILI9225_POWER_CTRL2: u8 = 0x11;
@@ -127,7 +125,55 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x12])?;
         delay.delay_us(50_000);
         di.write_raw(ILI9225_DISP_CTRL1, &[0x10, 0x17])?;
-        
+
         Ok(madctl)
+    }
+
+    fn update_address_window<DI>(
+        di: &mut DI,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_raw(0x37, &sx.to_be_bytes())?;
+        di.write_raw(0x36, &ex.to_be_bytes())?;
+        di.write_raw(0x39, &sy.to_be_bytes())?;
+        di.write_raw(0x38, &ey.to_be_bytes())?;
+        di.write_raw(0x20, &sx.to_be_bytes())?;
+        di.write_raw(0x21, &sy.to_be_bytes())
+    }
+
+    fn sleep<DI, DELAY>(di: &mut DI, delay: &mut DELAY) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+        DELAY: DelayNs,
+    {
+        di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x00])?;
+        delay.delay_us(50_000);
+        di.write_raw(ILI9225_POWER_CTRL2, &[0x00, 0x07])?;
+        delay.delay_us(50_000);
+        di.write_raw(ILI9225_POWER_CTRL1, &[0x0A, 0x01])
+    }
+
+    fn wake<DI, DELAY>(di: &mut DI, delay: &mut DELAY) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+        DELAY: DelayNs,
+    {
+        di.write_raw(ILI9225_POWER_CTRL1, &[0x0A, 0x00])?;
+        di.write_raw(ILI9225_POWER_CTRL2, &[0x10, 0x3B])?;
+        delay.delay_us(50_000);
+        di.write_raw(ILI9225_DISP_CTRL1, &[0x10, 0x17])
+    }
+
+    fn write_memory_start<DI>(di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_command(crate::dcs::WriteMemoryStartILI9225)
     }
 }

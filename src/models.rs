@@ -1,58 +1,39 @@
 //! Display models.
 
-use crate::{dcs::SetAddressMode, interface::Interface, options::ModelOptions, ConfigurationError};
+use crate::{
+    dcs::{self, InterfaceExt, SetAddressMode},
+    interface::Interface,
+    options::ModelOptions,
+    ConfigurationError,
+};
 use embedded_graphics_core::prelude::RgbColor;
 use embedded_hal::delay::DelayNs;
 
 // existing model implementations
-#[cfg(not(feature = "ili9225"))]
 mod gc9107;
-#[cfg(not(feature = "ili9225"))]
 mod gc9a01;
-#[cfg(feature = "ili9225")]
 mod ili9225;
-#[cfg(not(feature = "ili9225"))]
 mod ili9341;
-#[cfg(not(feature = "ili9225"))]
 mod ili9342c;
-#[cfg(not(feature = "ili9225"))]
 mod ili934x;
-#[cfg(not(feature = "ili9225"))]
 mod ili9486;
-#[cfg(not(feature = "ili9225"))]
 mod ili9488;
-#[cfg(not(feature = "ili9225"))]
 mod ili948x;
-#[cfg(not(feature = "ili9225"))]
 mod rm67162;
-#[cfg(not(feature = "ili9225"))]
 mod st7735s;
-#[cfg(not(feature = "ili9225"))]
 mod st7789;
-#[cfg(not(feature = "ili9225"))]
 mod st7796;
 
-#[cfg(not(feature = "ili9225"))]
 pub use gc9107::*;
-#[cfg(not(feature = "ili9225"))]
 pub use gc9a01::*;
-#[cfg(not(feature = "ili9225"))]
-pub use ili9341::*;
-#[cfg(feature = "ili9225")]
 pub use ili9225::*;
-#[cfg(not(feature = "ili9225"))]
+pub use ili9341::*;
 pub use ili9342c::*;
-#[cfg(not(feature = "ili9225"))]
 pub use ili9486::*;
-#[cfg(not(feature = "ili9225"))]
 pub use ili9488::*;
-#[cfg(not(feature = "ili9225"))]
 pub use rm67162::*;
-#[cfg(not(feature = "ili9225"))]
 pub use st7735s::*;
-#[cfg(not(feature = "ili9225"))]
 pub use st7789::*;
-#[cfg(not(feature = "ili9225"))]
 pub use st7796::*;
 
 /// Display model.
@@ -74,6 +55,60 @@ pub trait Model {
     where
         DELAY: DelayNs,
         DI: Interface;
+
+    /// Updates the address window of the display.
+    fn update_address_window<DI>(
+        di: &mut DI,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_command(dcs::SetColumnAddress::new(sx, ex))?;
+        di.write_command(dcs::SetPageAddress::new(sy, ey))
+    }
+
+    ///
+    /// Need to call [Self::wake] before issuing other commands
+    ///
+    fn sleep<DI, DELAY>(di: &mut DI, _delay: &mut DELAY) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+        DELAY: DelayNs,
+    {
+        di.write_command(dcs::EnterSleepMode)
+    }
+    ///
+    /// Wakes the display after it's been set to sleep via [Self::sleep]
+    ///
+    fn wake<DI, DELAY>(di: &mut DI, _delay: &mut DELAY) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+        DELAY: DelayNs,
+    {
+        di.write_command(dcs::ExitSleepMode)
+    }
+    ///
+    /// We need WriteMemoryStart befor write pixel
+    ///
+    fn write_memory_start<DI>(di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_command(dcs::WriteMemoryStart)
+    }
+    ///
+    /// SoftReset
+    ///
+    fn software_reset<DI>(di: &mut DI) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_command(dcs::SoftReset)
+    }
 }
 
 /// Error returned by [`Model::init`].
