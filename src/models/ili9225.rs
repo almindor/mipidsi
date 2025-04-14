@@ -1,6 +1,4 @@
-use embedded_graphics_core::pixelcolor::Rgb565;
-use embedded_hal::delay::DelayNs;
-
+use crate::dcs::DcsCommand;
 use crate::dcs::{AddressMode, InterfaceExt};
 use crate::options::{ColorOrder, Orientation, RefreshOrder, Rotation};
 use crate::{
@@ -8,6 +6,8 @@ use crate::{
     models::{Model, ModelInitError},
     options::ModelOptions,
 };
+use embedded_graphics_core::pixelcolor::Rgb565;
+use embedded_hal::delay::DelayNs;
 
 /// ILI9225 display in Rgb565 color mode.
 pub struct ILI9225Rgb565;
@@ -87,17 +87,15 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_POWER_CTRL2, &[0x10, 0x3B])?; // Set APON,PON,AON,VCI1EN,VC
         delay.delay_us(50_000);
 
-        
         madctl.send_commands(di)?;
         //di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &[0x01, 0x1C])?; // set the display line number and display direction
-        //di.write_raw(ILI9225_ENTRY_MODE, &[0x10, 0x30])?; // set GRAM write direction and BGR=1.
-        
         di.write_raw(ILI9225_LCD_AC_DRIVING_CTRL, &[0x01, 0x00])?; // set 1 line inversion
+                                                                   //di.write_raw(ILI9225_ENTRY_MODE, &[0x10, 0x30])?; // set GRAM write direction and BGR=1.
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x00])?; // Display off
         di.write_raw(ILI9225_BLANK_PERIOD_CTRL1, &[0x08, 0x08])?; // set the back porch and front porch
         di.write_raw(ILI9225_FRAME_CYCLE_CTRL, &[0x11, 0x00])?; // set the clocks number per line
-        di.write_raw(ILI9225_INTERFACE_CTRL, &[0x00, 0x00])?; // CPU interface
-        di.write_raw(ILI9225_OSC_CTRL, &[0x0D, 0x01])?; // Set Osc  /*0e01*/
+        di.write_raw(ILI9225_INTERFACE_CTRL, &[0x00, 0x00])?; // CPU  interface
+        di.write_raw(ILI9225_OSC_CTRL, &[0x0F, 0x01])?; // Set Osc  /*0e01*/
         di.write_raw(ILI9225_VCI_RECYCLING, &[0x00, 0x20])?; // Set VCI recycling
         di.write_raw(ILI9225_RAM_ADDR_SET1, &[0x00, 0x00])?; // RAM Address
         di.write_raw(ILI9225_RAM_ADDR_SET2, &[0x00, 0x00])?; // RAM Address
@@ -129,7 +127,7 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x12])?;
         delay.delay_us(50_000);
         di.write_raw(ILI9225_DISP_CTRL1, &[0x10, 0x17])?;
-        
+        delay.delay_us(50_000);
 
         Ok(madctl)
     }
@@ -179,9 +177,8 @@ impl Model for ILI9225Rgb565 {
     where
         DI: Interface,
     {
-        di.write_command(crate::dcs::WriteMemoryStartILI9225)
+        di.write_command(WriteMemoryStartILI9225)
     }
-
 }
 
 /// Set Address Mode
@@ -205,8 +202,6 @@ impl ILI9225AddressMode {
             color_order,
         }
     }
-
-    
 }
 
 impl From<&ModelOptions> for ILI9225AddressMode {
@@ -220,7 +215,10 @@ impl From<&ModelOptions> for ILI9225AddressMode {
 
 impl AddressMode for ILI9225AddressMode {
     fn with_color_order(self, color_order: ColorOrder) -> Self {
-        Self { color_order, ..self }
+        Self {
+            color_order,
+            ..self
+        }
     }
 
     fn with_orientation(self, orientation: Orientation) -> Self {
@@ -255,11 +253,35 @@ impl AddressMode for ILI9225AddressMode {
         di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &driver_params)?;
 
         // Command 2: ENTRY_MODE (0x03)
-        let color_order_byte = if self.color_order == ColorOrder::Bgr { 0x10 } else { 0x00 };
-        let entry_low_byte = if rotation == 1 || rotation == 3 { 0x38 } else { 0x30 };
+        let color_order_byte = if self.color_order == ColorOrder::Bgr {
+            0x10
+        } else {
+            0x00
+        };
+        let entry_low_byte = if rotation == 1 || rotation == 3 {
+            0x38
+        } else {
+            0x30
+        };
         let entry_params = [color_order_byte, entry_low_byte];
         di.write_raw(ILI9225_ENTRY_MODE, &entry_params)?;
 
         Ok(())
     }
 }
+
+#[path = "../dcs/macros.rs"]
+#[macro_use]
+mod dcs_macros;
+
+dcs_basic_command!(
+    /// Software Reset
+    WriteMemoryStartILI9225,
+    0x22
+);
+
+dcs_basic_command!(
+    /// Software Reset
+    SoftResetILI9225,
+    0x28
+);

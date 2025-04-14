@@ -3,7 +3,7 @@
 use crate::interface::Interface;
 
 #[macro_use]
-mod macros;
+pub(crate) mod macros;
 
 mod set_address_mode;
 pub use set_address_mode::*;
@@ -66,18 +66,6 @@ pub trait InterfaceExt: Interface {
 impl<T: Interface> InterfaceExt for T {}
 
 // DCS commands that don't use any parameters
-
-dcs_basic_command!(
-    /// Software Reset
-    SoftResetILI9225,
-    0x28
-);
-
-dcs_basic_command!(
-    /// Software Reset
-    WriteMemoryStartILI9225,
-    0x22
-);
 
 dcs_basic_command!(
     /// Software Reset
