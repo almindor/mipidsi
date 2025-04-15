@@ -85,12 +85,11 @@ impl Model for ILI9225Rgb565 {
         di.write_raw(ILI9225_POWER_CTRL5, &[0x08, 0x00])?; // Set SAP,DSTB,STB
         delay.delay_us(10_000);
         di.write_raw(ILI9225_POWER_CTRL2, &[0x10, 0x3B])?; // Set APON,PON,AON,VCI1EN,VC
-        delay.delay_us(50_000);
+        delay.delay_us(30_000);
+
+        di.write_raw(ILI9225_LCD_AC_DRIVING_CTRL, &[0x01, 0x00])?; // set 1 line inversion
 
         madctl.send_commands(di)?;
-        //di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &[0x01, 0x1C])?; // set the display line number and display direction
-        di.write_raw(ILI9225_LCD_AC_DRIVING_CTRL, &[0x01, 0x00])?; // set 1 line inversion
-                                                                   //di.write_raw(ILI9225_ENTRY_MODE, &[0x10, 0x30])?; // set GRAM write direction and BGR=1.
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x00])?; // Display off
         di.write_raw(ILI9225_BLANK_PERIOD_CTRL1, &[0x08, 0x08])?; // set the back porch and front porch
         di.write_raw(ILI9225_FRAME_CYCLE_CTRL, &[0x11, 0x00])?; // set the clocks number per line
@@ -134,6 +133,7 @@ impl Model for ILI9225Rgb565 {
 
     fn update_address_window<DI>(
         di: &mut DI,
+        rotation: Rotation,
         sx: u16,
         sy: u16,
         ex: u16,
@@ -142,12 +142,24 @@ impl Model for ILI9225Rgb565 {
     where
         DI: Interface,
     {
-        di.write_raw(0x37, &sx.to_be_bytes())?;
-        di.write_raw(0x36, &ex.to_be_bytes())?;
-        di.write_raw(0x39, &sy.to_be_bytes())?;
-        di.write_raw(0x38, &ey.to_be_bytes())?;
-        di.write_raw(0x20, &sx.to_be_bytes())?;
-        di.write_raw(0x21, &sy.to_be_bytes())
+        match rotation {
+            Rotation::Deg0 | Rotation::Deg180 => {
+                di.write_raw(0x37, &sx.to_be_bytes())?;
+                di.write_raw(0x36, &ex.to_be_bytes())?;
+                di.write_raw(0x39, &sy.to_be_bytes())?;
+                di.write_raw(0x38, &ey.to_be_bytes())?;
+                di.write_raw(0x20, &sx.to_be_bytes())?;
+                di.write_raw(0x21, &sy.to_be_bytes())
+            }
+            Rotation::Deg90 | Rotation::Deg270 => {
+                di.write_raw(0x39, &sx.to_be_bytes())?;
+                di.write_raw(0x38, &ex.to_be_bytes())?;
+                di.write_raw(0x37, &sy.to_be_bytes())?;
+                di.write_raw(0x36, &ey.to_be_bytes())?;
+                di.write_raw(0x21, &sx.to_be_bytes())?;
+                di.write_raw(0x20, &sy.to_be_bytes())
+            }
+        }
     }
 
     fn sleep<DI, DELAY>(di: &mut DI, delay: &mut DELAY) -> Result<(), DI::Error>

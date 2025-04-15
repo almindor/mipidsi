@@ -3,7 +3,7 @@
 use crate::{
     dcs::{self, InterfaceExt},
     interface::Interface,
-    options::ModelOptions,
+    options::{ModelOptions, Rotation},
     ConfigurationError,
 };
 use embedded_graphics_core::prelude::RgbColor;
@@ -62,6 +62,7 @@ pub trait Model {
     /// Updates the address window of the display.
     fn update_address_window<DI>(
         di: &mut DI,
+        _rotation: Rotation,
         sx: u16,
         sy: u16,
         ex: u16,

@@ -329,7 +329,14 @@ where
 
         let (sx, sy, ex, ey) = (sx + offset.0, sy + offset.1, ex + offset.0, ey + offset.1);
 
-        M::update_address_window(&mut self.di, sx, sy, ex, ey)
+        M::update_address_window(
+            &mut self.di,
+            self.options.orientation.rotation,
+            sx,
+            sy,
+            ex,
+            ey,
+        )
     }
 
     ///
