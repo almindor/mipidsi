@@ -29,7 +29,6 @@ pub struct RM67162;
 
 impl Model for RM67162 {
     type ColorFormat = Rgb565;
-    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 536);
 
     fn init<DELAY, DI>(
@@ -37,7 +36,7 @@ impl Model for RM67162 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,

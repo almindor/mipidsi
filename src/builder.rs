@@ -6,7 +6,7 @@ use embedded_hal::{
 };
 
 use crate::{
-    dcs::{self, InterfaceExt},
+    dcs::InterfaceExt,
     interface::{Interface, InterfacePixelFormat},
     models::{Model, ModelInitError},
     options::{ColorInversion, ColorOrder, ModelOptions, Orientation, RefreshOrder},
@@ -68,7 +68,6 @@ where
     DI: Interface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
-    MODEL::AddressMode: dcs::AddressMode + Copy,
     RST: OutputPin,
 {
     ///

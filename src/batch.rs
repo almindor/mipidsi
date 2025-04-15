@@ -2,7 +2,6 @@
 //! Batch the pixels to be rendered into Pixel Rows and Pixel Blocks (contiguous Pixel Rows).
 //! This enables the pixels to be rendered efficiently as Pixel Blocks, which may be transmitted in a single Non-Blocking SPI request.
 use crate::{
-    dcs,
     interface::{Interface, InterfacePixelFormat},
     models::Model,
     Display,
@@ -25,7 +24,6 @@ where
     DI: Interface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
-    M::AddressMode: dcs::AddressMode + Copy,
     I: IntoIterator<Item = Pixel<M::ColorFormat>>,
     RST: OutputPin,
 {

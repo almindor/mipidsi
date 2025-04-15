@@ -1,7 +1,7 @@
 //! Display models.
 
 use crate::{
-    dcs::{self, InterfaceExt},
+    dcs::{self, InterfaceExt, SetAddressMode},
     interface::Interface,
     options::{ModelOptions, Rotation},
     ConfigurationError,
@@ -41,9 +41,6 @@ pub trait Model {
     /// The color format.
     type ColorFormat: RgbColor;
 
-    /// AddressMode command for model
-    type AddressMode: dcs::AddressMode + Copy;
-
     /// The framebuffer size in pixels.
     const FRAMEBUFFER_SIZE: (u16, u16);
 
@@ -54,7 +51,7 @@ pub trait Model {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface;
@@ -113,6 +110,16 @@ pub trait Model {
     {
         di.write_command(dcs::SoftReset)
     }
+    ///
+    /// This function will been called if user update options
+    ///
+    fn update_options<DI>(&self, di: &mut DI, options: &ModelOptions) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        let madctl = SetAddressMode::from(options);
+        di.write_command(madctl)
+    }
 }
 
 /// Error returned by [`Model::init`].
@@ -155,7 +162,6 @@ mod tests {
 
     impl Model for OnlyOneKindModel {
         type ColorFormat = Rgb565;
-        type AddressMode = SetAddressMode;
 
         const FRAMEBUFFER_SIZE: (u16, u16) = (16, 16);
 
@@ -164,7 +170,7 @@ mod tests {
             _di: &mut DI,
             _delay: &mut DELAY,
             _options: &ModelOptions,
-        ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
+        ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
         where
             DELAY: DelayNs,
             DI: Interface,

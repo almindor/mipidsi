@@ -7,7 +7,7 @@ use embedded_graphics_core::{
 };
 use embedded_hal::digital::OutputPin;
 
-use crate::dcs::{self, InterfaceExt};
+use crate::dcs::InterfaceExt;
 use crate::{dcs::BitsPerPixel, interface::Interface};
 use crate::{dcs::WriteMemoryStart, models::Model};
 use crate::{interface::InterfacePixelFormat, Display};
@@ -17,7 +17,6 @@ where
     DI: Interface,
     M: Model,
     M::ColorFormat: InterfacePixelFormat<DI::Word>,
-    M::AddressMode: dcs::AddressMode + Copy,
     RST: OutputPin,
 {
     type Error = DI::Error;
@@ -123,7 +122,6 @@ where
     DI: Interface,
     MODEL: Model,
     MODEL::ColorFormat: InterfacePixelFormat<DI::Word>,
-    MODEL::AddressMode: dcs::AddressMode + Copy,
     RST: OutputPin,
 {
     fn size(&self) -> Size {

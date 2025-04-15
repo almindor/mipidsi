@@ -17,7 +17,6 @@ pub struct GC9A01;
 
 impl Model for GC9A01 {
     type ColorFormat = Rgb565;
-    type AddressMode = SetAddressMode;
     const FRAMEBUFFER_SIZE: (u16, u16) = (240, 240);
 
     fn init<DELAY, DI>(
@@ -25,7 +24,7 @@ impl Model for GC9A01 {
         di: &mut DI,
         delay: &mut DELAY,
         options: &ModelOptions,
-    ) -> Result<Self::AddressMode, ModelInitError<DI::Error>>
+    ) -> Result<SetAddressMode, ModelInitError<DI::Error>>
     where
         DELAY: DelayNs,
         DI: Interface,
