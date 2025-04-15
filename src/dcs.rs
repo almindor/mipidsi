@@ -82,19 +82,16 @@ dcs_basic_command!(
     ExitSleepMode,
     0x11
 );
-
 dcs_basic_command!(
     /// Enter Partial Mode
     EnterPartialMode,
     0x12
 );
-
 dcs_basic_command!(
     /// Enter Normal Mode
     EnterNormalMode,
     0x13
 );
-
 dcs_basic_command!(
     /// Turn Display Off
     SetDisplayOff,
@@ -106,13 +103,11 @@ dcs_basic_command!(
     SetDisplayOn,
     0x29
 );
-
 dcs_basic_command!(
     /// Exit Idle Mode
     ExitIdleMode,
     0x38
 );
-
 dcs_basic_command!(
     /// Enter Idle Mode
     EnterIdleMode,
@@ -128,7 +123,6 @@ dcs_basic_command!(
 //     EnterInvertMode,
 //     0x20
 // );
-
 dcs_basic_command!(
     /// Initiate Framebuffer Memory Write
     WriteMemoryStart,
