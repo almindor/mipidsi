@@ -44,8 +44,8 @@ pub trait Model {
     /// The framebuffer size in pixels.
     const FRAMEBUFFER_SIZE: (u16, u16);
 
-    /// Delay after lcd reset.
-    const LCD_RESET_DELAY: u32 = 10;
+    /// Duration of the active low reset pulse in µs.
+    const RESET_DURATION: u32 = 10;
 
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
@@ -91,12 +91,15 @@ pub trait Model {
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
     ///
-    fn wake<DI, DELAY>(di: &mut DI, _delay: &mut DELAY) -> Result<(), DI::Error>
+    fn wake<DI, DELAY>(di: &mut DI, delay: &mut DELAY) -> Result<(), DI::Error>
     where
         DI: Interface,
         DELAY: DelayNs,
     {
-        di.write_command(dcs::ExitSleepMode)
+        di.write_command(dcs::ExitSleepMode)?;
+        // ST7789 and st7735s have the highest minimal delay of 120ms
+        delay.delay_us(120_000);
+        Ok(())
     }
     ///
     /// We need WriteMemoryStart befor write pixel

@@ -369,8 +369,6 @@ where
     ///
     pub fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
         M::wake(&mut self.di, delay)?;
-        // ST7789 and st7735s have the highest minimal delay of 120ms
-        delay.delay_us(120_000);
         self.sleeping = false;
         Ok(())
     }
@@ -397,9 +395,9 @@ pub mod _mock {
 
     use embedded_hal::{delay::DelayNs, digital, spi};
 
-    use crate::models::ILI9341Rgb565;
     use crate::{
         interface::{Interface, InterfaceKind},
+        models::ILI9341Rgb565,
         Builder, Display, NoResetPin,
     };
 

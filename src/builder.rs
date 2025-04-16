@@ -177,7 +177,7 @@ where
         match self.rst {
             Some(ref mut rst) => {
                 rst.set_low().map_err(InitError::ResetPin)?;
-                delay_source.delay_us(MODEL::LCD_RESET_DELAY);
+                delay_source.delay_us(MODEL::RESET_DURATION);
                 rst.set_high().map_err(InitError::ResetPin)?;
             }
             None => self

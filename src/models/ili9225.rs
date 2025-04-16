@@ -88,7 +88,7 @@ where
 impl Model for ILI9225Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (176, 220);
-    const LCD_RESET_DELAY: u32 = 1000;
+    const RESET_DURATION: u32 = 1000;
 
     fn init<DELAY, DI>(
         &mut self,
@@ -238,7 +238,7 @@ impl Model for ILI9225Rgb565 {
 mod dcs_macros;
 
 dcs_basic_command!(
-    /// Software Reset
+    /// Initiate Framebuffer Memory Write
     WriteMemoryStartILI9225,
     0x22
 );
