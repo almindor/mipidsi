@@ -57,26 +57,24 @@ fn options_write_cmd<DI>(di: &mut DI, options: &ModelOptions) -> Result<(), DI::
 where
     DI: Interface,
 {
-    let rotation = (options.orientation.rotation as u8) % 4; // Only accept 0-3
-
     // Command 1: DRIVER_OUTPUT_CTRL (0x01)
-    let driver_high_byte = match rotation {
-        0 => 0x01, // 0°
-        1 => 0x00, // 90°
-        2 => 0x02, // 180°
-        3 => 0x03, // 270°
-        _ => 0x01, // Not reachable
+    let driver_high_byte = match options.orientation.rotation {
+        Rotation::Deg0 => 0x01,
+        Rotation::Deg90 => 0x00,
+        Rotation::Deg180 => 0x02,
+        Rotation::Deg270 => 0x03,
     };
+    
     let driver_params = [driver_high_byte, 0x1C];
     di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &driver_params)?;
 
     // Command 2: ENTRY_MODE (0x03)
-    let color_order_byte = if options.color_order == ColorOrder::Bgr {
-        0x10
-    } else {
-        0x00
+    let color_order_byte = match options.color_order {
+        ColorOrder::Rgb => 0x00,
+        ColorOrder::Bgr => 0x10,
     };
-    let entry_low_byte = if rotation == 1 || rotation == 3 {
+    
+    let entry_low_byte = if options.orientation.rotation.is_vertical() {
         0x38
     } else {
         0x30
