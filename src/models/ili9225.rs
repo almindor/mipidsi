@@ -64,7 +64,7 @@ where
         Rotation::Deg180 => 0x02,
         Rotation::Deg270 => 0x03,
     };
-    
+
     let driver_params = [driver_high_byte, 0x1C];
     di.write_raw(ILI9225_DRIVER_OUTPUT_CTRL, &driver_params)?;
 
@@ -73,7 +73,7 @@ where
         ColorOrder::Rgb => 0x00,
         ColorOrder::Bgr => 0x10,
     };
-    
+
     let entry_low_byte = if options.orientation.rotation.is_vertical() {
         0x38
     } else {
