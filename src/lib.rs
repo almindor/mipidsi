@@ -360,8 +360,6 @@ where
     ///
     pub fn sleep<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), DI::Error> {
         M::sleep(&mut self.di, delay)?;
-        // All supported models requires a 120ms delay before issuing other commands
-        delay.delay_us(120_000);
         self.sleeping = true;
         Ok(())
     }

@@ -78,12 +78,15 @@ pub trait Model {
     ///
     /// Need to call [Self::wake] before issuing other commands
     ///
-    fn sleep<DI, DELAY>(di: &mut DI, _delay: &mut DELAY) -> Result<(), DI::Error>
+    fn sleep<DI, DELAY>(di: &mut DI, delay: &mut DELAY) -> Result<(), DI::Error>
     where
         DI: Interface,
         DELAY: DelayNs,
     {
-        di.write_command(dcs::EnterSleepMode)
+        di.write_command(dcs::EnterSleepMode)?;
+        // All supported models requires a 120ms delay before issuing other commands
+        delay.delay_us(120_000);
+        Ok(())
     }
     ///
     /// Wakes the display after it's been set to sleep via [Self::sleep]
