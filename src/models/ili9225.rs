@@ -90,6 +90,7 @@ where
 impl Model for ILI9225Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (176, 220);
+    const LCD_RESET_DELAY: u32 = 1000;
 
     fn init<DELAY, DI>(
         &mut self,

@@ -44,6 +44,9 @@ pub trait Model {
     /// The framebuffer size in pixels.
     const FRAMEBUFFER_SIZE: (u16, u16);
 
+    /// Delay after lcd reset.
+    const LCD_RESET_DELAY: u32 = 10;
+
     /// Initializes the display for this model with MADCTL from [crate::Display]
     /// and returns the value of MADCTL set by init
     fn init<DELAY, DI>(
