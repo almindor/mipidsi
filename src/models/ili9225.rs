@@ -86,6 +86,14 @@ where
     Ok(())
 }
 
+fn options2ctrl_low(options: &ModelOptions) -> u8 {
+    0b10011
+        | match options.invert_colors {
+            options::ColorInversion::Normal => 0b100,
+            options::ColorInversion::Inverted => 0,
+        }
+}
+
 impl Model for ILI9225Rgb565 {
     type ColorFormat = Rgb565;
     const FRAMEBUFFER_SIZE: (u16, u16) = (176, 220);
@@ -159,7 +167,10 @@ impl Model for ILI9225Rgb565 {
 
         di.write_raw(ILI9225_DISP_CTRL1, &[0x00, 0x12])?;
         delay.delay_us(50_000);
-        di.write_raw(ILI9225_DISP_CTRL1, &[0x10, 0x17])?;
+
+        let low = options2ctrl_low(options);
+
+        di.write_raw(ILI9225_DISP_CTRL1, &[0x10, low])?;
         delay.delay_us(50_000);
 
         Ok(madctl)
@@ -233,14 +244,22 @@ impl Model for ILI9225Rgb565 {
         options_write_cmd(di, options)
     }
     fn set_tearing_effect<DI>(
-        _di: &mut DI,
-        _tearing_effect: options::TearingEffect,
+        di: &mut DI,
+        tearing_effect: options::TearingEffect,
+        options: &ModelOptions,
     ) -> Result<(), DI::Error>
     where
         DI: Interface,
     {
-        // Not support, ignore it
-        Ok(())
+        let low = options2ctrl_low(options);
+        // Acroding the datasheet, TEMON only one bit,
+        let high = match tearing_effect {
+            options::TearingEffect::Off => 0,
+            options::TearingEffect::Vertical => 0x10,
+            options::TearingEffect::HorizontalAndVertical => 0x10,
+        };
+
+        di.write_raw(ILI9225_DISP_CTRL1, &[high, low])
     }
     fn set_vertical_scroll_region<DI>(
         _di: &mut DI,

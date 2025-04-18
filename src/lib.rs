@@ -331,7 +331,7 @@ where
         &mut self,
         tearing_effect: options::TearingEffect,
     ) -> Result<(), DI::Error> {
-        M::set_tearing_effect(&mut self.di, tearing_effect)
+        M::set_tearing_effect(&mut self.di, tearing_effect, &self.options)
     }
 
     ///

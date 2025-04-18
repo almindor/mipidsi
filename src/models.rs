@@ -136,6 +136,7 @@ pub trait Model {
     fn set_tearing_effect<DI>(
         di: &mut DI,
         tearing_effect: options::TearingEffect,
+        _options: &ModelOptions,
     ) -> Result<(), DI::Error>
     where
         DI: Interface,
