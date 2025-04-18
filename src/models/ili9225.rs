@@ -89,8 +89,8 @@ where
 fn options2ctrl_low(options: &ModelOptions) -> u8 {
     0b10011
         | match options.invert_colors {
-            options::ColorInversion::Normal => 0b100,
-            options::ColorInversion::Inverted => 0,
+            options::ColorInversion::Normal => 0,
+            options::ColorInversion::Inverted => 0b100,
         }
 }
 
