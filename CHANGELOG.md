@@ -13,13 +13,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - added `RM67162` model support
 - made `InitError` visible
 - added `ILI9488` model support
+- added `ILI9228` model support
 - added `KIND` constant to `Interface` trait to detect invalid model, color format, and interface combinations
 - added `InvalidConfiguration` variant to `InitError` enum
+- added `update_address_window` in Model trait.
 
 ### Changed
 
 - changed the returned error type of `Model::init` to a new `ModelInitError` type to allow implementations to report configuration errors
 - added new errors returned from `Builder::init` in case of invalid `display_size` or `display_offset` parameters
+- Move functions `set_vertical_scroll_offset`, `set_vertical_scroll_region`, `set_tearing_effect`, `update_options`, `software_reset`, `write_memory_start`, `wake` and `sleep` 's dcs command part into Model trait from Display trait.
 
 ## Removed
 

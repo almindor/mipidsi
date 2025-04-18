@@ -1,6 +1,7 @@
 use crate::dcs::DcsCommand;
 use crate::dcs::InterfaceExt;
 use crate::dcs::SetAddressMode;
+use crate::options;
 use crate::options::{ColorOrder, Rotation};
 use crate::{
     interface::Interface,
@@ -230,6 +231,34 @@ impl Model for ILI9225Rgb565 {
         DI: Interface,
     {
         options_write_cmd(di, options)
+    }
+    fn set_tearing_effect<DI>(
+        _di: &mut DI,
+        _tearing_effect: options::TearingEffect,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        // Not support, ignore it
+        Ok(())
+    }
+    fn set_vertical_scroll_region<DI>(
+        _di: &mut DI,
+        _top_fixed_area: u16,
+        _bottom_fixed_area: u16,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        // Not support, ignore it
+        Ok(())
+    }
+    fn set_vertical_scroll_offset<DI>(_di: &mut DI, _offset: u16) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        // Not support, ignore it
+        Ok(())
     }
 }
 

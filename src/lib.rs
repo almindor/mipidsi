@@ -18,6 +18,7 @@
 //!
 //! * GC9107
 //! * GC9A01
+//! * ILI9225
 //! * ILI9341
 //! * ILI9342C
 //! * ILI9486
@@ -105,7 +106,7 @@
 //! display.clear(Rgb666::RED).unwrap();
 //! ```
 
-use dcs::{InterfaceExt, SetAddressMode};
+use dcs::SetAddressMode;
 
 pub mod interface;
 
@@ -274,19 +275,7 @@ where
         top_fixed_area: u16,
         bottom_fixed_area: u16,
     ) -> Result<(), DI::Error> {
-        let rows = M::FRAMEBUFFER_SIZE.1;
-
-        let vscrdef = if top_fixed_area + bottom_fixed_area > rows {
-            dcs::SetScrollArea::new(rows, 0, 0)
-        } else {
-            dcs::SetScrollArea::new(
-                top_fixed_area,
-                rows - top_fixed_area - bottom_fixed_area,
-                bottom_fixed_area,
-            )
-        };
-
-        self.di.write_command(vscrdef)
+        M::set_vertical_scroll_region(&mut self.di, top_fixed_area, bottom_fixed_area)
     }
 
     /// Sets the vertical scroll offset.
@@ -297,8 +286,7 @@ where
     /// Use [`set_vertical_scroll_region`](Self::set_vertical_scroll_region) to setup the scroll region, before
     /// using this method.
     pub fn set_vertical_scroll_offset(&mut self, offset: u16) -> Result<(), DI::Error> {
-        let vscad = dcs::SetScrollStart::new(offset);
-        self.di.write_command(vscad)
+        M::set_vertical_scroll_offset(&mut self.di, offset)
     }
 
     ///
@@ -343,8 +331,7 @@ where
         &mut self,
         tearing_effect: options::TearingEffect,
     ) -> Result<(), DI::Error> {
-        self.di
-            .write_command(dcs::SetTearingEffect::new(tearing_effect))
+        M::set_tearing_effect(&mut self.di, tearing_effect)
     }
 
     ///

@@ -3,7 +3,7 @@
 use crate::{
     dcs::{self, InterfaceExt, SetAddressMode},
     interface::Interface,
-    options::{ModelOptions, Rotation},
+    options::{self, ModelOptions, Rotation},
     ConfigurationError,
 };
 use embedded_graphics_core::prelude::RgbColor;
@@ -128,6 +128,72 @@ pub trait Model {
     {
         let madctl = SetAddressMode::from(options);
         di.write_command(madctl)
+    }
+
+    ///
+    /// Configures the tearing effect output.
+    ///
+    fn set_tearing_effect<DI>(
+        di: &mut DI,
+        tearing_effect: options::TearingEffect,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        di.write_command(dcs::SetTearingEffect::new(tearing_effect))
+    }
+
+    /// Sets the vertical scroll region.
+    ///
+    /// The `top_fixed_area` and `bottom_fixed_area` arguments can be used to
+    /// define an area on the top and/or bottom of the display which won't be
+    /// affected by scrolling.
+    ///
+    /// Note that this method is not affected by the current display orientation
+    /// and will always scroll vertically relative to the default display
+    /// orientation.
+    ///
+    /// The combined height of the fixed area must not larger than the
+    /// height of the framebuffer height in the default orientation.
+    ///
+    /// After the scrolling region is defined the [`set_vertical_scroll_offset`](Self::set_vertical_scroll_offset) can be
+    /// used to scroll the display.
+    fn set_vertical_scroll_region<DI>(
+        di: &mut DI,
+        top_fixed_area: u16,
+        bottom_fixed_area: u16,
+    ) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        let rows = Self::FRAMEBUFFER_SIZE.1;
+
+        let vscrdef = if top_fixed_area + bottom_fixed_area > rows {
+            dcs::SetScrollArea::new(rows, 0, 0)
+        } else {
+            dcs::SetScrollArea::new(
+                top_fixed_area,
+                rows - top_fixed_area - bottom_fixed_area,
+                bottom_fixed_area,
+            )
+        };
+
+        di.write_command(vscrdef)
+    }
+
+    /// Sets the vertical scroll offset.
+    ///
+    /// Setting the vertical scroll offset shifts the vertical scroll region
+    /// upwards by `offset` pixels.
+    ///
+    /// Use [`set_vertical_scroll_region`](Self::set_vertical_scroll_region) to setup the scroll region, before
+    /// using this method.
+    fn set_vertical_scroll_offset<DI>(di: &mut DI, offset: u16) -> Result<(), DI::Error>
+    where
+        DI: Interface,
+    {
+        let vscad = dcs::SetScrollStart::new(offset);
+        di.write_command(vscad)
     }
 }
 
