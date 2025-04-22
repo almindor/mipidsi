@@ -3,7 +3,7 @@
 use crate::interface::Interface;
 
 #[macro_use]
-mod macros;
+pub(crate) mod macros;
 
 mod set_address_mode;
 pub use set_address_mode::*;
@@ -72,7 +72,6 @@ dcs_basic_command!(
     SoftReset,
     0x01
 );
-
 dcs_basic_command!(
     /// Enter Sleep Mode
     EnterSleepMode,

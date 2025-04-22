@@ -28,4 +28,3 @@ batch = ["heapless"]
 
 [workspace]
 members = ["mipidsi-async"]
-
