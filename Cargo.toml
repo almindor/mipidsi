@@ -1,7 +1,7 @@
 [package]
 name = "mipidsi"
 description = "MIPI Display Command Set compatible generic driver"
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Ales Katona <almindor@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -12,6 +12,7 @@ documentation = "https://docs.rs/mipidsi"
 rust-version = "1.75"
 
 [dependencies]
+defmt = { version = "1.0.1", optional = true }
 embedded-graphics-core = "0.4.0"
 embedded-hal = "1.0.0"
 
@@ -25,6 +26,7 @@ embedded-graphics = "0.8.1"
 [features]
 default = ["batch"]
 batch = ["heapless"]
+defmt = ["dep:defmt", "embedded-hal/defmt-03"]
 
 [workspace]
 members = ["mipidsi-async"]

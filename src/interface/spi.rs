@@ -1,8 +1,12 @@
 use embedded_hal::{digital::OutputPin, spi::SpiDevice};
 
+#[cfg(feature = "defmt")]
+use defmt::Format;
+
 use super::{Interface, InterfaceKind};
 
 /// Spi interface error
+#[cfg_attr(feature = "defmt", derive(Format))]
 #[derive(Clone, Copy, Debug)]
 pub enum SpiError<SPI, DC> {
     /// SPI bus error
