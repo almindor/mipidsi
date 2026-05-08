@@ -167,6 +167,20 @@ where
     RST: OutputPin,
 {
     ///
+    /// Get display width
+    ///
+    pub fn get_display_width(&self) -> u16 {
+        self.options.display_size.0
+    }
+
+    ///
+    /// Get display height
+    ///
+    pub fn get_display_height(&self) -> u16 {
+        self.options.display_size.1
+    }
+
+    ///
     /// Returns currently set [options::Orientation]
     ///
     pub fn orientation(&self) -> options::Orientation {
