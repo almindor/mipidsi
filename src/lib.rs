@@ -169,15 +169,21 @@ where
     ///
     /// Get display width
     ///
-    pub fn get_display_width(&self) -> u16 {
-        self.options.display_size.0
+    pub fn get_width(&self) -> u16 {
+        match self.options.orientation.rotation {
+            options::Rotation::Deg90 | options::Rotation::Deg270 => self.options.display_size.1,
+            _ => self.options.display_size().0,
+        }
     }
 
     ///
     /// Get display height
     ///
-    pub fn get_display_height(&self) -> u16 {
-        self.options.display_size.1
+    pub fn get_height(&self) -> u16 {
+        match self.options.orientation.rotation {
+            options::Rotation::Deg90 | options::Rotation::Deg270 => self.options.display_size.0,
+            _ => self.options.display_size().1,
+        }
     }
 
     ///
