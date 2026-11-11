@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - added `NV3007` model support
+- added `Display::set_pixels_raw` to write pixel data that is already in the display's wire format, without color conversion
+- added `Interface::send_raw_pixels`, with a default implementation based on `send_pixels`; `SpiInterface` sends the data in a single write
 
 ## [v0.10.0] - 2026-02-17
 

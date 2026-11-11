@@ -86,6 +86,10 @@ where
         Ok(())
     }
 
+    fn send_raw_pixels(&mut self, data: &[u8]) -> Result<(), Self::Error> {
+        self.spi.write(data).map_err(SpiError::Spi)
+    }
+
     fn send_repeated_pixel<const N: usize>(
         &mut self,
         pixel: [Self::Word; N],
