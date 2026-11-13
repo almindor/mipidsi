@@ -104,9 +104,6 @@ pub trait InterfacePixelFormat<Word> {
     // but that doesn't work yet
 
     #[doc(hidden)]
-    const WORDS_PER_PIXEL: usize;
-
-    #[doc(hidden)]
     fn send_pixels<DI: Interface<Word = Word>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -121,8 +118,6 @@ pub trait InterfacePixelFormat<Word> {
 }
 
 impl InterfacePixelFormat<u8> for Rgb565 {
-    const WORDS_PER_PIXEL: usize = 2;
-
     fn send_pixels<DI: Interface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -140,8 +135,6 @@ impl InterfacePixelFormat<u8> for Rgb565 {
 }
 
 impl InterfacePixelFormat<u8> for Rgb666 {
-    const WORDS_PER_PIXEL: usize = 3;
-
     fn send_pixels<DI: Interface<Word = u8>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,
@@ -159,8 +152,6 @@ impl InterfacePixelFormat<u8> for Rgb666 {
 }
 
 impl InterfacePixelFormat<u16> for Rgb565 {
-    const WORDS_PER_PIXEL: usize = 1;
-
     fn send_pixels<DI: Interface<Word = u16>>(
         di: &mut DI,
         pixels: impl IntoIterator<Item = Self>,

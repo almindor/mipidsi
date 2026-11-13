@@ -8,8 +8,7 @@ use embedded_hal::{
 use mipidsi::{
     interface::{Interface, InterfaceKind, SpiInterface},
     models::{ILI9486Rgb666, ST7789},
-    options::{Orientation, Rotation},
-    Builder, SetPixelsRawError,
+    Builder,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -144,81 +143,19 @@ fn display_offset_is_applied() {
 }
 
 #[test]
-fn rgb666_uses_three_bytes_per_pixel() {
+fn data_is_sent_as_is_regardless_of_region_size() {
     let log = Log::default();
     let mut buffer = [0u8; 16];
     let mut display = Builder::new(ILI9486Rgb666, spi_interface(&log, &mut buffer))
         .init(&mut NoDelay)
         .unwrap();
-
-    assert!(matches!(
-        display.set_pixels_raw(0, 0, 1, 0, &[0; 4]),
-        Err(SetPixelsRawError::InvalidLength)
-    ));
-    display.set_pixels_raw(0, 0, 1, 0, &[0; 6]).unwrap();
-}
-
-#[test]
-fn invalid_regions_are_rejected_without_sending_anything() {
-    let log = Log::default();
-    let mut buffer = [0u8; 16];
-    let mut display = Builder::new(ST7789, spi_interface(&log, &mut buffer))
-        .display_size(240, 320)
-        .init(&mut NoDelay)
-        .unwrap();
     log.borrow_mut().clear();
 
-    let data = [0u8; 4];
-    for (sx, sy, ex, ey) in [
-        (239, 0, 240, 0), // past the right edge
-        (0, 319, 1, 320), // past the bottom edge
-        (5, 0, 4, 0),     // sx > ex
-        (0, 5, 1, 4),     // sy > ey
-    ] {
-        assert!(
-            matches!(
-                display.set_pixels_raw(sx, sy, ex, ey, &data),
-                Err(SetPixelsRawError::OutOfBounds)
-            ),
-            "region ({sx}, {sy}) - ({ex}, {ey})"
-        );
-    }
+    // Less data than the 4x4 region: only the first pixels are updated
+    let data = [0xFC, 0x00, 0x00, 0x00, 0xFC, 0x00];
+    display.set_pixels_raw(0, 0, 3, 3, &data).unwrap();
 
-    assert!(matches!(
-        display.set_pixels_raw(0, 0, 1, 0, &[0; 3]),
-        Err(SetPixelsRawError::InvalidLength)
-    ));
-    assert!(matches!(
-        display.set_pixels_raw(0, 0, 1, 0, &[0; 5]),
-        Err(SetPixelsRawError::InvalidLength)
-    ));
-
-    assert!(log.borrow().is_empty());
-}
-
-#[test]
-fn bounds_follow_orientation() {
-    let log = Log::default();
-    let mut buffer = [0u8; 16];
-    let mut display = Builder::new(ST7789, spi_interface(&log, &mut buffer))
-        .display_size(240, 320)
-        .init(&mut NoDelay)
-        .unwrap();
-
-    let data = [0u8; 2];
-    assert!(matches!(
-        display.set_pixels_raw(300, 0, 300, 0, &data),
-        Err(SetPixelsRawError::OutOfBounds)
-    ));
-
-    display
-        .set_orientation(Orientation::default().rotate(Rotation::Deg90))
-        .unwrap();
-    display.set_pixels_raw(300, 0, 300, 0, &data).unwrap();
-    assert!(matches!(
-        display.set_pixels_raw(0, 300, 0, 300, &data),
-        Err(SetPixelsRawError::OutOfBounds)
-    ));
+    assert_eq!(log.borrow().last(), Some(&Event::Data(data.to_vec())));
 }
 
 /// Interface that doesn't override `send_raw_pixels`.

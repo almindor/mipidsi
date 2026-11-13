@@ -266,7 +266,9 @@ where
     /// format directly.
     ///
     /// The pixels are written row first, from the top left to the bottom right corner of the
-    /// region. The end coordinates are inclusive.
+    /// region. No bounds checking is performed on `data`: if it contains less data than the
+    /// region, only the first pixels of the region are updated, and if it contains more, drawing
+    /// will wrap around.
     ///
     /// `data` must already be encoded in the format the display expects on the wire:
     ///
@@ -276,11 +278,14 @@ where
     /// | `Rgb666`     | `u8`           | 3 bytes, one per channel, left aligned (`RRRRRR00 GGGGGG00 BBBBBB00`) |
     /// | `Rgb565`     | `u16`          | 1 word (`RRRRRGGGGGGBBBBB`) |
     ///
-    /// # Errors
+    /// <div class="warning">
     ///
-    /// Returns [`SetPixelsRawError::OutOfBounds`] if a start coordinate is greater than the
-    /// corresponding end coordinate or if the region isn't entirely inside the display, and [`SetPixelsRawError::InvalidLength`] if the length of `data`
-    /// doesn't match the size of the region. Nothing is sent to the display in both cases.
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
+    /// </div>
     ///
     /// # Examples
     ///
@@ -297,22 +302,12 @@ where
         ex: u16,
         ey: u16,
         data: &[DI::Word],
-    ) -> Result<(), SetPixelsRawError<DI::Error>> {
-        let (width, height) = self.options.display_size();
-        if sx > ex || sy > ey || ex >= width || ey >= height {
-            return Err(SetPixelsRawError::OutOfBounds);
-        }
-
-        let pixel_count = usize::from(ex - sx + 1) * usize::from(ey - sy + 1);
-        if data.len() != pixel_count * M::ColorFormat::WORDS_PER_PIXEL {
-            return Err(SetPixelsRawError::InvalidLength);
-        }
-
+    ) -> Result<(), DI::Error> {
         self.set_address_window(sx, sy, ex, ey)?;
-        M::write_memory_start(&mut self.di)?;
-        self.di.send_raw_pixels(data)?;
 
-        Ok(())
+        M::write_memory_start(&mut self.di)?;
+
+        self.di.send_raw_pixels(data)
     }
 
     /// Sets the vertical scroll region.
@@ -430,28 +425,6 @@ where
     /// operation of this crate.
     pub unsafe fn dcs(&mut self) -> &mut DI {
         &mut self.di
-    }
-}
-
-/// Error returned by [`Display::set_pixels_raw`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
-#[non_exhaustive]
-pub enum SetPixelsRawError<DiError> {
-    /// Error caused by the display interface.
-    Interface(DiError),
-
-    /// A start coordinate is greater than the corresponding end coordinate, or the region
-    /// isn't entirely inside the display.
-    OutOfBounds,
-
-    /// The length of the pixel data doesn't match the size of the region.
-    InvalidLength,
-}
-
-impl<DiError> From<DiError> for SetPixelsRawError<DiError> {
-    fn from(value: DiError) -> Self {
-        Self::Interface(value)
     }
 }
 
