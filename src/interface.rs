@@ -41,6 +41,17 @@ pub trait Interface {
         pixel: [Self::Word; N],
         count: u32,
     ) -> Result<(), Self::Error>;
+
+    /// Send pixel data that is already encoded in the wire format expected by the display
+    ///
+    /// `WriteMemoryStart` must be sent before calling this function.
+    ///
+    /// The default implementation forwards the data word by word to
+    /// [`send_pixels`](Self::send_pixels). Implementations should override it if they
+    /// can send the slice directly, e.g. in a single (DMA) transfer without copying.
+    fn send_raw_pixels(&mut self, data: &[Self::Word]) -> Result<(), Self::Error> {
+        self.send_pixels(data.iter().map(|&word| [word]))
+    }
 }
 
 impl<T: Interface> Interface for &mut T {
@@ -66,6 +77,10 @@ impl<T: Interface> Interface for &mut T {
         count: u32,
     ) -> Result<(), Self::Error> {
         T::send_repeated_pixel(self, pixel, count)
+    }
+
+    fn send_raw_pixels(&mut self, data: &[Self::Word]) -> Result<(), Self::Error> {
+        T::send_raw_pixels(self, data)
     }
 }
 

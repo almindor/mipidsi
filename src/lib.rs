@@ -256,6 +256,60 @@ where
         M::ColorFormat::send_pixels(&mut self.di, colors)
     }
 
+    ///
+    /// Sets pixel colors in a rectangular region from a buffer of raw pixel data.
+    ///
+    /// Unlike [`set_pixels`](Self::set_pixels), no color conversion is performed: `data` is
+    /// sent to the display as is, which allows interfaces to send the whole buffer in a single
+    /// transfer (e.g. using DMA). This is useful when the pixel data is produced by another
+    /// renderer, like a GUI library or a framebuffer, that can output the display's native
+    /// format directly.
+    ///
+    /// The pixels are written row first, from the top left to the bottom right corner of the
+    /// region. No bounds checking is performed on `data`: if it contains less data than the
+    /// region, only the first pixels of the region are updated, and if it contains more, drawing
+    /// will wrap around.
+    ///
+    /// `data` must already be encoded in the format the display expects on the wire:
+    ///
+    /// | Color format | Interface word | Encoding per pixel |
+    /// |--------------|----------------|--------------------|
+    /// | `Rgb565`     | `u8`           | 2 bytes, big endian (`RRRRRGGG GGGBBBBB`) |
+    /// | `Rgb666`     | `u8`           | 3 bytes, one per channel, left aligned (`RRRRRR00 GGGGGG00 BBBBBB00`) |
+    /// | `Rgb565`     | `u16`          | 1 word (`RRRRRGGGGGGBBBBB`) |
+    ///
+    /// <div class="warning">
+    ///
+    /// The end values of the X and Y coordinate ranges are inclusive, and no
+    /// bounds checking is performed on these values. Using out of range values
+    /// (e.g., passing `320` instead of `319` for a 320 pixel wide display) will
+    /// result in undefined behavior.
+    ///
+    /// </div>
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # let mut display = mipidsi::_mock::new_mock_display();
+    /// // 10x10 pixels, RGB565 over an 8 bit interface: 2 bytes per pixel
+    /// let buffer = [0u8; 10 * 10 * 2];
+    /// display.set_pixels_raw(0, 0, 9, 9, &buffer).unwrap();
+    /// ```
+    pub fn set_pixels_raw(
+        &mut self,
+        sx: u16,
+        sy: u16,
+        ex: u16,
+        ey: u16,
+        data: &[DI::Word],
+    ) -> Result<(), DI::Error> {
+        self.set_address_window(sx, sy, ex, ey)?;
+
+        M::write_memory_start(&mut self.di)?;
+
+        self.di.send_raw_pixels(data)
+    }
+
     /// Sets the vertical scroll region.
     ///
     /// The `top_fixed_area` and `bottom_fixed_area` arguments can be used to
